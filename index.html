@@ -557,7 +557,7 @@ input[type=range]:disabled{opacity:.5}
           <tr><th>해결 보너스</th><td>민원을 해결하면 그날 매출이 1%~10% 랜덤으로 올라요. 영업 전에 해결하면 다음 영업에 적용돼요.</td></tr>
           <tr><th>무시·실패</th><td>미해결 민원 1개마다 손님 ÷1.5, 매출 -10%. 여러 개면 계속 겹쳐요.</td></tr>
           <tr><th>물약 상점</th><td>미해결 민원은 물약으로 없애요. 물약 값은 그 민원의 최고급 방법 비용의 1.5배이고, 쓰면 그 민원의 패널티가 모두 사라져요.</td></tr>
-          <tr><th>VIP</th><td>매일 5%. 부자: 음식값 3배 결제 + 평점 +1 · 인플루언서: 다음 날 손님 +50% · 산타: 처음엔 ₩50,000~₩100,000, 가게가 커지면 같은 비율로 커지는 돈 선물.</td></tr>
+          <tr><th>VIP</th><td>매일 5%. 부자: 음식값 300배 결제 + 평점 +1 · 인플루언서: 다음 날 손님 +50% · 산타: 처음엔 ₩50,000~₩100,000, 가게가 커지면 같은 비율로 커지는 돈 선물.</td></tr>
         </table>
       </div>
     </div>
@@ -589,8 +589,9 @@ const METHODS={
   normal:{name:"일반 방법",tier:"STANDARD",chance:.5},
   best:{name:"최고급 방법",tier:"PREMIUM",chance:1}
 };
+const RICH_MULT=300;   // 부자 손님은 음식값의 300배를 혼자 결제
 const VIPS={
-  rich:{name:"부자",title:"부자 손님이 찾아왔다!",effect:"음식값의 3배를 혼자 결제하고 평점을 1점 올려 줘요."},
+  rich:{name:"부자",title:"부자 손님이 찾아왔다!",effect:`음식값의 ${RICH_MULT}배를 혼자 결제하고 평점을 1점 올려 줘요.`},
   influencer:{name:"인플루언서",title:"인플루언서가 찾아왔다!",effect:"SNS에 가게를 올려서 다음 날 손님이 50% 늘어나요."},
   santa:{name:"산타",title:"산타가 찾아왔다!",effect:"가게 규모에 맞는 돈 선물을 두고 가요. (처음엔 ₩5만~₩10만)"}
 };
@@ -2423,9 +2424,9 @@ function onEaten(c){
   const p=B.price;
   c.emote={type:c.vip?"star":B.level<=9000?"heart":B.level<=13000?"yum":"sweat",t:0};
   if(c.vip==="rich"){
-    pop(hx,hy,"+"+won(p*3),MUSTARD,30);pop(hx,hy-34,"평점 +1",PAPER,22);
+    pop(hx,hy,"+"+won(p*RICH_MULT),MUSTARD,30);pop(hx,hy-34,"평점 +1",PAPER,22);
     burst(hx,hy+30,26,"coin");burst(hx,hy,12,"sparkle");Snd.register();
-    Hooks.revenue&&Hooks.revenue(p*3,hx,hy);return;
+    Hooks.revenue&&Hooks.revenue(p*RICH_MULT,hx,hy);return;
   }
   B.finished++;
   const now=Math.round(B.total*B.finished/B.V),got=now-B.shown;B.shown=now;
@@ -3234,7 +3235,7 @@ async function spinReel(pct){
 /* ---------- VIP ---------- */
 function showVip(L,after){
   const V=VIPS[L.vip];let body="";
-  if(L.vip==="rich")body=`<p>음식값 ${won(L.price)}의 3배인 <b>${won(L.vipSales)}</b>을 혼자 결제했어요.<br>${L.rating>L.ratingBeforeVip?`평점이 <b>${L.ratingBeforeVip.toFixed(1)} → ${L.rating.toFixed(1)}</b>으로 올랐어요.`:"평점은 이미 만점이에요!"}</p>`;
+  if(L.vip==="rich")body=`<p>음식값 ${won(L.price)}의 ${RICH_MULT}배인 <b>${won(L.vipSales)}</b>을 혼자 결제했어요.<br>${L.rating>L.ratingBeforeVip?`평점이 <b>${L.ratingBeforeVip.toFixed(1)} → ${L.rating.toFixed(1)}</b>으로 올랐어요.`:"평점은 이미 만점이에요!"}</p>`;
   if(L.vip==="influencer")body=`<p>"#졸라맨식당 진짜 맛집!" 게시물이 퍼지고 있어요.<br>내일 손님이 <b>50%</b> 늘어납니다.</p>`;
   if(L.vip==="santa")body=`<p>산타가 선물 상자를 두고 갔어요. 안에 무엇이 들어 있을까요?</p><div id="giftOut"></div>`;
   openModal(`<div class="ribbon gold">VIP 손님</div>
@@ -3257,7 +3258,7 @@ function showResults(L){
   line("판매액",won(L.gross));
   if(L.complaintLoss)line(`미해결 민원 ${L.unresolvedAt}개 -${L.complaintPct}%`,"-"+won(L.complaintLoss),"bad");
   if(L.bonusPct)line(`민원 해결 보너스 +${L.bonusPct}%`,"+"+won(L.bonus),"bonus");
-  if(L.vipSales)line("VIP 부자 결제 (×3)","+"+won(L.vipSales),"hl");
+  if(L.vipSales)line(`VIP 부자 결제 (×${RICH_MULT})`,"+"+won(L.vipSales),"hl");
   if(L.lodge)line(`숙박비 (객실 ${L.rooms}개 · 투숙률 ${L.occ}%)`,"+"+won(L.lodge),"hl");
   if(L.lodgeCost)line("객실 관리비 (15%)","-"+won(L.lodgeCost));
   line(`식재료비 (${Math.round(L.foodRate*100)}%)`,"-"+won(L.foodCost));
@@ -3430,7 +3431,7 @@ function finishBusiness(){
   const sales=Math.round(gross*cp), complaintLoss=gross-sales, fixed=fixedCost();
   const bonusPct=bonusTotal(), bonus=Math.round(sales*bonusPct/100);
   state.bonus=[];
-  const vipSales=vip==="rich"?price*3:0;
+  const vipSales=vip==="rich"?price*RICH_MULT:0;
   const gift=vip==="santa"?santaGift():0;
   // 숙박비 (5성급 호텔부터): 꾸민 객실 × 1박 요금 × 투숙률, 관리비 15%
   const rooms=lodgeOn()?roomsBuilt():0, occ=occupancy();
