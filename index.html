@@ -490,8 +490,8 @@ input[type=range]:disabled{opacity:.5}
       <div class="help help-wrap">
         <table>
           <tr><th>시작 자금</th><td>₩3,000,000 · 고정비 하루 ₩30,000 × 가격대 배수</td></tr>
-          <tr><th>가게 확장</th><td>돈을 모아 가구 설치(₩1,000만)부터 졸라맨 유니버스(₩100양)까지 24단계로 확장해요. 단계마다 손님이 늘고, 음식 가격이 2~5배(랜덤) 올라가요.</td></tr>
-          <tr><th>음식점 등급</th><td>등급사가 3일마다 와서 가게 구석구석을 살피고 맛·환경·친절도를 점수로 매겨요. 평균 점수가 다음 등급 기준을 넘으면 한 단계 올라가고, 너무 낮으면 내려가요. 초보부터 세상의 맛까지 15등급이고, 등급 하나마다 모든 음식의 적정가가 10% 올라요.</td></tr>
+          <tr><th>가게 확장</th><td>돈을 모아 가구 설치(₩1,000만)부터 졸라맨 유니버스(₩100양)까지 24단계로 확장해요. 단계마다 테이블과 손님이 늘고, 음식 가격이 2~5배(랜덤) 올라가요. 천국 호텔 같은 고급 단계일수록 확장 비용에 걸맞게 음식값이 더 크게 올라요.</td></tr>
+          <tr><th>음식점 등급</th><td>등급사가 3일마다 와서 가게 구석구석을 살피고 맛·환경·친절도를 점수로 매겨요. 평균 점수가 다음 등급 기준을 넘으면 한 단계 올라가고, 너무 낮으면 내려가요. 초보부터 세상의 맛까지 15등급이고, 등급 하나마다 손님이 12% 늘어요.</td></tr>
           <tr><th>직원</th><td>₩100만짜리 첫 직원부터 22명까지 고용할 수 있어요. 서빙은 친절도, 요리사는 맛, 청소·관리는 환경 점수를 올려 줘요.</td></tr>
           <tr><th>메뉴와 가격</th><td>메뉴는 날마다 바뀌고, 가게를 확장하면 더 고급 메뉴가 나와요. 메뉴마다 적정가가 있어요. 적정가의 112%까지는 평점이 조금 오르고, 62% 이하로 싸게 팔면 손님과 평점이 크게 늘지만 재료비 비율이 높아요. 그보다 비싸면 손님과 평점이 줄어요.</td></tr>
           <tr><th>평점</th><td>별이 1개 줄 때마다 손님이 1~2명 줄어요 (날마다 1명 또는 2명).</td></tr>
@@ -609,15 +609,15 @@ const TIER_MENUS=[
 ];
 /* ================= 음식점 등급 =================
    등급사가 3일마다 와서 맛·환경·친절도를 보고 등급을 한 단계씩 올리거나 내린다.
-   req: 이 등급으로 오르는 데 필요한 평균 점수. 등급 하나마다 적정가 +10% */
+   req: 이 등급으로 오르는 데 필요한 평균 점수. 등급 하나마다 손님 +12% */
 const GRADES=[
   {name:"초보",req:0},{name:"중수",req:36},{name:"고수",req:42},{name:"초고수",req:48},{name:"환상의 맛",req:54},
   {name:"미슐랭",req:60},{name:"미슐랭 2스타",req:65},{name:"미슐랭 3스타",req:70},{name:"레전더리 맛",req:75},{name:"슈퍼 음식점",req:80},
   {name:"환상의 음식점",req:84},{name:"울트라 맛",req:88},{name:"미친 맛",req:92},{name:"우주의 맛",req:95},{name:"세상의 맛",req:98}
 ];
 const MAX_GRADE=GRADES.length-1;
-// 등급이 오를수록 모든 음식의 적정가가 10%씩 오른다 (손님 수는 그대로)
-const gradePrice=()=>1+.1*state.grade;
+// 등급 하나마다 손님 +12%
+const gradeMult=()=>1+.12*state.grade;
 const INSPECT_EVERY=3;
 const daysToInspect=(day=state.day)=>(INSPECT_EVERY-day%INSPECT_EVERY)%INSPECT_EVERY;
 
@@ -667,12 +667,14 @@ function nextGradeFrom(g,avg){
 const nice2=x=>{if(x<=0)return 0;const e=Math.pow(10,Math.floor(Math.log10(x))-1);return Math.round(x/e)*e};
 const nice3=x=>{if(x<=0)return 0;const e=Math.pow(10,Math.floor(Math.log10(x))-2);return Math.round(x/e)*e};
 const menuOf=(tier=state.tier)=>TIER_MENUS[tier]||TIER_MENUS[0];
-function dishOf(day,tier=state.tier){const m=menuOf(tier),d=m[(day-1)%m.length];return {name:d[0],m:d[1],art:d[2],fair:nice2(8000*(tier===state.tier?priceScale()*gradePrice():TIERS[tier].scale)*d[1])}}
+function dishOf(day,tier=state.tier){const m=menuOf(tier),d=m[(day-1)%m.length];return {name:d[0],m:d[1],art:d[2],fair:nice2(8000*(tier===state.tier?priceScale():TIERS[tier].scale)*d[1])}}
 // 가격 슬라이더(level)는 적정가 대비 비율: level 8,000 = 적정가 100%
 const priceAt=(level,day=state.day)=>nice3(level/8000*dishOf(day).fair);
 const addText=a=>Array.isArray(a)?`${korNum(a[0])}~${korNum(a[1])}명`:`${korNum(a)}명`;
 // 가격대: 확장할 때마다 2~5배 (랜덤) 올라가서 state.scale 에 쌓인다
-const priceScale=()=>state.scale||TIERS[state.tier].scale;
+// 단, 고급 단계일수록 음식값이 확장 비용에 걸맞게: 기본 음식값 ≥ 그 단계 확장 비용의 1/1,000
+const minScale=tier=>TIERS[tier].cost/1000/8000;
+const priceScale=()=>Math.max(state.scale||TIERS[state.tier].scale,minScale(state.tier));
 const custScale=()=>+(1+state.bonusCust/280).toPrecision(2);   // 광고 효과와 광고비의 크기 (유효숫자 2자리)
 const fixedCost=()=>FIXED_COST*priceScale();
 // 가게 규모 배수: 처음엔 1이고, 하루 수입과 같은 비율로 커진다 (가격대 × 손님 규모)
@@ -732,12 +734,12 @@ function makeComplaint(){
 const COMPLAINT_BASE={old:30000,normal:50000};
 function complaintCost(c,k){
   const base=k==="best"?(c.bestBase||c.bestCost||90000):COMPLAINT_BASE[k];
-  return Math.round(base*econScale());
+  return nice3(base*econScale());
 }
 // 민원 패널티를 없애는 물약 = 그 민원의 최고급 방법 비용 × 1.5
-const potionCost=c=>Math.round(complaintCost(c,"best")*1.5);
+const potionCost=c=>nice3(complaintCost(c,"best")*1.5);
 // 산타 선물 = (5만~10만) × 가게 규모
-const santaGift=()=>Math.round((50000+randInt(0,50)*1000)*econScale());
+const santaGift=()=>nice3((50000+randInt(0,50)*1000)*econScale());
 
 /* ================= 계산식 ================= */
 // level: 가격 슬라이더 값(1,000~30,000). 실제 가격 = level × 가격대 배수
@@ -750,6 +752,7 @@ function forecast(level,adLevel){
   else if(level<=13000) pf=0.75;
   else pf=Math.max(.25,1-(level-13000)/18000);
   let demand=base*pf;
+  if(state.bonusCust>0) mods.push({t:`가게 확장 +${korNum(state.bonusCust*pf)}명`,c:"plus"});
   const adBoost=(adLevel/1000000)*180*custScale();
   demand+=adBoost;
   if(adBoost>=1) mods.push({t:`광고 +${korNum(adBoost)}명`,c:"plus"});
@@ -763,6 +766,7 @@ function forecast(level,adLevel){
     mods.push({t:`민원 ${state.unresolved}개 ÷${+div.toFixed(2)}`,c:"minus"});
   }
   if(state.influencerToday){demand*=1.5;mods.push({t:"인플루언서 ×1.5",c:"plus"})}
+  if(state.grade>0){demand*=gradeMult();mods.push({t:`등급 ${GRADES[state.grade].name} ×${gradeMult().toFixed(2)}`,c:"plus"})}
   const bonus=state.bonus.reduce((a,b)=>a+b,0);
   if(bonus>0) mods.push({t:`해결 보너스 매출 +${bonus}%`,c:"plus"});
   return {customers:Math.max(0,Math.round(demand)),mods};
@@ -1073,7 +1077,10 @@ function drawStick(ctx,o){
   // 앞팔 + 손에 든 물건
   stroke(ctx,[sh,arms[0][0],arms[0][1]],ink,LW);
   const hx=arms[0][1][0], hy=arms[0][1][1];
-  if(o.item==="tray"){
+  if(o.item==="togo"){
+    ctx.fillStyle="#c9955a";ctx.strokeStyle=ink;ctx.lineWidth=2;rr(ctx,hx-7,hy-2,14,15,2);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.arc(hx,hy-2,4,Math.PI,TAU);ctx.stroke();
+  }else if(o.item==="tray"){
     ctx.fillStyle="#d9dde3";ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(hx+dir*4,hy-3,14,3.5,0,0,TAU);ctx.fill();ctx.stroke();
     ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(hx+dir*4,hy-6,7,Math.PI,TAU);ctx.closePath();ctx.fill();ctx.stroke();
   }else if(o.item==="mop"){
@@ -1731,14 +1738,26 @@ const OUTSIDE={
 /* ================= 가게 (2.5D) ================= */
 const SW=960, SH=540, WALL=300, VPX=480, VPY=-320;
 const depthScale=y=>.7+(y-300)/240*.35;
-const ROWS=[{y:372,xs:[300,470,640]},{y:492,xs:[250,450,650]}];
+// 확장할수록 테이블이 늘어난다: 시작 4개 → 가구 설치 6개 → 리모델링부터 8개
+const LAYOUTS=[
+  [{y:372,xs:[360,580]},{y:492,xs:[300,540]}],
+  [{y:372,xs:[300,470,640]},{y:492,xs:[250,450,650]}],
+  [{y:372,xs:[235,385,535,685]},{y:492,xs:[175,340,505,670]}]
+];
 const AISLE=432, DOOR_PT=[86,316];
 const TABLES=[], SEATS=[];
-ROWS.forEach(r=>r.xs.forEach(x=>{
-  const s=depthScale(r.y), t={x,y:r.y,s,seats:[]};
-  [[-1,1],[1,-1]].forEach(([side,dir])=>{const seat={x:x+side*46*s,y:r.y,dir,table:t,taken:false};t.seats.push(seat);SEATS.push(seat)});
-  TABLES.push(t);
-}));
+let layoutKey=-1;
+function ensureLayout(){
+  const k=Math.min(state.tier,LAYOUTS.length-1);
+  if(k===layoutKey||Biz.on)return;
+  TABLES.length=0;SEATS.length=0;
+  LAYOUTS[k].forEach(r=>r.xs.forEach(x=>{
+    const s=depthScale(r.y), t={x,y:r.y,s,seats:[]};
+    [[-1,1],[1,-1]].forEach(([side,dir])=>{const seat={x:x+side*46*s,y:r.y,dir,table:t,taken:false};t.seats.push(seat);SEATS.push(seat)});
+    TABLES.push(t);
+  }));
+  layoutKey=k;
+}
 const Shop={t:0,phase:"prep",complainer:false,gift:false,chefMood:"idle",dark:0,cam:{z:1,x:480,y:300}};
 
 function timeOfDay(){ // 0 = 아침, 1 = 밤
@@ -2040,22 +2059,24 @@ const SHIRTS=["#56b8ff","#ff9340","#43d17f","#ff7eb6","#b28dff","#ffd84d","#ff5b
 const HATS=[{hat:"cap",hatColor:"#e84a5f"},{hat:"cap",hatColor:"#2a7fd0"},{hat:"bow",hatColor:"#ff7eb6"},{hat:"bow",hatColor:"#ffc83d"},{hat:"pony",hatColor:"#6b4a2b"},{hat:"pony",hatColor:"#c9772c"},{},{}];
 
 function startBizAnim(opts){
+  ensureLayout();
   SEATS.forEach(s=>s.taken=false);
-  Object.assign(Biz,{on:true,t:0,total:opts.total,price:opts.price,level:opts.level,V:opts.total>0?Math.min(opts.total,16):0,
+  Object.assign(Biz,{on:true,t:0,total:opts.total,price:opts.price,level:opts.level,V:opts.total>0?Math.min(opts.total,60,SEATS.length+4+Math.floor(4*Math.log10(opts.total+1))):0,
     spawned:0,finished:0,shown:0,sprites:[],pops:[],lastSpawn:-9999,vip:opts.vip,vipState:opts.vip?"wait":null,
     vipSprite:null,endT:null,onDone:opts.onDone,speed:reduceMotion?5:1,progress:0,vipFocus:0,insp:null});
+  Biz.gap=Biz.V?Math.max(110,4200/Biz.V):330;
   if(opts.inspect)startInspector(opts.inspect);
   Shop.phase="open";Shop.chefMood="cook";Shop.complainer=false;
 }
 
-function spawnSprite(seat,vip){
+function spawnSprite(seat,vip,takeout){
   if(seat)seat.taken=true;
   const look=vip?{...VIP_LOOK[vip]}:{...pick(HATS),shirt:pick(SHIRTS)};
   if(theme().helmet)look.helmet=true;
-  const target=vip==="influencer"?[470,AISLE]:vip==="santa"?[728,AISLE]:[seat.x,AISLE];
+  const target=vip==="influencer"?[470,AISLE]:vip==="santa"?[728,AISLE]:takeout?[690+Math.random()*50,AISLE-8+Math.random()*16]:[seat.x,AISLE];
   const path=[[DOOR_PT[0],DOOR_PT[1]+6],[150,AISLE],target];
   if(seat)path.push([seat.x,seat.y]);
-  const c={x:DOOR_PT[0]-6,y:DOOR_PT[1],path,pi:0,mode:"in",state:"walk",dir:1,seat,look,vip,walkT:Math.random()*6,t:0,emote:null};
+  const c={x:DOOR_PT[0]-6,y:DOOR_PT[1],path,pi:0,mode:"in",state:"walk",dir:1,seat,look,vip,takeout:!!takeout,walkT:Math.random()*6,t:0,emote:null};
   Biz.sprites.push(c);
   return c;
 }
@@ -2073,9 +2094,11 @@ Shop.parts=[];
 function updateBiz(dt){
   const B=Biz;if(!B.on)return;
   dt=Math.min(dt,60)*B.speed;B.t+=dt;
-  if(B.spawned<B.V&&B.t-B.lastSpawn>330){
+  if(B.spawned<B.V&&B.t-B.lastSpawn>B.gap&&B.sprites.length<30){
+    // 자리가 있으면 앉아서 먹고, 꽉 차면 카운터에서 포장해 간다
     const free=SEATS.filter(s=>!s.taken);
-    if(free.length){spawnSprite(pick(free),null);B.spawned++;B.lastSpawn=B.t;if(B.spawned%3===1)Snd.door()}
+    spawnSprite(free.length?pick(free):null,null,!free.length);
+    B.spawned++;B.lastSpawn=B.t;if(B.spawned%4===1)Snd.door();
   }
   if(B.vipState==="wait"&&B.t>1400&&B.spawned>=Math.ceil(B.V/2)){
     let seat=null;
@@ -2099,6 +2122,8 @@ function updateBiz(dt){
       }else{c.x+=dx/d*sp;c.y+=dy/d*sp}
     }else if(c.state==="eat"){
       if(c.t>(c.vip?2300:1600)){c.seat.taken=false;onEaten(c);leave(c)}
+    }else if(c.state==="act"&&c.takeout){
+      if(c.t>650){onEaten(c);c.look={...c.look,item:"togo"};leave(c)}
     }else if(c.state==="act"){
       if(c.vip==="santa"&&c.t>700&&!Shop.gift){Shop.gift=true;burst(800,250,14,"sparkle")}
       if(c.vip==="influencer"&&Math.floor(c.t/380)!==Math.floor((c.t-dt)/380)){Snd.tone(1800,.05,"square",.03);burst(c.x+20,c.y-110,3,"sparkle",["#fff","#fff7b0"])}
@@ -2116,7 +2141,7 @@ function updateBiz(dt){
 }
 
 function onEaten(c){
-  const B=Biz,s=c.seat.table.s,hx=c.seat.x,hy=c.seat.y-120*s;
+  const B=Biz,s=c.seat?c.seat.table.s:depthScale(c.y),hx=c.seat?c.seat.x:c.x,hy=(c.seat?c.seat.y:c.y)-120*s;
   const p=B.price;
   c.emote={type:c.vip?"star":B.level<=9000?"heart":B.level<=13000?"yum":"sweat",t:0};
   if(c.vip==="rich"){
@@ -2153,6 +2178,8 @@ function drawSprite(ctx,c,t){
   if(c.state==="act"&&c.vip==="influencer"){
     const f=(c.t%380)/380;
     drawStick(ctx,{...L,x:c.x,y:c.y,s,dir:1,pose:"photo",shadow:true,flash:f<.25?1-f*4:0});
+  }else if(c.state==="act"&&c.takeout){
+    drawStick(ctx,{...L,x:c.x,y:c.y,s,dir:1,pose:"give",t:c.t*.001,shadow:true});
   }else if(c.state==="act"&&c.vip==="santa"){
     drawStick(ctx,{...L,x:c.x,y:c.y,s,dir:1,pose:c.t<900?"give":"wave",t:c.t*.001,item:c.t<700?"gift":null,shadow:true});
     if(c.t>200)bubble(ctx,"호호호!",c.x,c.y-162*s,c.x+6,c.y-128*s,22);
@@ -2204,7 +2231,7 @@ function drawParticles(ctx,dt){
 }
 
 function drawShop(ctx,t,dt){
-  ctx0=ctx;
+  ctx0=ctx;ensureLayout();
   const tod=timeOfDay(),B=Biz;
   // 카메라: VIP 등장 시 살짝 줌인
   const vip=B.on&&B.vipSprite&&!B.vipSprite.gone?B.vipSprite:null;
@@ -2314,7 +2341,7 @@ function renderEffects(){
   if(state.influencerToday)o.push(`<span class="fx-chip gold">인플루언서 효과 · 오늘 손님 <b>+50%</b></span>`);
   if(state.influencerNext)o.push(`<span class="fx-chip gold">SNS 입소문 · 내일 손님 <b>+50%</b></span>`);
   const dd=daysToInspect();
-  o.push(`<span class="fx-chip gold">등급 <b>${GRADES[state.grade].name}</b> · 적정가 +${state.grade*10}% · 심사 <b>${dd===0?"오늘!":`D-${dd}`}</b></span>`);
+  o.push(`<span class="fx-chip gold">등급 <b>${GRADES[state.grade].name}</b> · 손님 +${state.grade*12}% · 심사 <b>${dd===0?"오늘!":`D-${dd}`}</b></span>`);
   o.push(`<span class="fx-chip info">VIP 방문 확률 <b>${Math.round(vipChance()*100)}%</b></span>`);
   const hot=state.unresolved>0&&!busy()&&!state.bankrupt;
   o.push(`<button id="shopBtn" class="b3 ${hot?"red pulse":"dark"} sm" type="button">물약 상점${state.unresolved?` (${state.unresolved})`:""}</button>`);
@@ -2370,10 +2397,14 @@ function renderUpgrade(){
   const nx=TIERS[state.tier+1], can=state.cash>=nx.cost&&!busy()&&!state.bankrupt, pct=clamp(state.cash/nx.cost*100,0,100);
   box.innerHTML=`<div class="up-head"><span class="up-kicker">다음 확장 · Lv.${state.tier+1} / ${MAX_TIER}</span><span class="muted">지금: ${TIERS[state.tier].shop}</span></div>
     <div class="up-main"><div><div class="up-name">${nx.name}</div>
-      <div class="up-eff"><span class="eff plus">손님 +${addText(nx.add)}</span><span class="eff menu">새 메뉴 ${menuOf(state.tier+1).length}종</span><span class="eff gold">음식 가격 ×2~5배</span></div></div>
+      <div class="up-eff"><span class="eff plus">손님 +${addText(nx.add)}</span><span class="eff menu">새 메뉴 ${menuOf(state.tier+1).length}종</span><span class="eff gold">${nextPriceText()}</span></div></div>
       <button id="upBtn" class="b3 gold${can?" pulse":""}" type="button" ${can?"":"disabled"}>확장하기<small>${won(nx.cost)}</small></button></div>
     <div class="up-bar"><i style="width:${pct}%"></i><span>${won(Math.min(state.cash,nx.cost))} / ${won(nx.cost)}</span></div>`;
   $("upBtn").onclick=buyUpgrade;
+}
+function nextPriceText(){
+  const f=minScale(state.tier+1)/priceScale();
+  return f>=5?`음식 가격 ×${fmtX(f)}배`:f>2?`음식 가격 ×${fmtX(f)}~5배`:"음식 가격 ×2~5배";
 }
 function renderTiers(){
   $("tierList").innerHTML=TIERS.slice(1).map((T,i)=>{const lv=i+1,st=lv<=state.tier?"done":lv===state.tier+1?"next":"locked";
@@ -2404,7 +2435,7 @@ function renderGrades(){
   const sc=inspectScores(0),dd=daysToInspect(),nx=GRADES[state.grade+1];
   $("gradeNow").innerHTML=`<b>지금 예상 점수</b> <span class="muted">· 평균 ${sc.avg}점 · 다음 심사 ${dd===0?"오늘":`${dd}일 뒤`}${nx?` · '${nx.name}'까지 평균 ${nx.req}점`:""}</span>${scoreBars(sc)}`;
   $("gradeList").innerHTML=GRADES.map((g,i)=>{const s=i<state.grade?"done":i===state.grade?"next":"locked";
-    return `<div class="tier-row ${s}"><span class="tn">${i+1}</span><div><b>${g.name}</b><small>${i?`평균 ${g.req}점 이상`:"시작 등급"} · 적정가 +${i*10}%</small></div><span class="st">${i===state.grade?"현재":i<state.grade?"달성":"잠김"}</span></div>`}).join("");
+    return `<div class="tier-row ${s}"><span class="tn">${i+1}</span><div><b>${g.name}</b><small>${i?`평균 ${g.req}점 이상`:"시작 등급"} · 손님 +${i*12}%</small></div><span class="st">${i===state.grade?"현재":i<state.grade?"달성":"잠김"}</span></div>`}).join("");
 }
 
 /* ================= 연출 ================= */
@@ -2435,7 +2466,7 @@ function canvasToScreen(x,y){
 }
 function flyCoins(x,y,amount){
   const [sx,sy]=canvasToScreen(x,y),t=$("coinIco").getBoundingClientRect(),tx=t.left+t.width/2,ty=t.top+t.height/2;
-  const n=reduceMotion?1:clamp(Math.ceil(amount/40000),2,5);
+  const n=reduceMotion?1:clamp(Math.ceil(amount/40000),1,Biz.V>24?2:5);
   for(let i=0;i<n;i++){
     const el=document.createElement("div");el.className="fly";$("fx").appendChild(el);
     const ox=sx+(Math.random()-.5)*30,oy=sy+(Math.random()-.5)*20,mx=(ox+tx)/2+(Math.random()-.5)*120,my=Math.min(oy,ty)-60-Math.random()*60;
@@ -2649,14 +2680,14 @@ function showResults(L){
 }
 
 /* ---------- 확장 완료 ---------- */
-function showUpgradeDone(T,add,oldScale){
+function showUpgradeDone(T,add,oldScale,before,after){
   const menus=menuOf(state.tier).map((d,i)=>{const x=dishOf(state.day+i);return `<span class="eff menu">${esc(x.name)} ${won(x.fair)}</span>`}).join("");
   openModal(`<div class="ribbon gold">확장 완료!</div>
     <canvas class="art" data-art="tier" width="320" height="320" aria-hidden="true"></canvas>
     <p class="muted" style="margin:0">Lv.${state.tier} · ${T.name}</p>
     <h2 id="modalTitle">${T.shop}</h2>
     <div class="stat-row">
-      <div class="stat"><span class="label">손님</span><b>+${korNum(add)}명</b></div>
+      <div class="stat"><span class="label">예상 손님 (+${korNum(add)}명)</span><b>${korNum(before)}→${korNum(after)}명</b></div>
       <div class="stat"><span class="label">음식 가격</span><b>×${fmtX(priceScale()/oldScale)} 상승</b></div>
       <div class="stat"><span class="label">메뉴</span><b>${menuOf(state.tier).length}종</b></div>
     </div>
@@ -2714,7 +2745,7 @@ function showInspection(R,after){
     <h2 id="modalTitle">${up?"승급!":down?"강등...":"등급 유지"}</h2>
     <div class="grade-change"><span class="gtag">${GRADES[R.from].name}</span>→<span class="gtag ${up?"up":down?"down":""}">${GRADES[R.to].name}</span></div>
     ${scoreBars(R)}
-    <p>평균 <b>${R.avg}점</b>${up?` · 모든 음식 적정가 +10%`:""}<br>${nx?`다음 심사에서 평균 ${nx.req}점 이상이면 '${nx.name}'${roEuro(nx.name)} 올라가요.`:"최고 등급이에요!"}</p>
+    <p>평균 <b>${R.avg}점</b>${up?` · 손님 +12%`:""}<br>${nx?`다음 심사에서 평균 ${nx.req}점 이상이면 '${nx.name}'${roEuro(nx.name)} 올라가요.`:"최고 등급이에요!"}</p>
     <p class="muted">${low}</p>
     <div class="actions"><button id="inspOk" class="b3" type="button">확인</button></div>`);
   if(up){Snd.fanfare();confetti(60)}else if(down)Snd.fail();else Snd.success();
@@ -2838,12 +2869,14 @@ function buyUpgrade(){
   if(busy()||state.bankrupt||state.tier>=MAX_TIER)return;
   const T=TIERS[state.tier+1];if(state.cash<T.cost)return;
   const oldScale=priceScale(), add=Array.isArray(T.add)?randInt(T.add[0],T.add[1]):T.add;
+  const before=forecast(+$("price").value,+$("ad").value).customers;
   const mult=Math.round((2+Math.random()*3)*10)/10;   // 음식 가격 2~5배
   state.cash-=T.cost;state.tier++;state.bonusCust+=add;
-  state.scale=oldScale*mult;state.scaleLog=(state.scaleLog||[]).concat(mult);
+  state.scale=Math.max(oldScale*mult,minScale(state.tier));
+  state.scaleLog=(state.scaleLog||[]).concat(+(state.scale/oldScale).toPrecision(3));
   setCash(state.cash);cashDelta=null;
   checkAch();save();render();
-  showUpgradeDone(T,add,oldScale);
+  showUpgradeDone(T,add,oldScale,before,forecast(+$("price").value,+$("ad").value).customers);
   Snd.fanfare();setTimeout(()=>Snd.register(),500);confetti(90);
 }
 
