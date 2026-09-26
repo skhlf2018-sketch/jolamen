@@ -450,10 +450,10 @@ input[type=range]:disabled{opacity:.5}
           <tr><th>가게 확장</th><td>돈을 모아 가구 설치(₩1,000만)부터 졸라맨 유니버스(₩100양)까지 24단계로 확장해요. 단계마다 손님이 늘고 가격대가 올라가요.</td></tr>
           <tr><th>음식 가격</th><td>싸면 손님과 평점이 늘지만 재료비 비율이 높아요. 기본 가격 ₩9,000(× 가격대 배수)을 넘기면 손님과 평점이 줄어요.</td></tr>
           <tr><th>평점</th><td>별이 1개 줄 때마다 손님이 1~2명 줄어요 (날마다 1명 또는 2명).</td></tr>
-          <tr><th>민원</th><td>하루 55% 확률로 발생. 구닥다리 ₩30,000 (성공 30%) · 일반 ₩50,000 (50%) · 최고급 ₩80,000~₩100,000 (100%).</td></tr>
+          <tr><th>민원</th><td>하루 55% 확률로 발생. 처음 비용은 구닥다리 ₩30,000 (성공 30%) · 일반 ₩50,000 (50%) · 최고급 ₩80,000~₩100,000 (100%). 가게가 커지면 하루 수입과 같은 비율로 비용도 커져요.</td></tr>
           <tr><th>해결 보너스</th><td>민원을 해결하면 그날 매출이 1%~10% 랜덤으로 올라요. 영업 전에 해결하면 다음 영업에 적용돼요.</td></tr>
           <tr><th>무시·실패</th><td>미해결 민원 1개마다 손님 ÷1.5, 매출 -10%. 여러 개면 계속 겹쳐요.</td></tr>
-          <tr><th>VIP</th><td>매일 5%. 부자: 음식값 3배 결제 + 평점 +1 · 인플루언서: 다음 날 손님 +50% · 산타: ₩50,000~₩100,000 선물.</td></tr>
+          <tr><th>VIP</th><td>매일 5%. 부자: 음식값 3배 결제 + 평점 +1 · 인플루언서: 다음 날 손님 +50% · 산타: 처음엔 ₩50,000~₩100,000, 가게가 커지면 같은 비율로 커지는 돈 선물.</td></tr>
         </table>
       </div>
     </div>
@@ -488,7 +488,7 @@ const METHODS={
 const VIPS={
   rich:{name:"부자",title:"부자 손님이 찾아왔다!",effect:"음식값의 3배를 혼자 결제하고 평점을 1점 올려 줘요."},
   influencer:{name:"인플루언서",title:"인플루언서가 찾아왔다!",effect:"SNS에 가게를 올려서 다음 날 손님이 50% 늘어나요."},
-  santa:{name:"산타",title:"산타가 찾아왔다!",effect:"₩50,000~₩100,000이 든 선물을 두고 가요."}
+  santa:{name:"산타",title:"산타가 찾아왔다!",effect:"가게 규모에 맞는 돈 선물을 두고 가요. (처음엔 ₩5만~₩10만)"}
 };
 const VIP_KEYS=["rich","influencer","santa"];
 const VIP_CHANCE=0.05;          // 하루에 VIP가 올 확률 5%
@@ -534,6 +534,9 @@ const addText=a=>Array.isArray(a)?`${korNum(a[0])}~${korNum(a[1])}명`:`${korNum
 const priceScale=()=>TIERS[state.tier].scale;
 const custScale=()=>+(1+state.bonusCust/280).toPrecision(2);   // 광고 효과와 광고비의 크기 (유효숫자 2자리)
 const fixedCost=()=>FIXED_COST*priceScale();
+// 가게 규모 배수: 처음엔 1이고, 하루 수입과 같은 비율로 커진다 (가격대 × 손님 규모)
+const econScale=()=>priceScale()*custScale();
+const fmtX=x=>x<1e4?(+x.toPrecision(3)).toLocaleString("ko-KR"):korNum(x);
 
 /* ================= 유틸 ================= */
 const $=id=>document.getElementById(id);
@@ -579,8 +582,16 @@ function freshState(){
 let state=freshState();
 
 function makeComplaint(){
-  return {...pick(COMPLAINTS),oldCost:30000,normalCost:50000,bestCost:80000+randInt(0,20)*1000};
+  return {...pick(COMPLAINTS),bestBase:80000+randInt(0,20)*1000};
 }
+// 해결 비용 = 기본 비용 × 가게 규모. 기본: 구닥다리 3만, 일반 5만, 최고급 8만~10만
+const COMPLAINT_BASE={old:30000,normal:50000};
+function complaintCost(c,k){
+  const base=k==="best"?(c.bestBase||c.bestCost||90000):COMPLAINT_BASE[k];
+  return Math.round(base*econScale());
+}
+// 산타 선물 = (5만~10만) × 가게 규모
+const santaGift=()=>Math.round((50000+randInt(0,50)*1000)*econScale());
 
 /* ================= 계산식 ================= */
 // level: 가격 슬라이더 값(1,000~30,000). 실제 가격 = level × 가격대 배수
@@ -2055,7 +2066,7 @@ function closeModal(){$("modal").hidden=true;$("dialog").innerHTML=""}
 
 /* ---------- 민원 ---------- */
 function showComplaint(c,mode){
-  const opt=k=>{const M=METHODS[k],cost=c[k+"Cost"],p=M.chance*100;
+  const opt=k=>{const M=METHODS[k],cost=complaintCost(c,k),p=M.chance*100;
     return `<button class="opt" type="button" data-m="${k}" ${state.cash<cost?"disabled":""}>
       <span class="tier">${M.tier}</span><b>${M.name}</b><span class="ring" style="--p:${p}"><span>${p}%</span></span><span class="cost">${won(cost)}</span></button>`};
   const tail=mode==="new"
@@ -2064,7 +2075,7 @@ function showComplaint(c,mode){
   openModal(`<div class="ribbon red">${mode==="new"?"민원 발생!":`미해결 민원 · ${state.unresolved}개`}</div>
     <canvas class="art" data-art="angry" width="320" height="320" aria-hidden="true"></canvas>
     <h2 id="modalTitle">${esc(c.type)}</h2><p>${esc(c.desc)}</p>
-    <p class="muted">해결에 성공하면 매출이 <b>1%~10%</b> 랜덤으로 올라요!</p>
+    <p class="muted">해결에 성공하면 매출이 <b>1%~10%</b> 랜덤으로 올라요!${econScale()>1?`<br>비용은 가게 규모에 맞춰져 있어요 (기본 금액 ×${fmtX(econScale())})`:""}</p>
     <div class="opts">${opt("old")}${opt("normal")}${opt("best")}</div>${tail}`,true);
   $("dialog").querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{Snd.click();attempt(c,b.dataset.m,mode)});
 }
@@ -2076,7 +2087,7 @@ async function attempt(c,key,mode){
     today.complaintNote=`${c.type} 민원을 무시했어요. 미해결로 남아요.`;
     Snd.fail();closeModal();Shop.complainer=false;runDay();return;
   }
-  const M=METHODS[key],cost=c[key+"Cost"];
+  const M=METHODS[key],cost=complaintCost(c,key);
   if(state.cash<cost)return;
   state.cash-=cost;setCash(state.cash);
   if(mode==="new")today.complaintCost+=cost;
@@ -2266,7 +2277,7 @@ function finishBusiness(){
   const bonusPct=bonusTotal(), bonus=Math.round(sales*bonusPct/100);
   state.bonus=[];
   const vipSales=vip==="rich"?price*3:0;
-  const gift=vip==="santa"?50000+randInt(0,50)*1000:0;
+  const gift=vip==="santa"?santaGift():0;
   const profit=sales+bonus+vipSales-foodCost-ad-fixed;
   const net=profit+gift-today.complaintCost;
   state.cash+=profit+gift;
