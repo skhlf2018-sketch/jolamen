@@ -88,16 +88,20 @@ button{cursor:pointer}
 .cine-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
 
 /* ---------- HUD ---------- */
-.hud{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.hud{display:flex;align-items:center;gap:10px;row-gap:14px;flex-wrap:wrap;margin-bottom:16px}
 .pill{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 16px 6px 8px;border-radius:999px;background:linear-gradient(180deg,rgba(49,56,112,.95),rgba(29,33,70,.95));
   border:2.5px solid var(--line);box-shadow:inset 0 2px 0 rgba(255,255,255,.12),0 4px 0 var(--line)}
 .day-badge{font-family:var(--display);font-size:22px;padding:6px 16px;background:linear-gradient(180deg,var(--orange),var(--orange-deep));color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.3)}
 .coin-ico{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:var(--display);font-size:16px;color:#8a5a00;
   background:radial-gradient(circle at 35% 30%,#fff3b0 0 18%,var(--gold) 45%,var(--gold-deep) 100%);border:2.5px solid var(--line);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
 .cash{font-family:var(--display);font-size:clamp(22px,3.4vw,28px);font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
-.cash-pill{flex:1 1 200px;min-width:0}
+.cash-pill{flex:1 0 auto;min-width:0;position:relative}
+.cash.long{font-size:clamp(18px,2.6vw,23px)}
 .cash-pill.bump .coin-ico{animation:bump .25s}
-.delta{font-size:14px;margin-left:4px;white-space:nowrap}
+/* 오늘 자금 변화: 금액 옆이 아니라 알약 아래에 작은 배지로 (길어도 상단이 밀리지 않게) */
+.delta{position:absolute;right:14px;bottom:-11px;font-size:13px;line-height:1;white-space:nowrap;padding:3px 9px;border-radius:999px;
+  background:#1d2146;border:2px solid var(--line);pointer-events:none}
+.delta:empty{display:none}
 .up{color:#7dffb0}.down{color:#ff9aa0}
 .stars{display:inline-flex;gap:1px;font-size:20px;line-height:1}
 .stars .on{color:var(--gold);text-shadow:0 2px 0 var(--line)}
@@ -180,7 +184,7 @@ input[type=range]:disabled{opacity:.5}
 .help-wrap{overflow-x:auto}
 
 /* ---------- 가게 확장 ---------- */
-.shop-pill{font-size:15px;padding:6px 14px;color:var(--gold);white-space:nowrap}
+.shop-pill{font-size:15px;padding:6px 14px;color:var(--gold);white-space:nowrap;display:block;line-height:36px;max-width:230px;overflow:hidden;text-overflow:ellipsis}
 .upgrade{margin-top:14px;padding:14px 16px}
 .up-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
 .up-kicker{font-size:13px;letter-spacing:.06em;color:var(--orange-deep)}
@@ -214,6 +218,43 @@ input[type=range]:disabled{opacity:.5}
 .gtag.down{background:#ffd7d4}
 #gradeNow{margin-bottom:12px;padding:12px 14px;border-radius:14px;background:#fff;border:2px solid var(--cream-3)}
 @keyframes grow{from{width:0}}
+/* 꾸미기 체크리스트 */
+.fit-card .up-head{margin-bottom:8px}
+.fit-count{font-family:var(--display);font-size:15px;padding:2px 10px;border-radius:99px;background:#eee4cf;border:2px solid var(--line)}
+.fit-count.all{background:linear-gradient(180deg,#8ff0b6,#43d17f)}
+.fit-list{display:flex;flex-direction:column;gap:6px}
+.fit-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:14px;background:#fff;border:2px solid var(--cream-3)}
+.fit-row.done{background:#effbf3;border-color:#bfe8cd}
+.fit-ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:14px;border:2px solid var(--line);background:#fff0bf}
+.fit-row.done .fit-ico{background:var(--green);color:#fff}
+.fit-top{display:flex;align-items:baseline;gap:8px}
+.fit-top b{font-family:var(--display);font-weight:400;font-size:16px}
+.fit-num{font-size:13px;color:var(--brown-soft);font-variant-numeric:tabular-nums}
+.fit-main small{display:block;font-size:12.5px;color:var(--brown-soft);line-height:1.4;word-break:keep-all}
+.mini{height:7px;border-radius:99px;background:#eadcc0;overflow:hidden;margin-top:5px}
+.mini i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ffe27a)}
+.fit-row.done .mini i{background:var(--green)}
+.fit-act .b3{display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:112px;font-size:14px}
+.fit-act .b3 small{font-size:12px;opacity:.9}
+.fit-ok{font-family:var(--display);color:var(--green-deep);font-size:15px}
+.fit-tip{font-size:12px;color:var(--brown-soft);max-width:120px;display:block;text-align:right;word-break:keep-all}
+.fit-next{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:12px;border-radius:16px;border:2.5px dashed #cdb98f;background:#fbf3e0;flex-wrap:wrap}
+.fit-next.ready{border-style:solid;border-color:var(--gold-deep);background:linear-gradient(180deg,#fff7d6,#ffe9a8)}
+.fit-next-info{min-width:0;flex:1 1 220px}
+.fit-lock{display:block;margin-top:6px;color:var(--red-deep);font-size:12.5px}
+.fit-next .b3{display:flex;flex-direction:column;align-items:center;line-height:1.2;min-width:140px}
+.fit-next .b3 small{font-size:13px}
+.fit-card .up-bar{margin-top:8px}
+.eff.wage{background:#ffe3cc;color:var(--orange-deep)}
+.lodge-line{margin-top:-6px;padding:8px 12px;border-radius:12px;background:#efe3ff;border:2px solid #cbb6f5;color:#5a3a9a;font-size:13.5px}
+/* 층 탭 */
+.floor-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.ftab{border:2.5px solid var(--line);border-radius:12px 12px 4px 4px;padding:5px 12px;background:#2f3566;color:#fff;font-size:14px;box-shadow:0 3px 0 var(--line)}
+.ftab small{opacity:.75;font-size:12px}
+.ftab[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:var(--brown)}
+.ftab.add{background:linear-gradient(180deg,var(--green),var(--green-deep))}
+.ftab:disabled{opacity:.5;cursor:not-allowed}
+@media (max-width:560px){.fit-row{grid-template-columns:28px minmax(0,1fr)}.fit-act{grid-column:1/-1}.fit-act .b3{width:100%}.fit-tip{text-align:left;max-width:none}}
 .shop-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .shop-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:14px;border:2.5px solid var(--line);background:#fff;box-shadow:0 3px 0 var(--line)}
 .potion-ico{width:52px;height:52px;border-radius:50%;background:#efe3ff}
@@ -345,15 +386,28 @@ input[type=range]:disabled{opacity:.5}
 @keyframes toastOut{to{transform:translateY(20px);opacity:0}}
 @keyframes rot{to{transform:rotate(360deg)}}
 
+/* 등급은 가게 아래 칩에도 보여요: 좁거나 금액이 길면 상단 표시는 숨김 */
+.hud.tight .grade-pill{display:none}
+@media (max-width:1366px){
+  .grade-pill{display:none}
+}
 @media (max-width:1240px){
   .shop-pill{display:none}
 }
 @media (max-width:900px){
-  .game-grid{grid-template-columns:1fr}
+  /* 한 줄 화면: 가게 → 오늘의 운영(가격·영업 시작) → 꾸미기 → 직원 순서로 */
+  .game-grid{grid-template-columns:1fr;gap:0}
+  .game-main{display:contents}
+  #floorTabs{order:1}
+  #stage{order:2}
+  #effects{order:3}
+  .dock{order:4;margin-top:14px}
+  #upgrade{order:5}
+  #hire{order:6}
 }
 @media (max-width:560px){
   .app{padding-block:10px 32px}
-  .hud{gap:8px}
+  .hud{gap:8px;row-gap:14px}
   .pill{min-height:42px;padding:4px 12px 4px 6px}
   .day-badge{font-size:18px;padding:4px 12px}
   .cash-pill{flex:1 1 190px}
@@ -366,7 +420,7 @@ input[type=range]:disabled{opacity:.5}
   .grade-pill{display:none}
   #hireBtn{width:100%}
   #upBtn{width:100%}
-  .hud{gap:6px}
+  .hud{gap:6px;row-gap:14px}
   .icon-btn{width:40px;min-height:40px}
   .opts{grid-template-columns:1fr}
   .opt{flex-direction:row;justify-content:space-between;text-align:left;padding:10px 12px}
@@ -427,7 +481,8 @@ input[type=range]:disabled{opacity:.5}
   </div>
 
   <div class="game-grid">
-    <div>
+    <div class="game-main">
+      <div id="floorTabs" class="floor-tabs" hidden></div>
       <div id="stage" class="stage">
         <canvas id="shopCanvas" width="960" height="540" aria-label="졸라맨 식당 가게 안"></canvas>
         <div class="stage-hud"><span id="bizTag" class="tag" hidden></span><span id="timeTag" class="tag">영업 준비 중</span></div>
@@ -435,7 +490,7 @@ input[type=range]:disabled{opacity:.5}
         <div id="vipBanner" class="vip-banner" hidden><span></span></div>
       </div>
       <div id="effects" class="effects" aria-live="polite"></div>
-      <div id="upgrade" class="panel upgrade" aria-label="가게 확장"></div>
+      <div id="upgrade" class="panel upgrade fit-card" aria-label="가게 꾸미기와 확장"></div>
       <div id="hire" class="panel upgrade" aria-label="직원 고용"></div>
     </div>
 
@@ -462,6 +517,7 @@ input[type=range]:disabled{opacity:.5}
         <div><div class="label">예상 손님</div><div id="mods" class="mods"></div></div>
         <div id="customers" class="big">0명</div>
       </div>
+      <div id="lodgeLine" class="lodge-line" hidden></div>
       <div class="go-row">
         <button id="openBtn" class="b3 xl pulse" type="button">영업 시작</button>
         <button id="nextBtn" class="b3 xl orange pulse" type="button" hidden>다음 날 ▶</button>
@@ -490,9 +546,11 @@ input[type=range]:disabled{opacity:.5}
       <div class="help help-wrap">
         <table>
           <tr><th>시작 자금</th><td>₩3,000,000 · 고정비 하루 ₩30,000 × 가격대 배수</td></tr>
-          <tr><th>가게 확장</th><td>돈을 모아 가구 설치(₩1,000만)부터 졸라맨 유니버스(₩100양)까지 24단계로 확장해요. 단계마다 테이블과 손님이 늘고, 음식 가격이 2~5배(랜덤) 올라가요. 천국 호텔 같은 고급 단계일수록 확장 비용에 걸맞게 음식값이 더 크게 올라요.</td></tr>
+          <tr><th>가게 꾸미기</th><td>가게 안의 + 자리를 누르면 테이블을 놓고, 테이블을 누르면 더 좋은 가구(나무 → 원목 → 명품)로 바꿔요. 상자를 누르면 가게가 넓어져 자리가 생기고, 리모델링하면 음식값이 30%씩 올라요. 첫 식당은 리모델링할 때마다 고급 메뉴도 생겨요.</td></tr>
+          <tr><th>가게 확장</th><td>지금 가게의 꾸미기(테이블 8개, 가게 넓히기, 가구 바꾸기, 리모델링)를 모두 마치고 그 건물에서 하루 이상 영업해야 다음 건물로 확장할 수 있어요. 더 좋은 음식점(₩1억)부터 졸라맨 유니버스(₩100양)까지 22번 확장하고, 확장할 때마다 손님이 늘고 메뉴 평균 가격이 2~5배 올라요. 별 호텔부터는 음식값이 확장 비용에 걸맞게 더 크게 올라요.</td></tr>
+          <tr><th>호텔 숙박</th><td>5성급 호텔부터는 2층 이상 건물이에요. 층을 4층까지 올리고 층마다 객실 6개를 꾸미면 매일 숙박비(1박 요금 × 투숙률)가 들어와요. 호텔은 층과 객실까지 모두 꾸며야 확장할 수 있어요.</td></tr>
           <tr><th>음식점 등급</th><td>등급사가 3일마다 와서 가게 구석구석을 살피고 맛·환경·친절도를 점수로 매겨요. 평균 점수가 다음 등급 기준을 넘으면 한 단계 올라가고, 너무 낮으면 내려가요. 초보부터 세상의 맛까지 15등급이고, 등급 하나마다 손님이 12% 늘어요.</td></tr>
-          <tr><th>직원</th><td>₩100만짜리 첫 직원부터 22명까지 고용할 수 있어요. 서빙은 친절도, 요리사는 맛, 청소·관리는 환경 점수를 올려 줘요.</td></tr>
+          <tr><th>직원</th><td>₩100만짜리 첫 직원부터 22명까지 고용할 수 있어요. 서빙은 친절도, 요리사는 맛, 청소·관리는 환경 점수를 올려 줘요. 월급은 고용비의 30%이고, 매일 하루치씩 나가요.</td></tr>
           <tr><th>메뉴와 가격</th><td>메뉴는 날마다 바뀌고, 가게를 확장하면 더 고급 메뉴가 나와요. 메뉴마다 적정가가 있어요. 적정가의 112%까지는 평점이 조금 오르고, 62% 이하로 싸게 팔면 손님과 평점이 크게 늘지만 재료비 비율이 높아요. 그보다 비싸면 손님과 평점이 줄어요.</td></tr>
           <tr><th>평점</th><td>별이 1개 줄 때마다 손님이 1~2명 줄어요 (날마다 1명 또는 2명).</td></tr>
           <tr><th>민원</th><td>하루 55% 확률로 발생. 처음 비용은 구닥다리 ₩30,000 (성공 30%) · 일반 ₩50,000 (50%) · 최고급 ₩80,000~₩100,000 (100%). 가게가 커지면 하루 수입과 같은 비율로 비용도 커져요.</td></tr>
@@ -541,39 +599,39 @@ const VIP_CHANCE=0.05;          // 하루에 VIP가 올 확률 5%
 const COMPLAINT_CHANCE=0.55;    // 하루에 민원이 생길 확률 55%
 const FIXED_COST=30000;
 const START_CASH=3000000;
-const SAVE_KEY="jolaman-restaurant-v4";
-const OLD_SAVE_KEY="jolaman-restaurant-v3";
+const SAVE_KEY="jolaman-restaurant-v5";
+const OLD_SAVE_KEYS=["jolaman-restaurant-v4","jolaman-restaurant-v3"];
 const SETTINGS_KEY="jolaman-restaurant-settings";
 
-/* ================= 가게 확장 단계 =================
-   add: 늘어나는 손님 수 (배열이면 구매할 때 그 사이에서 랜덤)
-   scale: 가격대 배수. 가게가 고급해질수록 한 명이 내는 돈이 커진다. */
+/* ================= 확장 단계 (건물) =================
+   확장 = 더 좋은 건물로 옮기기. 건물마다 테이블 놓기 · 가게 넓히기 · 가구 바꾸기 · 리모델링
+   (5성급 호텔부터는 층 올리기 · 객실 꾸미기까지)을 모두 마쳐야 다음 확장을 할 수 있다.
+   cost: 이 건물로 옮기는 비용, add: 옮기면 늘어나는 손님 (배열이면 그 사이에서 랜덤)
+   menu: 메뉴 번호, lodge: 숙박비가 생기는 호텔 (5성급 호텔부터, 2층 이상 최대 4층) */
 const TIERS=[
-  {name:"시작",shop:"졸라맨 식당",cost:0,add:0,scale:1,theme:"diner"},
-  {name:"가구 설치",shop:"졸라맨 식당",cost:1e7,add:[100,150],scale:5,theme:"diner"},
-  {name:"리모델링",shop:"졸라맨 식당",cost:3e7,add:300,scale:10,theme:"remodel"},
-  {name:"더 좋은 음식점 이주",shop:"졸라맨 음식점",cost:1e8,add:500,scale:50,theme:"bistro"},
-  {name:"고급 레스토랑",shop:"졸라맨 고급 레스토랑",cost:1e9,add:1000,scale:100,theme:"fine"},
-  {name:"작은 호텔",shop:"졸라맨 작은 호텔",cost:5e9,add:2000,scale:200,theme:"hotel"},
-  {name:"고급 호텔",shop:"졸라맨 고급 호텔",cost:1e10,add:3000,scale:400,theme:"hotel"},
-  {name:"5성급 호텔",shop:"졸라맨 5성급 호텔",cost:5e10,add:5000,scale:500,theme:"hotel5"},
-  {name:"우주선 호텔",shop:"졸라맨 우주선 호텔",cost:1e11,add:1e4,scale:600,theme:"ship"},
-  {name:"우주 호텔",shop:"졸라맨 우주 호텔",cost:2.5e11,add:5e4,scale:700,theme:"station"},
-  {name:"달 호텔",shop:"졸라맨 달 호텔",cost:5e11,add:1e5,scale:800,theme:"moon"},
-  {name:"은하수 호텔",shop:"졸라맨 은하수 호텔",cost:1e12,add:5e5,scale:5e4,theme:"galaxy"},
-  {name:"별 호텔",shop:"졸라맨 별 호텔",cost:5e14,add:[1e6,3e6],scale:6e4,theme:"star"},
-  {name:"천국 호텔",shop:"졸라맨 천국 호텔",cost:1e15,add:1e8,scale:7e4,theme:"heaven"},
-  {name:"레전더리 호텔",shop:"졸라맨 레전더리 호텔",cost:1e17,add:9999e8,scale:8e4,theme:"legend"},
-  {name:"차원 호텔",shop:"졸라맨 차원 호텔",cost:1e21,add:1e13,scale:1e5,theme:"warp"},
-  {name:"시간여행 호텔",shop:"졸라맨 시간여행 호텔",cost:1e22,add:1e14,scale:1.2e5,theme:"time"},
-  {name:"블랙홀 호텔",shop:"졸라맨 블랙홀 호텔",cost:1e23,add:1e15,scale:1.5e5,theme:"blackhole"},
-  {name:"평행우주 호텔",shop:"졸라맨 평행우주 호텔",cost:1e24,add:1e16,scale:2e5,theme:"parallel"},
-  {name:"신들의 호텔",shop:"졸라맨 신들의 호텔",cost:1e25,add:1e17,scale:2.5e5,theme:"gods"},
-  {name:"무한 호텔",shop:"졸라맨 무한 호텔",cost:1e26,add:1e18,scale:3e5,theme:"infinite"},
-  {name:"빅뱅 호텔",shop:"졸라맨 빅뱅 호텔",cost:1e27,add:1e19,scale:4e5,theme:"bigbang"},
-  {name:"멀티버스 호텔",shop:"졸라맨 멀티버스 호텔",cost:1e28,add:1e20,scale:5e5,theme:"multiverse"},
-  {name:"우주의 끝 호텔",shop:"졸라맨 우주의 끝 호텔",cost:1e29,add:1e21,scale:7e5,theme:"edge"},
-  {name:"졸라맨 유니버스",shop:"졸라맨 유니버스",cost:1e30,add:1e22,scale:1e6,theme:"universe"}
+  {name:"졸라맨 식당",shop:"졸라맨 식당",cost:0,add:0,theme:"diner",menu:0},
+  {name:"더 좋은 음식점 이주",shop:"졸라맨 음식점",cost:1e8,add:500,theme:"bistro",menu:3},
+  {name:"고급 레스토랑",shop:"졸라맨 고급 레스토랑",cost:1e9,add:1000,theme:"fine",menu:4},
+  {name:"작은 호텔",shop:"졸라맨 작은 호텔",cost:5e9,add:2000,theme:"hotel",menu:5},
+  {name:"고급 호텔",shop:"졸라맨 고급 호텔",cost:1e10,add:3000,theme:"hotel",menu:6},
+  {name:"5성급 호텔",shop:"졸라맨 5성급 호텔",cost:5e10,add:5000,theme:"hotel5",menu:7,lodge:true},
+  {name:"우주선 호텔",shop:"졸라맨 우주선 호텔",cost:1e11,add:1e4,theme:"ship",menu:8,lodge:true},
+  {name:"우주 호텔",shop:"졸라맨 우주 호텔",cost:2.5e11,add:5e4,theme:"station",menu:9,lodge:true},
+  {name:"달 호텔",shop:"졸라맨 달 호텔",cost:5e11,add:1e5,theme:"moon",menu:10,lodge:true},
+  {name:"은하수 호텔",shop:"졸라맨 은하수 호텔",cost:1e12,add:5e5,theme:"galaxy",menu:11,lodge:true},
+  {name:"별 호텔",shop:"졸라맨 별 호텔",cost:5e14,add:[1e6,3e6],theme:"star",menu:12,lodge:true},
+  {name:"천국 호텔",shop:"졸라맨 천국 호텔",cost:1e15,add:1e8,theme:"heaven",menu:13,lodge:true},
+  {name:"레전더리 호텔",shop:"졸라맨 레전더리 호텔",cost:1e17,add:9999e8,theme:"legend",menu:14,lodge:true},
+  {name:"차원 호텔",shop:"졸라맨 차원 호텔",cost:1e21,add:1e13,theme:"warp",menu:15,lodge:true},
+  {name:"시간여행 호텔",shop:"졸라맨 시간여행 호텔",cost:1e22,add:1e14,theme:"time",menu:16,lodge:true},
+  {name:"블랙홀 호텔",shop:"졸라맨 블랙홀 호텔",cost:1e23,add:1e15,theme:"blackhole",menu:17,lodge:true},
+  {name:"평행우주 호텔",shop:"졸라맨 평행우주 호텔",cost:1e24,add:1e16,theme:"parallel",menu:18,lodge:true},
+  {name:"신들의 호텔",shop:"졸라맨 신들의 호텔",cost:1e25,add:1e17,theme:"gods",menu:19,lodge:true},
+  {name:"무한 호텔",shop:"졸라맨 무한 호텔",cost:1e26,add:1e18,theme:"infinite",menu:20,lodge:true},
+  {name:"빅뱅 호텔",shop:"졸라맨 빅뱅 호텔",cost:1e27,add:1e19,theme:"bigbang",menu:21,lodge:true},
+  {name:"멀티버스 호텔",shop:"졸라맨 멀티버스 호텔",cost:1e28,add:1e20,theme:"multiverse",menu:22,lodge:true},
+  {name:"우주의 끝 호텔",shop:"졸라맨 우주의 끝 호텔",cost:1e29,add:1e21,theme:"edge",menu:23,lodge:true},
+  {name:"졸라맨 유니버스",shop:"졸라맨 유니버스",cost:1e30,add:1e22,theme:"universe",menu:24,lodge:true}
 ];
 const MAX_TIER=TIERS.length-1;
 
@@ -607,6 +665,50 @@ const TIER_MENUS=[
   [["마지막 만찬",1.2,["fine","#ffffff","#ffd84d"]],["공허 수프",.9,["stew","#0a0a0f","#ffffff"]],["끝의 케이크",1,["cake","#ffffff","#0a0a0f"]]],
   [["졸라맨 특제 김치찌개",1,0],["유니버스 코스",1.3,["fine","#ffd84d","#ff5b5f"]],["은하 치킨",.9,7],["전설의 라면",.8,6]]
 ];
+// 첫 식당은 리모델링할 때마다 고급 메뉴가 더해진다 (1단계: 갈비찜·족발…, 2단계: 한우·대게…)
+// 다음 건물 메뉴보다는 싸도록 배수를 적당히 둔다
+const E0_EXTRA=[TIER_MENUS[1].map(d=>[d[0],d[1]*2.5,d[2]]),TIER_MENUS[2].map(d=>[d[0],d[1]*4,d[2]])];
+
+/* ================= 건물 꾸미기 (확장 준비) =================
+   테이블 자리 8개: 0~3은 가운데, 4~5는 왼쪽(가게 넓히기 1), 6~7은 오른쪽(가게 넓히기 2)
+   tables[i]: -1 빈 자리, 0 나무, 1 원목(식탁보), 2 명품(대리석·금)
+   비용은 다음 확장 비용에 비례하고, 효과(손님)는 그 건물의 손님 단위에 비례한다 */
+const SLOTS_BY_SIZE=[4,6,8], MAX_SIZE=2, MAX_FURN=2, MAX_REMODEL=2, MAX_FLOORS=4, ROOMS_PER_FLOOR=6;
+const MAX_ROOMS=(MAX_FLOORS-1)*ROOMS_PER_FLOOR;
+const FURN_NAMES=["나무 테이블","원목 테이블","명품 테이블"];
+const FIT_COST={table:.008,size:[.015,.03],grade:[.002,.004],remodel:[.10,.20],floor:[.12,.18],room:.012};
+const FIT_BONUS={table:.16,grade:.048,remodel:1.2,room:.05};
+function freshFit(tier){return {size:0,tables:[0,0,-1,-1,-1,-1,-1,-1],remodel:0,floors:TIERS[tier].lodge?2:1,rooms:Array(MAX_ROOMS).fill(false),days:0}}
+const fit=()=>state.fit||(state.fit=freshFit(state.tier));
+const slotsOpen=()=>SLOTS_BY_SIZE[fit().size];
+const tablesPlaced=()=>fit().tables.filter(g=>g>=0).length;
+const furnSum=()=>fit().tables.reduce((a,g)=>a+Math.max(0,g),0);
+const roomsBuilt=()=>fit().rooms.filter(Boolean).length;
+const roomsAvail=()=>Math.max(0,fit().floors-1)*ROOMS_PER_FLOOR;
+const lodgeOn=()=>!!TIERS[state.tier].lodge;
+const unitCust=(t=state.tier)=>t===0?125:(Array.isArray(TIERS[t].add)?(TIERS[t].add[0]+TIERS[t].add[1])/2:TIERS[t].add);
+const anchorCost=(t=state.tier)=>t<MAX_TIER?TIERS[t+1].cost:TIERS[t].cost*10;
+function fitCost(kind,lvl=0){const f=FIT_COST[kind];return nice3(anchorCost()*(Array.isArray(f)?f[lvl]:f))}
+const fitBonus=kind=>unitCust()*FIT_BONUS[kind];
+function liveBonus(){const F=fit();return tablesPlaced()*fitBonus("table")+furnSum()*fitBonus("grade")+F.remodel*fitBonus("remodel")+roomsBuilt()*fitBonus("room")}
+function fitTasks(){
+  const F=fit(),t=[
+    {k:"table",label:"테이블 놓기",have:tablesPlaced(),need:SLOTS_BY_SIZE[MAX_SIZE]},
+    {k:"size",label:"가게 넓히기",have:F.size,need:MAX_SIZE},
+    {k:"grade",label:"가구 바꾸기",have:furnSum(),need:SLOTS_BY_SIZE[MAX_SIZE]*MAX_FURN},
+    {k:"remodel",label:"리모델링",have:F.remodel,need:MAX_REMODEL}];
+  if(lodgeOn())t.push({k:"floor",label:"층 올리기",have:F.floors,need:MAX_FLOORS},{k:"room",label:"객실 꾸미기",have:roomsBuilt(),need:MAX_ROOMS});
+  // 새 건물에서 하루는 영업해 봐야 다음 확장을 할 수 있다 (이사하자마자 또 이사하는 것 막기)
+  t.push({k:"open",label:"영업하기",have:Math.min(1,F.days||0),need:1});
+  return t;
+}
+const fitDone=()=>fitTasks().every(x=>x.have>=x.need);
+
+/* ================= 숙박 (5성급 호텔부터) ================= */
+const roomRate=()=>nice3(8000*priceScale()*unitCust()/4);           // 객실 1박 요금
+const occupancy=()=>clamp(.6+.06*(state.rating-4)+.02*state.grade-.05*state.unresolved,.3,.98);
+const lodgingRevenue=()=>lodgeOn()?roomsBuilt()*roomRate()*occupancy():0;
+
 /* ================= 음식점 등급 =================
    등급사가 3일마다 와서 맛·환경·친절도를 보고 등급을 한 단계씩 올리거나 내린다.
    req: 이 등급으로 오르는 데 필요한 평균 점수. 등급 하나마다 손님 +12% */
@@ -649,12 +751,17 @@ const STAFF=[
   {name:"졸라맨 클론",role:"all",cost:1e40,look:{hat:"chef",shirt:"#3d7fd6"}}
 ];
 const hired=()=>STAFF.slice(0,state.staff||0);
+// 월급 = 고용비의 30%. 매일 하루치(월급 ÷ 30)씩 나간다
+const WAGE_RATE=.3;
+const monthlyWage=st=>nice3(st.cost*WAGE_RATE);
+const monthlyPayroll=()=>hired().reduce((a,st)=>a+monthlyWage(st),0);
+const dailyWages=()=>Math.round(monthlyPayroll()/30);
 const roleCount=r=>hired().filter(x=>x.role===r).length;
 // 심사 점수 (0~100). noise: 등급사의 그날 기분 (±4)
 function inspectScores(noise=0){
   const all=roleCount("all")*5, n=()=>noise?randInt(-noise,noise):0;
   const taste=clamp(Math.round(25+state.rating*9+roleCount("cook")*6+all+n()),0,100);
-  const env=clamp(Math.round(20+state.tier*2+roleCount("clean")*7+all-state.unresolved*12+n()),0,100);
+  const env=clamp(Math.round(15+state.tier*2+fit().remodel*6+furnSum()*1.2+roleCount("clean")*7+all-state.unresolved*12+n()),0,100);
   const kind=clamp(Math.round(25+state.rep*.25+roleCount("serve")*8+all+n()),0,100);
   return {taste,env,kind,avg:Math.round((taste+env+kind)/3)};
 }
@@ -666,16 +773,24 @@ function nextGradeFrom(g,avg){
 
 const nice2=x=>{if(x<=0)return 0;const e=Math.pow(10,Math.floor(Math.log10(x))-1);return Math.round(x/e)*e};
 const nice3=x=>{if(x<=0)return 0;const e=Math.pow(10,Math.floor(Math.log10(x))-2);return Math.round(x/e)*e};
-const menuOf=(tier=state.tier)=>TIER_MENUS[tier]||TIER_MENUS[0];
-function dishOf(day,tier=state.tier){const m=menuOf(tier),d=m[(day-1)%m.length];return {name:d[0],m:d[1],art:d[2],fair:nice2(8000*(tier===state.tier?priceScale():TIERS[tier].scale)*d[1])}}
+function menuOf(tier=state.tier){
+  if(tier===0){const r=state.tier===0?fit().remodel:0;return TIER_MENUS[0].concat(r>=1?E0_EXTRA[0]:[],r>=2?E0_EXTRA[1]:[])}
+  return TIER_MENUS[TIERS[tier].menu]||TIER_MENUS[0];
+}
+function dishOf(day){const m=menuOf(),d=m[(day-1)%m.length];return {name:d[0],m:d[1],art:d[2],fair:nice2(8000*priceScale()*d[1])}}
 // 가격 슬라이더(level)는 적정가 대비 비율: level 8,000 = 적정가 100%
 const priceAt=(level,day=state.day)=>nice3(level/8000*dishOf(day).fair);
 const addText=a=>Array.isArray(a)?`${korNum(a[0])}~${korNum(a[1])}명`:`${korNum(a)}명`;
-// 가격대: 확장할 때마다 2~5배 (랜덤) 올라가서 state.scale 에 쌓인다
-// 단, 고급 단계일수록 음식값이 확장 비용에 걸맞게: 기본 음식값 ≥ 그 단계 확장 비용의 1/1,000
-const minScale=tier=>TIERS[tier].cost/1000/8000;
-const priceScale=()=>Math.max(state.scale||TIERS[state.tier].scale,minScale(state.tier));
-const custScale=()=>+(1+state.bonusCust/280).toPrecision(2);   // 광고 효과와 광고비의 크기 (유효숫자 2자리)
+// 가격대: 확장할 때마다 2~5배(랜덤) 올라 state.scale 에 쌓인다. 리모델링 한 단계마다 +30%.
+// 별 호텔부터는 음식값이 확장 비용에 걸맞게: 기본 음식값 ≥ 그 건물 확장 비용의 1/1,000
+const floorScale=t=>t>=10?TIERS[t].cost/1000/8000:0;
+const remodelMult=()=>1+.3*fit().remodel;
+const priceScale=()=>Math.max(state.scale||1,floorScale(state.tier))*remodelMult();
+// 메뉴 평균 적정가. 확장할 때 "음식 가격 ×N배"는 이 평균이 N배가 된다는 뜻
+const menuAvgM=(tier=state.tier)=>{const m=menuOf(tier);return m.reduce((a,d)=>a+d[1],0)/m.length};
+const avgFair=()=>8000*priceScale()*menuAvgM();
+const nextPriceRange=()=>{const f=floorScale(state.tier+1)*8000*menuAvgM(state.tier+1)/avgFair();return f>=5?[f,f]:[Math.max(2,f),5]};
+const custScale=()=>+(1+(state.bonusCust+liveBonus())/280).toPrecision(2);   // 광고 효과·광고비의 크기
 const fixedCost=()=>FIXED_COST*priceScale();
 // 가게 규모 배수: 처음엔 1이고, 하루 수입과 같은 비율로 커진다 (가격대 × 손님 규모)
 const econScale=()=>priceScale()*custScale();
@@ -722,7 +837,7 @@ function freshState(){
     influencerToday:false, influencerNext:false,
     vipMet:{rich:0,influencer:0,santa:0},
     stats:{fixed:0}, ach:{}, last:null,
-    tier:0, bonusCust:0, starK:1, scale:1, staff:0, grade:0, lastInspect:null
+    tier:0, bonusCust:0, starK:1, scale:1, staff:0, grade:0, lastInspect:null, fit:freshFit(0)
   };
 }
 let state=freshState();
@@ -743,16 +858,27 @@ const santaGift=()=>nice3((50000+randInt(0,50)*1000)*econScale());
 
 /* ================= 계산식 ================= */
 // level: 가격 슬라이더 값(1,000~30,000). 실제 가격 = level × 가격대 배수
+// 가격에 따른 손님 배수 (적정가 근처면 ×1.05)
+const priceFactor=level=>level<5000?1.35:level<=9000?1.05:level<=13000?.75:Math.max(.25,1-(level-13000)/18000);
+// 확장 손님(add)에 곱해지는 배수들 (설명용)
+function custMultParts(level){
+  const out=[],pf=priceFactor(level);
+  if(pf!==1)out.push(`가격 ×${+pf.toFixed(2)}`);
+  if(state.grade>0)out.push(`등급 ×${gradeMult().toFixed(2)}`);
+  if(state.unresolved>0)out.push(`민원 ÷${+Math.pow(1.5,state.unresolved).toFixed(2)}`);
+  if(state.influencerToday)out.push("인플루언서 ×1.5");
+  return out;
+}
 function forecast(level,adLevel){
   const mods=[];
-  let base=(45+state.rep*0.55)*3+state.bonusCust;
-  let pf;
-  if(level<5000) pf=1.35;
-  else if(level<=9000) pf=1.05;
-  else if(level<=13000) pf=0.75;
-  else pf=Math.max(.25,1-(level-13000)/18000);
+  const live=liveBonus();
+  let base=(45+state.rep*0.55)*3+state.bonusCust+live;
+  const pf=priceFactor(level);
   let demand=base*pf;
-  if(state.bonusCust>0) mods.push({t:`가게 확장 +${korNum(state.bonusCust*pf)}명`,c:"plus"});
+  // 새 건물에 처음부터 있는 테이블 2개는 건물 몫으로 보여 준다 (확장 손님이 줄어 보이지 않게)
+  const base0=2*fitBonus("table"),shopPart=state.bonusCust+(state.tier>0?base0:0),furnPart=live-base0;
+  if(shopPart>0) mods.push({t:`가게 확장 +${korNum(shopPart*pf)}명`,c:"plus"});
+  if(furnPart>0) mods.push({t:`가구·인테리어 +${korNum(furnPart*pf)}명`,c:"plus"});
   const adBoost=(adLevel/1000000)*180*custScale();
   demand+=adBoost;
   if(adBoost>=1) mods.push({t:`광고 +${korNum(adBoost)}명`,c:"plus"});
@@ -800,14 +926,18 @@ function gradeOf(net,revenue){
 /* ================= 업적 ================= */
 const ACHS=[
   {id:"first",name:"첫 영업",desc:"첫 영업을 마쳤다",test:s=>s.records.length>=1},
-  {id:"up1",name:"첫 확장",desc:"가구 설치를 마쳤다",test:s=>s.tier>=1},
+  {id:"table1",name:"첫 가구",desc:"테이블을 직접 놓았다",test:s=>(s.stats.tables||0)>=1},
+  {id:"up1",name:"첫 이사",desc:"더 좋은 음식점으로 옮겼다",test:s=>s.tier>=1},
+  {id:"remodel",name:"인테리어 장인",desc:"리모델링을 끝까지 마쳤다",test:s=>(s.stats.remodelMax||0)>=1},
   {id:"big",name:"대박 난 날",desc:"하루에 ₩1억 이상 벌었다",test:s=>s.records.some(r=>r.net>=1e8)},
   {id:"c8",name:"억만장자",desc:"보유 자금 ₩1억 달성",test:s=>s.cash>=1e8},
-  {id:"hotel",name:"호텔 사장님",desc:"작은 호텔로 확장했다",test:s=>s.tier>=5},
-  {id:"space",name:"우주 진출",desc:"우주선 호텔로 확장했다",test:s=>s.tier>=8},
+  {id:"hotel",name:"호텔 사장님",desc:"작은 호텔로 확장했다",test:s=>s.tier>=3},
+  {id:"floor4",name:"4층 호텔",desc:"호텔을 4층까지 올렸다",test:s=>(s.stats.floor4||0)>=1},
+  {id:"full",name:"만실",desc:"한 호텔의 객실 18개를 모두 꾸몄다",test:s=>(s.stats.fullRooms||0)>=1},
+  {id:"space",name:"우주 진출",desc:"우주선 호텔로 확장했다",test:s=>s.tier>=6},
   {id:"c12",name:"조만장자",desc:"보유 자금 ₩1조 달성",test:s=>s.cash>=1e12},
-  {id:"heaven",name:"천국의 문",desc:"천국 호텔로 확장했다",test:s=>s.tier>=13},
-  {id:"legend",name:"전설",desc:"레전더리 호텔로 확장했다",test:s=>s.tier>=14},
+  {id:"heaven",name:"천국의 문",desc:"천국 호텔로 확장했다",test:s=>s.tier>=11},
+  {id:"legend",name:"전설",desc:"레전더리 호텔로 확장했다",test:s=>s.tier>=12},
   {id:"final",name:"졸라맨 유니버스",desc:"마지막 단계까지 확장했다",test:s=>s.tier>=MAX_TIER},
   {id:"star",name:"별 다섯 개",desc:"평점 5.0 달성",test:s=>s.rating>=5},
   {id:"staff1",name:"첫 직원",desc:"첫 직원을 고용했다",test:s=>s.staff>=1},
@@ -823,15 +953,35 @@ const ACHS=[
 
 /* ================= 저장 ================= */
 function save(){
-  try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:4,state,price:+$("price").value,ad:+$("ad").value}))}catch(e){}
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:5,state,price:+$("price").value,ad:+$("ad").value}))}catch(e){}
 }
 function loadSave(){
   try{
-    const d=JSON.parse(localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_SAVE_KEY)||"null");
-    return d&&(d.v===3||d.v===4)&&d.state&&!d.state.bankrupt?d:null;
+    let raw=localStorage.getItem(SAVE_KEY);
+    for(const k of OLD_SAVE_KEYS)if(!raw)raw=localStorage.getItem(k);
+    const d=JSON.parse(raw||"null");
+    if(!d||!d.state||d.state.bankrupt||![3,4,5].includes(d.v))return null;
+    if(d.v<5)migrateState(d.state);
+    return d;
   }catch(e){return null}
 }
-function clearSave(){try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(OLD_SAVE_KEY)}catch(e){}}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);OLD_SAVE_KEYS.forEach(k=>localStorage.removeItem(k))}catch(e){}}
+// v4 이전: 24단계(가구 설치·리모델링이 단계였음) → v5: 건물 23개 + 건물 안 업그레이드
+function migrateState(st){
+  if(st.fit)return st;
+  const old=st.tier||0;
+  if(old<=2){
+    st.tier=0;st.fit=freshFit(0);
+    if(old>=1)st.fit.tables=[0,0,0,0,-1,-1,-1,-1];
+    if(old>=2)st.fit.remodel=1;
+    st.bonusCust=Math.max(0,(st.bonusCust||0)-(old>=1?125:0)-(old>=2?300:0));
+    st.scale=1;
+  }else{
+    st.tier=old-2;st.fit=freshFit(st.tier);
+  }
+  st.stats=st.stats||{};
+  return st;
+}
 
 /* ================= 사운드 (효과음 + 배경음악) ================= */
 const Snd={
@@ -934,6 +1084,12 @@ function circle(ctx,x,y,r,fill,stroke,lw){
 function text(ctx,str,x,y,size,color,align="center",font=FONT_D){
   ctx.font=`${size}px ${font}`;ctx.textAlign=align;ctx.textBaseline="middle";
   ctx.fillStyle=color;ctx.fillText(str,x,y);
+}
+// 칸 폭(maxW)을 넘으면 글자 크기를 줄여서 쓴다
+function fitText(ctx,str,x,y,maxW,size,color,align="center",min=9){
+  ctx.font=`${size}px ${FONT_D}`;const w=ctx.measureText(str).width;
+  const s=w>maxW?Math.max(min,Math.floor(size*maxW/w)):size;
+  text(ctx,str,x,y,s,color,align);return s;
 }
 function outlinedText(ctx,str,x,y,size,fill,stroke=INK,lw=6){
   ctx.font=`${size}px ${FONT_D}`;ctx.textAlign="center";ctx.textBaseline="middle";
@@ -1602,7 +1758,7 @@ const THEMES={
   edge:      TH("#0a0a0f","#101018","#ffffff","#16161f","#0a0a0f","#0e0e14","#1c1c26","#ffffff","#888888","#1a1a24","#ffffff","orb","edge",1),
   universe:  TH("#1a1030","#2a1a50","#ffd84d","#2a1a50","#1a1036","#1c1440","#3a2a70","#ff5b5f","#ffd84d","#6a2ac0","#ffd84d","chandelier","universe",1)
 };
-const theme=()=>THEMES[TIERS[state.tier].theme]||THEMES.diner;
+const theme=()=>THEMES[state.tier===0&&fit().remodel>=1?"remodel":TIERS[state.tier].theme]||THEMES.diner;
 
 /* 창밖 풍경 */
 function starsIn(ctx,X,Y,W,H,t,n=24,seed=0){
@@ -1738,24 +1894,21 @@ const OUTSIDE={
 /* ================= 가게 (2.5D) ================= */
 const SW=960, SH=540, WALL=300, VPX=480, VPY=-320;
 const depthScale=y=>.7+(y-300)/240*.35;
-// 확장할수록 테이블이 늘어난다: 시작 4개 → 가구 설치 6개 → 리모델링부터 8개
-const LAYOUTS=[
-  [{y:372,xs:[360,580]},{y:492,xs:[300,540]}],
-  [{y:372,xs:[300,470,640]},{y:492,xs:[250,450,650]}],
-  [{y:372,xs:[235,385,535,685]},{y:492,xs:[175,340,505,670]}]
-];
+// 테이블 자리 8곳 (고정). 0~3 가운데, 4~5 왼쪽(넓히기 1단계), 6~7 오른쪽(넓히기 2단계)
+const SLOT_POS=[[385,372],[535,372],[340,492],[505,492],[235,372],[175,492],[685,372],[670,492]];
 const AISLE=432, DOOR_PT=[86,316];
 const TABLES=[], SEATS=[];
-let layoutKey=-1;
+let layoutKey="";
 function ensureLayout(){
-  const k=Math.min(state.tier,LAYOUTS.length-1);
+  const F=fit(),k=state.tier+"|"+F.size+"|"+F.tables.join(",");
   if(k===layoutKey||Biz.on)return;
   TABLES.length=0;SEATS.length=0;
-  LAYOUTS[k].forEach(r=>r.xs.forEach(x=>{
-    const s=depthScale(r.y), t={x,y:r.y,s,seats:[]};
-    [[-1,1],[1,-1]].forEach(([side,dir])=>{const seat={x:x+side*46*s,y:r.y,dir,table:t,taken:false};t.seats.push(seat);SEATS.push(seat)});
+  for(let i=0;i<slotsOpen();i++){
+    const g=F.tables[i];if(g<0)continue;
+    const [x,y]=SLOT_POS[i],s=depthScale(y),t={x,y,s,g,slot:i,seats:[]};
+    [[-1,1],[1,-1]].forEach(([side,dir])=>{const seat={x:x+side*46*s,y,dir,table:t,taken:false};t.seats.push(seat);SEATS.push(seat)});
     TABLES.push(t);
-  }));
+  }
   layoutKey=k;
 }
 const Shop={t:0,phase:"prep",complainer:false,gift:false,chefMood:"idle",dark:0,cam:{z:1,x:480,y:300}};
@@ -1771,6 +1924,7 @@ function drawWall(ctx,t,tod){
   const th=theme();
   for(let x=0;x<770;x+=24){ctx.fillStyle=(x/24)%2?th.wb:th.wa;ctx.fillRect(x,0,24,WALL)}
   ctx.fillStyle=th.trim;ctx.fillRect(0,0,770,14);
+  if(fit().remodel>=1)wallPattern(ctx,th);
   // 징두리 판벽
   const wg=ctx.createLinearGradient(0,222,0,300);wg.addColorStop(0,th.w1);wg.addColorStop(1,th.w2);
   ctx.fillStyle=wg;ctx.fillRect(0,222,770,78);
@@ -1799,10 +1953,16 @@ function drawWall(ctx,t,tod){
   // 칠판 메뉴
   ctx.fillStyle="#2c3a36";ctx.strokeStyle="#8a6a4a";ctx.lineWidth=9;rr(ctx,566,44,178,136,8);ctx.fill();ctx.stroke();
   text(ctx,"오늘의 메뉴",655,66,16,"#b9d8cc");
-  const dish=dishOf(state.day),nl=dish.name.length;
+  // 음식 이름과 가격은 칠판 칸(94px)에 맞춰 줄이고, 긴 이름은 두 줄로
+  const dish=dishOf(state.day),NX=691,NW=94;
   drawDish(ctx,dish,612,112,26);
-  text(ctx,dish.name,690,106,nl>8?12:nl>6?14:nl>4?18:23,"#fffdf7");
-  text(ctx,won(priceAt(+$("price").value)),690,138,19,MUSTARD);
+  ctx.font=`14px ${FONT_D}`;
+  if(ctx.measureText(dish.name).width>NW&&dish.name.includes(" ")){
+    const sp=[...dish.name].map((c,i)=>c===" "?i:-1).filter(i=>i>0),mid=dish.name.length/2;
+    const cut=sp.reduce((a,b)=>Math.abs(b-mid)<Math.abs(a-mid)?b:a);
+    fitText(ctx,dish.name.slice(0,cut),NX,96,NW,15,"#fffdf7");fitText(ctx,dish.name.slice(cut+1),NX,115,NW,15,"#fffdf7");
+  }else fitText(ctx,dish.name,NX,106,NW,23,"#fffdf7");
+  fitText(ctx,won(priceAt(+$("price").value)),NX,139,NW,19,MUSTARD);
   ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(586,160);ctx.lineTo(724,160);ctx.stroke();
   const shop=TIERS[state.tier].shop;
   text(ctx,shop,655,170,shop.length>10?11:13,"#ffe7a0");
@@ -1906,7 +2066,18 @@ function steam(ctx,x,y,t,a=1){
 
 function drawLamps(ctx,tod,pass){
   const th=theme();
-  [300,480,660].forEach((lx,i)=>{
+  // 칠판 조명: 칠판 위 벽에 달린 작은 등 (전등이 메뉴 글씨를 가리지 않게)
+  if(pass===0){
+    ctx.strokeStyle=INK;ctx.lineWidth=2.5;
+    ctx.fillStyle="#c9a15a";rr(ctx,650,30,10,12,3);ctx.fill();ctx.stroke();
+    ctx.fillStyle=th.shade;rr(ctx,610,16,90,14,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#fff4b8";rr(ctx,618,27,74,4,2);ctx.fill();
+  }else{
+    const a=.1+tod*.22,g=ctx.createLinearGradient(0,30,0,176);
+    g.addColorStop(0,`rgba(255,226,160,${a})`);g.addColorStop(1,"rgba(255,226,160,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(618,30);ctx.lineTo(692,30);ctx.lineTo(744,176);ctx.lineTo(566,176);ctx.closePath();ctx.fill();
+  }
+  [300,480].forEach((lx,i)=>{
     if(pass===0){
       if(th.lamp==="pendant"){
         stroke(ctx,[[lx,0],[lx,52]],INK,2.5);
@@ -1935,6 +2106,52 @@ function drawLamps(ctx,tod,pass){
 function mix(a,b,t){
   const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)), A=p(a), B=p(b);
   return "#"+A.map((v,i)=>Math.round(v+(B[i]-v)*clamp(t,0,1)).toString(16).padStart(2,"0")).join("");
+}
+
+/* ================= 빈 자리 · 공사 중 자리 · 리모델링 장식 ================= */
+function drawEmptySlot(ctx,i,t,hot){
+  const [x,y]=SLOT_POS[i],s=depthScale(y),pulse=.5+.5*Math.sin(t*.005+i);
+  ctx.save();
+  ctx.setLineDash([7*s,6*s]);ctx.lineWidth=3;ctx.strokeStyle=hot?"#ffc83d":`rgba(255,255,255,${.55+.35*pulse})`;
+  ctx.fillStyle=hot?"rgba(255,200,61,.28)":"rgba(255,255,255,.14)";
+  ctx.beginPath();ctx.ellipse(x,y-6*s,62*s,17*s,0,0,TAU);ctx.fill();ctx.stroke();ctx.setLineDash([]);
+  circle(ctx,x,y-46*s,15*s,hot?"#ffc83d":"#43d17f",INK,2.5);
+  ctx.fillStyle="#fff";ctx.fillRect(x-7*s,y-48*s,14*s,4*s);ctx.fillRect(x-2*s,y-53*s,4*s,14*s);
+  ctx.restore();
+}
+function drawClosedSlot(ctx,i,t,hot){
+  const [x,y]=SLOT_POS[i],s=depthScale(y);
+  const box=(bx,by,w,h,c)=>{ctx.fillStyle=c;ctx.strokeStyle=INK;ctx.lineWidth=2.2;ctx.fillRect(bx,by,w,h);ctx.strokeRect(bx,by,w,h);
+    ctx.strokeStyle="rgba(120,80,30,.6)";ctx.beginPath();ctx.moveTo(bx+w/2,by);ctx.lineTo(bx+w/2,by+h);ctx.stroke()};
+  ctx.save();if(hot){ctx.shadowColor="#ffc83d";ctx.shadowBlur=18}
+  box(x-52*s,y-38*s,46*s,38*s,"#c9955a");box(x-4*s,y-30*s,40*s,30*s,"#d8a86a");box(x-34*s,y-70*s,40*s,32*s,"#d19c5e");
+  ctx.restore();
+  ctx.save();ctx.translate(x,y-18*s);ctx.rotate(-.12);
+  ctx.fillStyle="#ffd84d";ctx.fillRect(-60*s,-6*s,120*s,12*s);ctx.fillStyle=INK;
+  for(let k=-60;k<60;k+=14)ctx.fillRect(k*s,-6*s,6*s,12*s);
+  ctx.restore();
+  if(hot){ctx.fillStyle="rgba(13,15,36,.85)";rr(ctx,x-52*s,y-100*s,104*s,22*s,11*s);ctx.fill();text(ctx,"넓히기",x,y-89*s,14*s,"#ffd84d")}
+}
+function wallPattern(ctx,th){
+  // 리모델링 1단계: 무늬 벽지
+  ctx.save();ctx.globalAlpha=.22;ctx.fillStyle=th.trim;
+  for(let y=30;y<212;y+=26)for(let x=(y/26)%2?13:0;x<770;x+=26){ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+6,y);ctx.lineTo(x,y+6);ctx.lineTo(x-6,y);ctx.closePath();ctx.fill()}
+  ctx.restore();
+}
+function drawDecor(ctx,t){
+  const lv=fit().remodel;if(!lv)return;
+  // 1단계: 판벽에 금빛 테두리
+  ctx.strokeStyle="rgba(255,216,77,.85)";ctx.lineWidth=2;
+  for(let x=10;x<760;x+=64){rr(ctx,x+5,239,42,44,3);ctx.stroke()}
+  if(lv<2)return;
+  // 2단계: 금빛 몰딩과 대리석 화분
+  ctx.fillStyle="#ffd84d";ctx.fillRect(0,14,770,5);ctx.fillRect(0,212,770,5);
+  ctx.strokeStyle="rgba(217,146,18,.8)";ctx.lineWidth=2;for(let x=6;x<770;x+=22){ctx.beginPath();ctx.arc(x+8,19,6,0,Math.PI);ctx.stroke()}
+  const x=732,y=300;ctx.fillStyle="#f2f2f2";ctx.strokeStyle=INK;ctx.lineWidth=2.5;rr(ctx,x-14,y-38,28,38,4);ctx.fill();ctx.stroke();
+  ctx.strokeStyle="rgba(150,150,160,.6)";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x-10,y-30);ctx.lineTo(x+4,y-12);ctx.moveTo(x+8,y-34);ctx.lineTo(x-2,y-6);ctx.stroke();
+  ctx.strokeStyle=INK;ctx.lineWidth=2.5;
+  [[-.45,"#3f9e5a"],[0,"#4fb46a"],[.45,"#5cc47a"]].forEach(([a,c],k)=>{ctx.save();ctx.translate(x,y-38);ctx.rotate(a+Math.sin(t*.0015+k)*.05);
+    ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,-24,8,24,0,0,TAU);ctx.fill();ctx.stroke();ctx.restore()});
 }
 
 /* ================= 직원 (가게 안 모습) ================= */
@@ -2028,28 +2245,51 @@ function inspectorDrawable(t){
   }};
 }
 
-/* ================= 테이블, 의자 ================= */
+/* ================= 테이블, 의자 (가구 등급별) ================= */
+const FURN=[
+  {wood:"#8d5a31",light:"#a8703f",leg:"#6b4a2b",cush:null},
+  {wood:"#5e3519",light:"#7a4524",leg:"#3e2210",cush:"#c73a40"},
+  {wood:"#d4a64a",light:"#f0c860",leg:"#b8860b",cush:"#6a2ac0"}
+];
 function drawChair(ctx,seat,s,front){
-  const sy=seat.y-34*s, bx=seat.x-seat.dir*15*s;
-  ctx.strokeStyle=INK;ctx.lineWidth=2.5;ctx.fillStyle="#8d5a31";
+  const C=FURN[seat.table.g||0],sy=seat.y-34*s,bx=seat.x-seat.dir*15*s;
+  ctx.strokeStyle=INK;ctx.lineWidth=2.5;
   if(!front){ // 등받이
-    rr(ctx,bx-4*s,sy-46*s,8*s,48*s,3*s);ctx.fill();ctx.stroke();
-    rr(ctx,bx-7*s,sy-50*s,14*s,10*s,4*s);ctx.fillStyle="#a8703f";ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.wood;rr(ctx,bx-4*s,sy-46*s,8*s,48*s,3*s);ctx.fill();ctx.stroke();
+    rr(ctx,bx-7*s,sy-50*s,14*s,10*s,4*s);ctx.fillStyle=C.light;ctx.fill();ctx.stroke();
+    if(C.cush){ctx.fillStyle=C.cush;rr(ctx,bx-5*s,sy-38*s,10*s,28*s,4*s);ctx.fill();ctx.stroke()}
   }else{
-    ctx.fillStyle="#a8703f";rr(ctx,seat.x-17*s,sy-3*s,34*s,7*s,3*s);ctx.fill();ctx.stroke();
-    ctx.fillStyle="#6b4a2b";ctx.fillRect(seat.x-14*s,sy+4*s,4*s,30*s);ctx.fillRect(seat.x+10*s,sy+4*s,4*s,30*s);
+    ctx.fillStyle=C.cush||C.light;rr(ctx,seat.x-17*s,sy-4*s,34*s,C.cush?9*s:7*s,3*s);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.leg;ctx.fillRect(seat.x-14*s,sy+4*s,4*s,30*s);ctx.fillRect(seat.x+10*s,sy+4*s,4*s,30*s);
   }
 }
-function drawTable(ctx,T){
-  const s=T.s, top=T.y-58*s;
+function drawTable(ctx,T,hot){
+  const s=T.s, top=T.y-58*s, g=T.g||0, C=FURN[g];
+  ctx.save();if(hot){ctx.shadowColor="#ffc83d";ctx.shadowBlur=20}
   ctx.fillStyle="rgba(40,20,10,.22)";ctx.beginPath();ctx.ellipse(T.x,T.y+2,48*s,9*s,0,0,TAU);ctx.fill();
-  ctx.fillStyle="#6b4a2b";ctx.fillRect(T.x-4*s,top,8*s,58*s);
+  ctx.fillStyle=C.leg;ctx.fillRect(T.x-4*s,top,8*s,58*s);
   ctx.strokeStyle=INK;ctx.lineWidth=2.5;
-  ctx.beginPath();ctx.ellipse(T.x,T.y-2,18*s,5*s,0,0,TAU);ctx.fillStyle="#5a3a20";ctx.fill();ctx.stroke();
-  ctx.fillStyle="#8d5a31";ctx.beginPath();ctx.ellipse(T.x,top+5*s,42*s,11*s,0,0,Math.PI);ctx.lineTo(T.x-42*s,top);ctx.fill();ctx.stroke();
-  const tg=ctx.createLinearGradient(0,top-11*s,0,top+11*s);tg.addColorStop(0,"#d9a06a");tg.addColorStop(1,"#b57a47");
-  ctx.fillStyle=tg;ctx.beginPath();ctx.ellipse(T.x,top,42*s,11*s,0,0,TAU);ctx.fill();ctx.stroke();
-  ctx.fillStyle="rgba(255,255,255,.25)";ctx.beginPath();ctx.ellipse(T.x-12*s,top-3*s,14*s,3*s,0,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.ellipse(T.x,T.y-2,18*s,5*s,0,0,TAU);ctx.fillStyle=C.leg;ctx.fill();ctx.stroke();
+  if(g===1){ // 원목 + 식탁보
+    ctx.fillStyle="#fffaf0";ctx.beginPath();ctx.moveTo(T.x-44*s,top);ctx.lineTo(T.x-40*s,top+24*s);
+    ctx.quadraticCurveTo(T.x,top+32*s,T.x+40*s,top+24*s);ctx.lineTo(T.x+44*s,top);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.ellipse(T.x,top,44*s,11*s,0,0,TAU);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#c73a40";ctx.beginPath();ctx.ellipse(T.x,top,12*s,10*s,0,0,TAU);ctx.fill();
+    ctx.fillRect(T.x-12*s,top,24*s,26*s);
+  }else if(g===2){ // 명품: 대리석 상판 + 금테 + 촛불
+    ctx.fillStyle="#b8860b";ctx.beginPath();ctx.ellipse(T.x,top+5*s,44*s,11*s,0,0,Math.PI);ctx.lineTo(T.x-44*s,top);ctx.fill();ctx.stroke();
+    const mg=ctx.createLinearGradient(T.x-40*s,0,T.x+40*s,0);mg.addColorStop(0,"#f4f4f8");mg.addColorStop(.5,"#ffffff");mg.addColorStop(1,"#d9dbe3");
+    ctx.fillStyle=mg;ctx.beginPath();ctx.ellipse(T.x,top,44*s,11*s,0,0,TAU);ctx.fill();ctx.strokeStyle="#d4a64a";ctx.lineWidth=3;ctx.stroke();
+    ctx.strokeStyle="rgba(140,140,160,.5)";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(T.x-28*s,top-4*s);ctx.lineTo(T.x-6*s,top+5*s);ctx.moveTo(T.x+10*s,top-6*s);ctx.lineTo(T.x+30*s,top+3*s);ctx.stroke();
+    ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.fillStyle="#fffaf0";ctx.fillRect(T.x-3*s,top-18*s,6*s,14*s);ctx.strokeRect(T.x-3*s,top-18*s,6*s,14*s);
+    const fl=1+Math.sin(Shop.t*.02+T.x)*.15;ctx.fillStyle="#ffb02e";ctx.beginPath();ctx.ellipse(T.x,top-22*s,3*s,6*s*fl,0,0,TAU);ctx.fill();
+  }else{
+    ctx.fillStyle=C.wood;ctx.beginPath();ctx.ellipse(T.x,top+5*s,42*s,11*s,0,0,Math.PI);ctx.lineTo(T.x-42*s,top);ctx.fill();ctx.stroke();
+    const tg=ctx.createLinearGradient(0,top-11*s,0,top+11*s);tg.addColorStop(0,"#d9a06a");tg.addColorStop(1,"#b57a47");
+    ctx.fillStyle=tg;ctx.beginPath();ctx.ellipse(T.x,top,42*s,11*s,0,0,TAU);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,.25)";ctx.beginPath();ctx.ellipse(T.x-12*s,top-3*s,14*s,3*s,0,0,TAU);ctx.fill();
+  }
+  ctx.restore();
 }
 
 /* ================= 영업 시뮬레이션 ================= */
@@ -2232,6 +2472,8 @@ function drawParticles(ctx,dt){
 
 function drawShop(ctx,t,dt){
   ctx0=ctx;ensureLayout();
+  if(!Biz.on){Biz.pops.forEach(p=>p.t+=dt);Biz.pops=Biz.pops.filter(p=>p.t<1300)}
+  if(Shop.view>1&&lodgeOn()&&!Biz.on){drawFloorView(ctx,t,dt,Shop.view);drawFitTooltip(ctx);return}
   const tod=timeOfDay(),B=Biz;
   // 카메라: VIP 등장 시 살짝 줌인
   const vip=B.on&&B.vipSprite&&!B.vipSprite.gone?B.vipSprite:null;
@@ -2242,7 +2484,7 @@ function drawShop(ctx,t,dt){
   const hw=480/cam.z,hh=270/cam.z,cx=clamp(cam.x,hw,SW-hw),cy=clamp(cam.y,hh,SH-hh);
   ctx.save();ctx.translate(480,270);ctx.scale(cam.z,cam.z);ctx.translate(-cx,-cy);
 
-  drawWall(ctx,t,tod);drawDoor(ctx);drawFloor(ctx,tod);drawKitchen(ctx,t);drawLamps(ctx,tod,0);
+  drawWall(ctx,t,tod);drawDecor(ctx,t);drawDoor(ctx);drawFloor(ctx,tod);drawKitchen(ctx,t);drawLamps(ctx,tod,0);
   // 깊이 정렬
   const list=[];
   const eating=B.sprites.filter(c=>c.state==="eat");
@@ -2250,11 +2492,17 @@ function drawShop(ctx,t,dt){
     T.seats.forEach(s=>drawChair(ctx,s,T.s,false));
     eating.filter(c=>c.seat.table===T).forEach(c=>drawSprite(ctx,c,t));
     T.seats.forEach(s=>drawChair(ctx,s,T.s,true));
-    drawTable(ctx,T);
+    drawTable(ctx,T,!B.on&&(Shop.hover==="table:"+T.slot||Shop.sel==="table:"+T.slot));
     eating.filter(c=>c.seat.table===T&&c.t>300).forEach(c=>{const fx=c.seat.x+c.seat.dir*20*T.s,fy=T.y-60*T.s;
       drawDish(ctx,dishOf(state.day),fx,fy,12*T.s);steam(ctx,fx+6*T.s,fy-10*T.s,t,.7)});
   }}));
   B.sprites.filter(c=>c.state!=="eat").forEach(c=>list.push({y:c.y,f:()=>drawSprite(ctx,c,t)}));
+  // 빈 자리(+)와 아직 못 쓰는 자리(상자)
+  for(let i=0;i<SLOT_POS.length;i++){
+    const hot=!B.on&&(Shop.hover===(i>=slotsOpen()?"box:":"slot:")+i||Shop.sel===(i>=slotsOpen()?"box:":"slot:")+i);
+    if(i>=slotsOpen())list.push({y:SLOT_POS[i][1]-1,f:()=>drawClosedSlot(ctx,i,t,hot)});
+    else if(fit().tables[i]<0&&!B.on)list.push({y:SLOT_POS[i][1]-1,f:()=>drawEmptySlot(ctx,i,t,hot)});
+  }
   for(let i=0;i<Math.min(4,state.unresolved);i++)list.push({y:TRASH[i][1],f:()=>drawTrash(ctx,TRASH[i],i,t)});
   if(Shop.complainer)list.push({y:392,f:()=>{
     drawStick(ctx,{x:196,y:392,s:depthScale(392),dir:1,pose:"wave",t:t*.001,face:"sad",hat:"cap",hatColor:"#8a8799",shirt:"#9aa0c8",shadow:true});
@@ -2274,6 +2522,272 @@ function drawShop(ctx,t,dt){
   B.pops.forEach(p=>{const q=p.t/1300;ctx.save();ctx.globalAlpha=1-Math.max(0,q-.6)/.4;outlinedText(ctx,p.str,p.x,p.y-q*50,p.size,p.color,INK,6);ctx.restore()});
   if(B.on&&B.V===0&&!vip&&!B.insp)bubble(ctx,"오늘은 손님이 없네...",740,120,880,168,22);
   ctx.restore();
+  drawFitTooltip(ctx);
+}
+
+/* ================= 호텔 객실 층 (5성급 호텔부터, 2~4층) ================= */
+const ROOM_X0=122, ROOM_W=139, ROOM_Y=74, ROOM_H=316;
+const roomRect=k=>({x:ROOM_X0+k*ROOM_W,y:ROOM_Y,w:ROOM_W-4,h:ROOM_H});
+const roomNo=idx=>`${Math.floor(idx/ROOMS_PER_FLOOR)+2}0${idx%ROOMS_PER_FLOOR+1}`;
+function roomRegions(floor){
+  const R=[];
+  for(let k=0;k<ROOMS_PER_FLOOR;k++){const r=roomRect(k),idx=(floor-2)*ROOMS_PER_FLOOR+k;
+    R.push({id:"room:"+idx,kind:"room",i:idx,x:r.x,y:r.y,w:r.w,h:r.h,cx:r.x+r.w/2,cy:r.y+60})}
+  return R;
+}
+// 그날 손님이 든 방 (투숙률만큼, 날마다 바뀜)
+const roomOccupied=idx=>seeded(idx*7.3+state.day*1.7)<occupancy();
+
+function drawFloorView(ctx,t,dt,floor){
+  const th=theme(),tod=timeOfDay(),night=tod>.55||Shop.phase==="closed";
+  // 건물 단면 배경
+  const bg=ctx.createLinearGradient(0,0,0,SH);bg.addColorStop(0,th.w2);bg.addColorStop(1,mix(th.w2,"#000000",.25));
+  ctx.fillStyle=bg;ctx.fillRect(0,0,SW,SH);
+  ctx.fillStyle=th.trim;ctx.fillRect(0,0,SW,22);ctx.fillRect(0,ROOM_Y+ROOM_H,SW,8);
+  ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(0,22,SW,5);
+  // 층 표시와 엘리베이터
+  const ex=14,ey=ROOM_Y+104,ew=96,eh=ROOM_H-104,open=Math.max(0,Math.sin(t*.0011))**3;
+  outlinedText(ctx,`${floor}층`,ex+48,ROOM_Y+22,32,"#ffd84d",INK,6);
+  outlinedText(ctx,"객실층",ex+48,ROOM_Y+56,15,"#ffffff",INK,5);
+  ctx.fillStyle="#2a2d3a";ctx.fillRect(ex,ey,ew,eh);
+  ctx.fillStyle="#ffe9a8";ctx.fillRect(ex+8,ey+8,ew-16,eh-8);
+  drawStick(ctx,{x:ex+ew/2,y:ey+eh-4,s:.62,dir:1,pose:"stand",t:t*.001,shirt:"#2a2d4a",bowtie:true,hat:"cap",hatColor:"#c73a40"});
+  const half=(ew-16)/2*(1-open);
+  ctx.fillStyle="#b9c2c8";ctx.strokeStyle=INK;ctx.lineWidth=2.5;
+  ctx.fillRect(ex+8,ey+8,half,eh-8);ctx.strokeRect(ex+8,ey+8,half,eh-8);
+  ctx.fillRect(ex+ew-8-half,ey+8,half,eh-8);ctx.strokeRect(ex+ew-8-half,ey+8,half,eh-8);
+  ctx.strokeRect(ex,ey,ew,eh);
+  // 오르내림 표시등
+  const up=Math.sin(t*.0011+1)>0;
+  ctx.fillStyle="#1f1d2b";rr(ctx,ex+24,ey-30,48,22,6);ctx.fill();
+  text(ctx,"▲",ex+38,ey-19,13,up?"#ffd84d":"#4a475c");text(ctx,"▼",ex+58,ey-19,13,up?"#4a475c":"#ffd84d");
+  // 객실 6개
+  for(let k=0;k<ROOMS_PER_FLOOR;k++){
+    const idx=(floor-2)*ROOMS_PER_FLOOR+k,r=roomRect(k),built=fit().rooms[idx],hot=Shop.hover==="room:"+idx||Shop.sel==="room:"+idx;
+    ctx.save();ctx.beginPath();ctx.rect(r.x,r.y,r.w,r.h);ctx.clip();
+    if(built){
+      ctx.fillStyle=th.wa;ctx.fillRect(r.x,r.y,r.w,r.h);
+      ctx.fillStyle=th.f1;ctx.fillRect(r.x,r.y+r.h-54,r.w,54);
+      ctx.fillStyle="rgba(0,0,0,.12)";for(let x=r.x;x<r.x+r.w;x+=18)ctx.fillRect(x,r.y+r.h-54,2,54);
+      // 창문 (호텔마다 다른 바깥 풍경)
+      const wx=r.x+14,wy=r.y+30,ww=56,wh=64;
+      ctx.save();ctx.beginPath();ctx.rect(wx,wy,ww,wh);ctx.clip();(OUTSIDE[th.out]||OUTSIDE.city)(ctx,wx-80,wy-40,220,150,t+idx*999,night?.95:.25);ctx.restore();
+      ctx.strokeStyle=th.trim;ctx.lineWidth=4;ctx.strokeRect(wx,wy,ww,wh);
+      ctx.beginPath();ctx.moveTo(wx+ww/2,wy);ctx.lineTo(wx+ww/2,wy+wh);ctx.stroke();
+      // 액자 (작은 풍경화)
+      const px=r.x+86,py=r.y+36;
+      ctx.fillStyle=th.trim;ctx.fillRect(px,py,36,28);
+      ctx.fillStyle=["#e89a5a","#56b8ff","#43d17f","#ff7eb6","#ffb02e","#b28dff"][k];ctx.fillRect(px+4,py+4,28,20);
+      ctx.fillStyle="rgba(255,255,255,.9)";ctx.beginPath();ctx.arc(px+24,py+10,3.5,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(0,0,0,.3)";ctx.beginPath();ctx.moveTo(px+4,py+24);ctx.lineTo(px+13,py+13);ctx.lineTo(px+20,py+19);ctx.lineTo(px+25,py+15);ctx.lineTo(px+32,py+24);ctx.closePath();ctx.fill();
+      ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.strokeRect(px,py,36,28);
+      // 침대
+      const bx=r.x+14,by=r.y+r.h-62,bw=r.w-34;
+      ctx.fillStyle=mix(th.trim,"#5a3a20",.4);ctx.strokeStyle=INK;ctx.lineWidth=2.5;rr(ctx,bx-6,by-46,14,58,4);ctx.fill();ctx.stroke();
+      ctx.fillStyle="#ffffff";rr(ctx,bx,by-14,bw,22,6);ctx.fill();ctx.stroke();
+      ctx.fillStyle="#fffaf0";rr(ctx,bx+4,by-26,30,14,6);ctx.fill();ctx.stroke();
+      const guest=roomOccupied(idx),blanket=["#c73a40","#2a7fd0","#1e9b55","#7658d8","#d99212","#ff7eb6"][(idx+state.tier)%6];
+      if(guest){
+        // 베개 위의 머리(수면 모자)와 이불 속에서 불룩한 몸
+        const hx=bx+22,hy=by-24;
+        circle(ctx,hx,hy,12,"#ffffff",INK,2.5);
+        ctx.strokeStyle=INK;ctx.lineWidth=2;
+        if(night){[hx-4,hx+5].forEach(x=>{ctx.beginPath();ctx.arc(x,hy,2.8,.15*Math.PI,.85*Math.PI);ctx.stroke()})}
+        else{circle(ctx,hx-4,hy-1,1.9,INK);circle(ctx,hx+5,hy-1,1.9,INK);ctx.beginPath();ctx.arc(hx+1,hy+3,4,.2*Math.PI,.8*Math.PI);ctx.stroke()}
+        ctx.fillStyle=pick2(idx);ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(hx-12,hy-3);ctx.quadraticCurveTo(hx-6,hy-20,hx+13,hy-14);ctx.quadraticCurveTo(hx+8,hy-8,hx+12,hy-4);ctx.closePath();ctx.fill();ctx.stroke();
+        circle(ctx,hx+15,hy-14,3.5,"#ffffff",INK,2);
+        ctx.fillStyle=blanket;ctx.beginPath();ctx.moveTo(bx+28,by+8);ctx.lineTo(bx+28,by-12);ctx.quadraticCurveTo(bx+52,by-34,bx+bw-8,by-17);ctx.quadraticCurveTo(bx+bw-2,by-16,bx+bw-2,by-8);ctx.lineTo(bx+bw-2,by+8);ctx.closePath();ctx.fill();ctx.stroke();
+        // 여행 가방
+        const sx=r.x+r.w/2+8,sy=r.y+r.h-14;
+        ctx.fillStyle=pick2(idx+3);rr(ctx,sx,sy-24,28,24,5);ctx.fill();ctx.stroke();
+        ctx.strokeStyle=INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(sx+9,sy-24);ctx.lineTo(sx+9,sy-30);ctx.lineTo(sx+19,sy-30);ctx.lineTo(sx+19,sy-24);ctx.stroke();
+        ctx.fillStyle="rgba(255,255,255,.5)";ctx.fillRect(sx+4,sy-14,20,3);
+      }else{
+        ctx.fillStyle=blanket;rr(ctx,bx+30,by-16,bw-34,22,6);ctx.fill();ctx.stroke();
+      }
+      if(guest&&night)for(let z=0;z<3;z++){const ph=(t*.0006+z*.33)%1;ctx.globalAlpha=1-ph;text(ctx,"Z",bx+28+ph*18+z*4,by-40-ph*40,12+z*3,"#ffffff");ctx.globalAlpha=1}
+      // 협탁과 스탠드
+      ctx.fillStyle=mix(th.trim,"#5a3a20",.5);ctx.fillRect(r.x+r.w-26,by-18,20,26);ctx.strokeRect(r.x+r.w-26,by-18,20,26);
+      circle(ctx,r.x+r.w-16,by-30,7,"#fff4b8",INK,2);
+      if(night){const g=ctx.createRadialGradient(r.x+r.w-16,by-30,2,r.x+r.w-16,by-30,60);g.addColorStop(0,"rgba(255,220,140,.5)");g.addColorStop(1,"rgba(255,220,140,0)");ctx.fillStyle=g;ctx.fillRect(r.x,r.y,r.w,r.h)}
+      if(!guest&&!night){text(ctx,"빈 방",r.x+r.w/2,r.y+120,13,mix(th.trim,"#000000",.4))}
+    }else{
+      ctx.fillStyle="#3a3a48";ctx.fillRect(r.x,r.y,r.w,r.h);
+      ctx.fillStyle="rgba(255,255,255,.05)";for(let y=r.y;y<r.y+r.h;y+=22)ctx.fillRect(r.x,y,r.w,2);
+      ctx.setLineDash([8,7]);ctx.strokeStyle=hot?"#ffc83d":"rgba(255,255,255,.55)";ctx.lineWidth=3;ctx.strokeRect(r.x+10,r.y+10,r.w-20,r.h-20);ctx.setLineDash([]);
+      const pulse=.6+.4*Math.sin(t*.005+k);
+      circle(ctx,r.x+r.w/2,r.y+r.h/2-14,22,hot?"#ffc83d":`rgba(67,209,127,${pulse})`,INK,2.5);
+      ctx.fillStyle="#fff";ctx.fillRect(r.x+r.w/2-10,r.y+r.h/2-17,20,6);ctx.fillRect(r.x+r.w/2-3,r.y+r.h/2-24,6,20);
+      text(ctx,"객실 꾸미기",r.x+r.w/2,r.y+r.h/2+26,15,"#ffffff");
+    }
+    ctx.restore();
+    // 방 번호 명패와 벽
+    ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.strokeRect(r.x,r.y,r.w,r.h);
+    ctx.fillStyle=built?"#ffd84d":"#8a8799";rr(ctx,r.x+r.w/2-24,r.y-18,48,20,6);ctx.fill();ctx.lineWidth=2;ctx.stroke();
+    text(ctx,roomNo(idx),r.x+r.w/2,r.y-8,13,INK);
+  }
+  // 복도와 손님
+  const cy=ROOM_Y+ROOM_H+8;
+  ctx.fillStyle=th.rug;ctx.fillRect(0,cy,SW,SH-cy);
+  ctx.fillStyle=th.rugT;ctx.fillRect(0,cy+18,SW,4);ctx.fillRect(0,SH-26,SW,4);
+  for(let i=0;i<3;i++){
+    const sp=.045+i*.012,dir=i%2?-1:1,span=SW+160;let x=((t*sp+i*380)%span)-80;if(dir<0)x=SW-x;
+    drawStick(ctx,{x,y:SH-34,s:.72,dir,pose:i===1?"carry":"walk",item:i===1?"tray":"togo",t:t*.009+i,shadow:true,
+      ...(i===1?{shirt:"#2a2d4a",bowtie:true}:{shirt:["#56b8ff","#ff9340","#43d17f"][i],hat:["cap","bow","pony"][i],hatColor:"#c73a40"}),helmet:theme().helmet&&i!==1});
+  }
+  drawParticles(ctx,dt);
+  Biz.pops.forEach(p=>{const q=p.t/1300;ctx.save();ctx.globalAlpha=1-Math.max(0,q-.6)/.4;outlinedText(ctx,p.str,p.x,p.y-q*50,p.size,p.color,INK,6);ctx.restore()});
+}
+const pick2=i=>["#56b8ff","#ff9340","#43d17f","#ff7eb6","#b28dff","#ffd84d"][i%6];
+
+/* ================= 가게 직접 꾸미기 (마우스·터치) =================
+   1층: + 자리를 누르면 테이블, 테이블을 누르면 가구 바꾸기, 상자를 누르면 가게 넓히기
+   객실 층: 빈 객실을 누르면 객실 꾸미기
+   마우스는 한 번 클릭으로 사고, 터치는 첫 탭에 정보, 두 번째 탭에 산다 */
+Shop.view=1;Shop.hover=null;Shop.sel=null;
+function fitRegions(){
+  const R=[],F=fit();
+  for(let i=0;i<SLOT_POS.length;i++){
+    const [x,y]=SLOT_POS[i],s=depthScale(y),kind=i>=slotsOpen()?"box":F.tables[i]<0?"slot":"table";
+    R.push({id:kind+":"+i,kind,i,x:x-66*s,y:y-112*s,w:132*s,h:130*s,cx:x,cy:y-80*s});
+  }
+  return R;
+}
+const currentRegions=()=>Shop.view>1&&lodgeOn()?roomRegions(Shop.view):fitRegions();
+const regionById=id=>currentRegions().find(r=>r.id===id)||null;
+
+function describeRegion(r){
+  const F=fit();
+  if(r.kind==="slot")return {title:"빈 자리",lines:[`테이블 놓기 · ${won(fitCost("table"))}`,`손님 +${korNum(fitBonus("table"))}명`],cost:fitCost("table")};
+  if(r.kind==="table"){const g=F.tables[r.i];
+    if(g>=MAX_FURN)return {title:FURN_NAMES[g],lines:["최고급 가구예요"],cost:null};
+    return {title:FURN_NAMES[g],lines:[`${FURN_NAMES[g+1]}로 바꾸기 · ${won(fitCost("grade",g))}`,`손님 +${korNum(fitBonus("grade"))}명 · 환경 점수↑`],cost:fitCost("grade",g)}}
+  if(r.kind==="box")return {title:`가게 넓히기 ${F.size+1}단계`,lines:[won(fitCost("size",F.size)),`${F.size===0?"왼쪽":"오른쪽"} 자리 2개가 생겨요`],cost:fitCost("size",F.size)};
+  if(r.kind==="room"){const no=roomNo(r.i);
+    if(F.rooms[r.i])return {title:`${no}호`,lines:[`1박 ${won(roomRate())}`,`투숙률 ${Math.round(occupancy()*100)}% · 오늘 ${roomOccupied(r.i)?"손님 있음":"빈 방"}`],cost:null};
+    return {title:`${no}호 · 빈 객실`,lines:[`객실 꾸미기 · ${won(fitCost("room"))}`,`1박 ${won(roomRate())} 수입`],cost:fitCost("room")}}
+  return null;
+}
+function drawFitTooltip(ctx){
+  if(Biz.on||$("game").hidden)return;
+  const id=Shop.hover||Shop.sel;if(!id)return;
+  const r=regionById(id);if(!r)return;
+  const d=describeRegion(r);if(!d)return;
+  const lines=[...d.lines];
+  if(d.cost!=null&&state.cash<d.cost)lines.push("돈이 부족해요");
+  else if(d.cost!=null&&Shop.sel===id&&!Shop.hover)lines.push("한 번 더 누르면 사요");
+  ctx.save();ctx.setTransform(ctx.getTransform());
+  ctx.font=`17px ${FONT_D}`;let w=ctx.measureText(d.title).width;
+  ctx.font=`14px ${FONT_D}`;lines.forEach(l=>w=Math.max(w,ctx.measureText(l).width));
+  w+=28;const h=34+lines.length*20;
+  let x=clamp(r.cx-w/2,8,SW-w-8),y=r.y-h-6;if(y<8)y=r.y+r.h+6;y=clamp(y,8,SH-h-8);
+  ctx.fillStyle="rgba(13,15,36,.92)";ctx.strokeStyle="#ffc83d";ctx.lineWidth=2.5;rr(ctx,x,y,w,h,12);ctx.fill();ctx.stroke();
+  text(ctx,d.title,x+14,y+19,17,"#ffd84d","left");
+  lines.forEach((l,k)=>text(ctx,l,x+14,y+42+k*20,14,l==="돈이 부족해요"?"#ff9aa0":l==="한 번 더 누르면 사요"?"#9dffc4":"#ffffff","left"));
+  ctx.restore();
+}
+
+(function(){
+  const cv=$("shopCanvas");
+  const pt=ev=>{const b=cv.getBoundingClientRect(),x=(ev.clientX-b.left)/b.width*SW,y=(ev.clientY-b.top)/b.height*SH,
+    c=Shop.cam,hw=480/c.z,hh=270/c.z,cx=clamp(c.x,hw,SW-hw),cy=clamp(c.y,hh,SH-hh);return [(x-480)/c.z+cx,(y-270)/c.z+cy]};
+  const at=(x,y)=>{let best=null;for(const r of currentRegions())if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h&&(!best||r.cy>best.cy))best=r;return best};
+  cv.addEventListener("pointermove",ev=>{
+    if(ev.pointerType!=="mouse")return;
+    const r=Biz.on?null:at(...pt(ev));Shop.hover=r?r.id:null;cv.style.cursor=r?"pointer":"";
+  });
+  cv.addEventListener("pointerleave",()=>{Shop.hover=null;cv.style.cursor=""});
+  cv.addEventListener("pointerup",ev=>{
+    const r=at(...pt(ev));
+    if(!r){Shop.sel=null;return}
+    Snd.wake();
+    if(Biz.on||(state.opened&&!state.resultReady)){toast("영업 중이에요","영업이 끝난 뒤에 가게를 꾸밀 수 있어요","!");return}
+    if(ev.pointerType!=="mouse"&&Shop.sel!==r.id){Shop.sel=r.id;Snd.tick();return}
+    Shop.sel=null;activateRegion(r);
+  });
+})();
+
+function activateRegion(r){
+  if(r.kind==="slot")placeTable(r.i);
+  else if(r.kind==="table"){if(fit().tables[r.i]>=MAX_FURN){toast(FURN_NAMES[MAX_FURN],"이미 최고급 가구예요","★");return}upgradeFurn(r.i)}
+  else if(r.kind==="box")buySize();
+  else if(r.kind==="room"){if(fit().rooms[r.i]){toast(`${roomNo(r.i)}호`,`1박 ${won(roomRate())} · 투숙률 ${Math.round(occupancy()*100)}%`,"방");return}buyRoom(r.i)}
+}
+
+/* ================= 꾸미기 구매 ================= */
+function spend(cost,what){
+  if(busy()||state.bankrupt)return false;
+  if(state.cash<cost){toast("돈이 부족해요",`${what}에 ${won(cost)}이 필요해요`,"!");Snd.fail();return false}
+  state.cash-=cost;setCash(state.cash);cashDelta=null;return true;
+}
+function afterFit(x,y,label){
+  if(x!=null){burst(x,y,14,"sparkle",["#ffd84d","#ffffff","#43d17f"]);if(label)pop(x,y-10,label,"#9dffc4",20)}
+  Snd.register();
+  readyCheck();
+  checkAch();save();render();
+}
+// 할 일을 모두 마친 순간 한 번만 알려 준다 (꾸미기를 끝냈을 때, 또는 첫 영업을 마쳤을 때)
+function readyCheck(){
+  const F=fit();
+  if(!fitDone()||F.readyToast)return;
+  F.readyToast=true;save();
+  setTimeout(()=>{toast("확장 준비 완료!",state.tier<MAX_TIER?`이제 ${TIERS[state.tier+1].name}${roEuro(TIERS[state.tier+1].name)} 확장할 수 있어요`:"모든 꾸미기를 마쳤어요","★");Snd.fanfare();confetti(50)},250);
+}
+function placeTable(i,quiet){
+  const F=fit();if(i>=slotsOpen()||F.tables[i]>=0)return false;
+  if(!spend(fitCost("table"),"테이블"))return false;
+  F.tables[i]=0;state.stats.tables=(state.stats.tables||0)+1;
+  if(!quiet){const [x,y]=SLOT_POS[i];afterFit(x,y-70*depthScale(y),`손님 +${korNum(fitBonus("table"))}명`)}
+  return true;
+}
+function upgradeFurn(i,quiet){
+  const F=fit(),g=F.tables[i];if(g<0||g>=MAX_FURN)return false;
+  if(!spend(fitCost("grade",g),FURN_NAMES[g+1]))return false;
+  F.tables[i]=g+1;
+  if(!quiet){const [x,y]=SLOT_POS[i];afterFit(x,y-70*depthScale(y),FURN_NAMES[g+1])}
+  return true;
+}
+function buySize(){
+  const F=fit();if(F.size>=MAX_SIZE)return false;
+  if(!spend(fitCost("size",F.size),"가게 넓히기"))return false;
+  F.size++;
+  (F.size===1?[4,5]:[6,7]).forEach(i=>{const [x,y]=SLOT_POS[i];burst(x,y-30,24,"confetti",["#c9955a","#d8a86a","#ffd84d"])});
+  toast("가게가 넓어졌어요!","새로 생긴 + 자리에 테이블을 놓아 보세요","+");Snd.whoosh();
+  afterFit(null);return true;
+}
+function buyRemodel(){
+  const F=fit();if(F.remodel>=MAX_REMODEL)return false;
+  if(!spend(fitCost("remodel",F.remodel),"리모델링"))return false;
+  F.remodel++;if(F.remodel>=MAX_REMODEL)state.stats.remodelMax=(state.stats.remodelMax||0)+1;
+  Shop.view=1;confetti(60);
+  toast(`리모델링 ${F.remodel}단계 완료!`,state.tier===0?`새 메뉴: ${E0_EXTRA[F.remodel-1].map(d=>d[0]).slice(0,3).join(", ")} 등`:"음식값 +30% · 손님이 늘었어요","★");
+  afterFit(null);return true;
+}
+function buyFloor(){
+  const F=fit();if(!lodgeOn()||F.floors>=MAX_FLOORS)return false;
+  if(!spend(fitCost("floor",F.floors-2),`${F.floors+1}층 올리기`))return false;
+  F.floors++;if(F.floors>=MAX_FLOORS)state.stats.floor4=(state.stats.floor4||0)+1;
+  Shop.view=F.floors;confetti(50);toast(`${F.floors}층이 생겼어요!`,"빈 객실을 눌러 꾸며 보세요","+");
+  afterFit(null);return true;
+}
+function buyRoom(idx,quiet){
+  const F=fit();if(!lodgeOn()||F.rooms[idx]||idx>=roomsAvail())return false;
+  if(!spend(fitCost("room"),"객실 꾸미기"))return false;
+  F.rooms[idx]=true;if(roomsBuilt()>=MAX_ROOMS)state.stats.fullRooms=(state.stats.fullRooms||0)+1;
+  if(!quiet){const r=roomRect(idx%ROOMS_PER_FLOOR);afterFit(r.x+r.w/2,r.y+140,`1박 ${won(roomRate())}`)}
+  return true;
+}
+// 한 번에 사기 (살 수 있는 만큼, 싼 것부터)
+function buyAll(kind){
+  if(busy()||state.bankrupt)return;
+  let n=0;const F=fit();
+  if(kind==="tables")for(let i=0;i<slotsOpen();i++){if(F.tables[i]<0&&state.cash>=fitCost("table")&&placeTable(i,true))n++}
+  if(kind==="furn"){for(;;){let best=-1;for(let i=0;i<slotsOpen();i++){const g=F.tables[i];if(g>=0&&g<MAX_FURN&&(best<0||g<F.tables[best]))best=i}
+    if(best<0||state.cash<fitCost("grade",F.tables[best])||!upgradeFurn(best,true))break;n++}}
+  if(kind==="rooms"){const first=(Shop.view>1?Shop.view-2:0)*ROOMS_PER_FLOOR;
+    for(let k=0;k<roomsAvail();k++){const i=(first+k)%roomsAvail();if(!F.rooms[i]&&state.cash>=fitCost("room")&&buyRoom(i,true))n++}}
+  if(n){toast(`${n}개 완료!`,kind==="tables"?"테이블을 놓았어요":kind==="furn"?"가구를 바꿨어요":"객실을 꾸몄어요","+");confetti(30);afterFit(null)}
+  else{toast("돈이 부족해요","조금 더 벌고 다시 해 보세요","!");Snd.fail()}
 }
 
 /* ================= 화면 갱신 ================= */
@@ -2291,7 +2805,10 @@ function ensurePending(){
   state.pending.length=state.unresolved;
   if(!Array.isArray(state.bonus))state.bonus=[];
 }
-function setCash(v,instant){targetCash=v;if(instant){dispCash=v;$("cash").textContent=won(v)}}
+function setCash(v,instant){targetCash=v;if(instant){dispCash=v;showCash(v)}}
+// 금액이 길면(₩12경 3,450조 같은) 글자를 조금 줄여서 잘리지 않게
+function showCash(v){const el=$("cash"),s=won(v);el.textContent=s;el.classList.toggle("long",s.length>=12);
+  el.closest(".hud").classList.toggle("tight",s.length>=11)}   // 금액이 길면 상단의 등급 표시는 숨긴다 (가게 아래 칩에 있어요)
 function maxAd(){
   const max=Math.max(0,Math.floor(Math.min(1000000,state.cash/(priceScale()*custScale()))/10000)*10000),el=$("ad");
   el.max=String(max);if(+el.value>max)el.value=max;
@@ -2313,9 +2830,13 @@ function render(){
   $("menuName").textContent=foodOf(state.day);$("menuNext").textContent="내일: "+foodOf(state.day+1);
   const S=priceScale(),G=custScale();
   $("priceValue").textContent=won(priceAt(price));
+  const lodge=lodgeOn();$("lodgeLine").hidden=!lodge;
+  if(lodge)$("lodgeLine").textContent=`객실 ${roomsBuilt()}개 · 1박 ${won(roomRate())} · 투숙률 ${Math.round(occupancy()*100)}% · 숙박비 약 ${won(lodgingRevenue()*complaintSalesFactor(state.unresolved))}`;
   $("menuFair").textContent=`적정가 ${won(dishOf(state.day).fair)}`;$("adValue").textContent=won(ad*S*G);
   $("adHint").textContent=`끝까지 올리면 ${won(1e6*S*G)}로 손님 약 +${korNum(180*G)}명. 광고비는 그대로 비용이에요.`;
-  $("shopPill").textContent=`Lv.${state.tier} ${TIERS[state.tier].shop}`;
+  // 상단 표시는 짧게: "졸라맨 레전더리 호텔" → "레전더리 호텔" (한 단어만 남으면 그대로)
+  {const full=TIERS[state.tier].shop,short=full.replace(/^졸라맨 /,"");
+   $("shopPill").textContent=`Lv.${state.tier} ${short.includes(" ")?short:full}`;$("shopPill").title=full}
   $("gradeText").textContent=GRADES[state.grade].name;
   $("priceHint").textContent=priceHint(price);
   setFill($("price"));setFill($("ad"));
@@ -2391,41 +2912,90 @@ function checkAch(){
 }
 
 /* ================= 가게 확장 ================= */
+// 확장 준비 체크리스트 + 다음 확장
 function renderUpgrade(){
-  const box=$("upgrade");
-  if(state.tier>=MAX_TIER){box.innerHTML=`<div class="up-head"><span class="up-kicker">최종 단계 달성</span></div><div class="up-name">${TIERS[MAX_TIER].shop}</div><p class="muted" style="margin:4px 0 0">모든 확장을 마쳤어요. 졸라맨이 우주 최고의 사장님이 됐어요!</p>`;return}
-  const nx=TIERS[state.tier+1], can=state.cash>=nx.cost&&!busy()&&!state.bankrupt, pct=clamp(state.cash/nx.cost*100,0,100);
-  box.innerHTML=`<div class="up-head"><span class="up-kicker">다음 확장 · Lv.${state.tier+1} / ${MAX_TIER}</span><span class="muted">지금: ${TIERS[state.tier].shop}</span></div>
-    <div class="up-main"><div><div class="up-name">${nx.name}</div>
-      <div class="up-eff"><span class="eff plus">손님 +${addText(nx.add)}</span><span class="eff menu">새 메뉴 ${menuOf(state.tier+1).length}종</span><span class="eff gold">${nextPriceText()}</span></div></div>
-      <button id="upBtn" class="b3 gold${can?" pulse":""}" type="button" ${can?"":"disabled"}>확장하기<small>${won(nx.cost)}</small></button></div>
-    <div class="up-bar"><i style="width:${pct}%"></i><span>${won(Math.min(state.cash,nx.cost))} / ${won(nx.cost)}</span></div>`;
-  $("upBtn").onclick=buyUpgrade;
+  const box=$("upgrade"),T=TIERS[state.tier],F=fit(),tasks=fitTasks(),can=!busy()&&!state.bankrupt;
+  const doneN=tasks.filter(x=>x.have>=x.need).length;
+  const btn=(kind,label,cost,enabled=true)=>`<button class="b3 sm ${cost!=null&&state.cash>=cost&&can&&enabled?"gold":"cream"}" type="button" data-fit="${kind}" ${can&&enabled&&cost!=null&&state.cash>=cost?"":"disabled"}>${label}${cost!=null?`<small>${won(cost)}</small>`:""}</button>`;
+  const empty=[];for(let i=0;i<slotsOpen();i++)if(F.tables[i]<0)empty.push(i);
+  let furnCost=0,furnN=0;F.tables.forEach(g=>{if(g>=0&&g<MAX_FURN){furnCost+=fitCost("grade",g);furnN++}});
+  const emptyRooms=[];for(let i=0;i<roomsAvail();i++)if(!F.rooms[i])emptyRooms.push(i);
+  const info={
+    table:{sub:`가게 안의 + 자리를 눌러요 · 1개 ${won(fitCost("table"))} · 손님 +${korNum(fitBonus("table"))}명`,
+      b:empty.length?btn("tables",`빈 자리 ${empty.length}곳 모두`,fitCost("table")*empty.length):tablesPlaced()<8?`<span class="fit-tip">가게를 넓히면 자리가 생겨요</span>`:""},
+    size:{sub:`상자를 치우면 자리 2개가 생겨요${F.size<MAX_SIZE?` · 손님 자리 ${SLOTS_BY_SIZE[F.size]}→${SLOTS_BY_SIZE[F.size+1]}곳`:""}`,
+      b:F.size<MAX_SIZE?btn("size","넓히기",fitCost("size",F.size)):""},
+    grade:{sub:`테이블을 눌러 바꿔요: ${FURN_NAMES.join(" → ")} · 한 단계 손님 +${korNum(fitBonus("grade"))}명`,
+      b:furnN?btn("furn",`${furnN}개 한 단계씩`,furnCost):""},
+    remodel:{sub:`${F.remodel===0?"무늬 벽지와 금빛 판벽":"금빛 몰딩과 대리석 장식"} · 음식값 +30% · 손님 +${korNum(fitBonus("remodel"))}명${state.tier===0&&F.remodel<2?` · 새 메뉴 ${E0_EXTRA[F.remodel].length}종`:""}`,
+      b:F.remodel<MAX_REMODEL?btn("remodel",`${F.remodel+1}단계`,fitCost("remodel",F.remodel)):""},
+    floor:{sub:`층마다 객실 ${ROOMS_PER_FLOOR}개 · 최대 ${MAX_FLOORS}층`,
+      b:F.floors<MAX_FLOORS?btn("floor",`${F.floors+1}층 올리기`,fitCost("floor",F.floors-2)):""},
+    open:{sub:state.tier===0?"이 가게에서 하루 이상 영업하면 완료돼요":"이사한 날 바로 또 확장할 수는 없어요 · 이 건물에서 하루 영업하면 완료",b:`<span class="fit-tip">영업 시작을 눌러요</span>`},
+    room:{sub:`층 탭에서 빈 객실을 눌러요 · 1개 ${won(fitCost("room"))} · 1박 ${won(roomRate())}`,
+      b:emptyRooms.length?btn("rooms",`빈 객실 ${emptyRooms.length}개 모두`,fitCost("room")*emptyRooms.length):roomsBuilt()<MAX_ROOMS?`<span class="fit-tip">층을 올리면 객실이 생겨요</span>`:""}
+  };
+  const rows=tasks.map((x,i)=>{const ok=x.have>=x.need;
+    return `<div class="fit-row ${ok?"done":""}"><span class="fit-ico">${ok?"✓":i+1}</span>
+      <div class="fit-main"><div class="fit-top"><b>${x.label}</b><span class="fit-num">${x.have}/${x.need}</span></div>
+      <small>${info[x.k].sub}</small><div class="mini"><i style="width:${Math.min(100,x.have/x.need*100)}%"></i></div></div>
+      <div class="fit-act">${ok?`<span class="fit-ok">완료</span>`:info[x.k].b}</div></div>`}).join("");
+  let foot;
+  if(state.tier>=MAX_TIER){
+    foot=`<div class="fit-next ready"><div><div class="label">최종 단계</div><div class="up-name">${T.shop}</div><small class="muted">모든 확장을 마쳤어요. 졸라맨이 우주 최고의 사장님이 됐어요!</small></div></div>`;
+  }else{
+    const nx=TIERS[state.tier+1],ready=fitDone(),[lo,hi]=nextPriceRange(),ok=ready&&can&&state.cash>=nx.cost,pct=clamp(state.cash/nx.cost*100,0,100);
+    foot=`<div class="fit-next ${ready?"ready":""}"><div class="fit-next-info"><div class="label">다음 확장 · Lv.${state.tier+1} / ${MAX_TIER}</div><div class="up-name">${nx.name}</div>
+      <div class="up-eff"><span class="eff plus">확장하면 손님 +${addText(nx.add)}</span><span class="eff gold">음식 가격 ×${lo===hi?fmtX(lo):`${fmtX(lo)}~${fmtX(hi)}`}배</span><span class="eff menu">새 메뉴 ${menuOf(state.tier+1).length}종</span>${nx.lodge&&!T.lodge?`<span class="eff role">숙박 시작 · 2층부터</span>`:""}</div>
+      ${ready?"":`<small class="fit-lock">위 목록을 모두 마쳐야 확장할 수 있어요 (${doneN}/${tasks.length})</small>`}</div>
+      <button id="upBtn" class="b3 gold${ok?" pulse":""}" type="button" ${ok?"":"disabled"}>${ready?"확장하기":"준비 중"}<small>${won(nx.cost)}</small></button></div>
+      ${ready?`<div class="up-bar"><i style="width:${pct}%"></i><span>${won(Math.min(state.cash,nx.cost))} / ${won(nx.cost)}</span></div>`:""}`;
+  }
+  box.innerHTML=`<div class="up-head"><span class="up-kicker">Lv.${state.tier} ${T.shop} · 꾸미기</span><span class="fit-count ${doneN===tasks.length?"all":""}">${doneN} / ${tasks.length} 완료</span></div>
+    <div class="fit-list">${rows}</div>${foot}`;
+  box.querySelectorAll("[data-fit]").forEach(b=>b.onclick=()=>{Snd.wake();const k=b.dataset.fit;
+    if(k==="tables")buyAll("tables");else if(k==="furn")buyAll("furn");else if(k==="rooms")buyAll("rooms");
+    else if(k==="size")buySize();else if(k==="remodel")buyRemodel();else if(k==="floor")buyFloor()});
+  if($("upBtn"))$("upBtn").onclick=buyUpgrade;
+  renderFloorTabs();
 }
-function nextPriceText(){
-  const f=minScale(state.tier+1)/priceScale();
-  return f>=5?`음식 가격 ×${fmtX(f)}배`:f>2?`음식 가격 ×${fmtX(f)}~5배`:"음식 가격 ×2~5배";
+function renderFloorTabs(){
+  const box=$("floorTabs");
+  if(!lodgeOn()){box.hidden=true;Shop.view=1;return}
+  const F=fit(),dis=busy()?"disabled":"";
+  if(Shop.view>F.floors)Shop.view=1;
+  let h=`<button class="ftab" type="button" data-floor="1" aria-pressed="${Shop.view===1}" ${dis}>1F 레스토랑</button>`;
+  for(let f=2;f<=F.floors;f++){const n=F.rooms.slice((f-2)*ROOMS_PER_FLOOR,(f-1)*ROOMS_PER_FLOOR).filter(Boolean).length;
+    h+=`<button class="ftab" type="button" data-floor="${f}" aria-pressed="${Shop.view===f}" ${dis}>${f}F 객실 <small>${n}/${ROOMS_PER_FLOOR}</small></button>`}
+  if(F.floors<MAX_FLOORS)h+=`<button class="ftab add" type="button" data-addfloor="1" ${dis}>+ ${F.floors+1}층 <small>${won(fitCost("floor",F.floors-2))}</small></button>`;
+  box.innerHTML=h;box.hidden=false;
+  box.querySelectorAll("[data-floor]").forEach(b=>b.onclick=()=>{Snd.click();Shop.view=+b.dataset.floor;Shop.sel=null;renderFloorTabs()});
+  const a=box.querySelector("[data-addfloor]");if(a)a.onclick=()=>{Snd.wake();buyFloor()};
 }
 function renderTiers(){
-  $("tierList").innerHTML=TIERS.slice(1).map((T,i)=>{const lv=i+1,st=lv<=state.tier?"done":lv===state.tier+1?"next":"locked";
-    return `<div class="tier-row ${st}"><span class="tn">Lv.${lv}</span><div><b>${T.name}</b><small>${won(T.cost)} · 손님 +${addText(T.add)} · 음식 가격 ${st==="done"&&state.scaleLog&&state.scaleLog[i]?`×${state.scaleLog[i]}`:"×2~5배"}</small><small class="menus">메뉴: ${menuOf(lv).map(d=>d[0]).join(", ")}</small></div><span class="st">${st==="done"?"완료":st==="next"?"다음":"잠김"}</span></div>`}).join("");
+  $("tierList").innerHTML=TIERS.map((T,lv)=>{const st=lv<state.tier?"done":lv===state.tier?"now":lv===state.tier+1?"next":"locked";
+    const prog=lv===state.tier?` · 꾸미기 ${fitTasks().filter(x=>x.have>=x.need).length}/${fitTasks().length}`:"";
+    return `<div class="tier-row ${st==="now"?"next":st}"><span class="tn">Lv.${lv}</span><div><b>${T.shop}</b>
+      <small>${lv?`${won(T.cost)} · 손님 +${addText(T.add)} · 음식 가격 ${state.scaleLog&&state.scaleLog[lv-1]&&lv<=state.tier?`×${state.scaleLog[lv-1]}`:"×2~5배"}`:"시작 가게"}${T.lodge?" · 숙박 (2~4층)":""}${prog}</small>
+      <small class="menus">메뉴: ${menuOf(lv).map(d=>d[0]).join(", ")}</small></div>
+      <span class="st">${st==="done"?"완료":st==="now"?"지금":st==="next"?"다음":"잠김"}</span></div>`}).join("");
 }
 
 /* ================= 직원, 등급 ================= */
 function renderHire(){
   const box=$("hire"),n=state.staff||0;
-  if(n>=STAFF.length){box.innerHTML=`<div class="up-head"><span class="up-kicker">직원 고용 완료</span></div><div class="up-name">직원 ${n}명이 모두 일하고 있어요</div>`;return}
+  if(n>=STAFF.length){box.innerHTML=`<div class="up-head"><span class="up-kicker">직원 고용 완료</span><span class="muted">월급 합계 ${won(monthlyPayroll())} (하루 ${won(dailyWages())})</span></div><div class="up-name">직원 ${n}명이 모두 일하고 있어요</div>`;return}
   const st=STAFF[n],R=ROLES[st.role],can=state.cash>=st.cost&&!busy()&&!state.bankrupt,pct=clamp(state.cash/st.cost*100,0,100);
-  box.innerHTML=`<div class="up-head"><span class="up-kicker">다음 직원 · ${n+1} / ${STAFF.length}</span><span class="muted">지금 직원 ${n}명</span></div>
+  box.innerHTML=`<div class="up-head"><span class="up-kicker">다음 직원 · ${n+1} / ${STAFF.length}</span><span class="muted">지금 ${n}명 · 월급 합계 ${won(monthlyPayroll())} (하루 ${won(dailyWages())})</span></div>
     <div class="up-main"><div class="hire-who"><canvas class="hire-art" data-art="staff" data-staff="${n}" width="120" height="120" aria-hidden="true"></canvas>
-      <div><div class="up-name">${st.name}</div><div class="up-eff"><span class="eff role">${R.label}</span><span class="eff plus">${R.stat} +${R.pts}</span></div></div></div>
+      <div><div class="up-name">${st.name}</div><div class="up-eff"><span class="eff role">${R.label}</span><span class="eff plus">${R.stat} +${R.pts}</span><span class="eff wage">월급 ${won(monthlyWage(st))}</span></div></div></div>
       <button id="hireBtn" class="b3 blue${can?" pulse":""}" type="button" ${can?"":"disabled"}>고용하기<small>${won(st.cost)}</small></button></div>
     <div class="up-bar"><i style="width:${pct}%"></i><span>${won(Math.min(state.cash,st.cost))} / ${won(st.cost)}</span></div>`;
   $("hireBtn").onclick=hireStaff;
 }
 function renderStaffList(){
   $("staffList").innerHTML=STAFF.map((st,i)=>{const R=ROLES[st.role],s=i<state.staff?"done":i===state.staff?"next":"locked";
-    return `<div class="tier-row ${s}"><span class="tn">${i+1}</span><div><b>${st.name}</b><small>${R.label} · ${R.stat} +${R.pts} · ${won(st.cost)}</small></div><span class="st">${s==="done"?"근무 중":s==="next"?"다음":"잠김"}</span></div>`}).join("");
+    return `<div class="tier-row ${s}"><span class="tn">${i+1}</span><div><b>${st.name}</b><small>${R.label} · ${R.stat} +${R.pts} · 고용 ${won(st.cost)} · 월급 ${won(monthlyWage(st))}</small></div><span class="st">${s==="done"?"근무 중":s==="next"?"다음":"잠김"}</span></div>`}).join("");
 }
 function scoreBars(sc){
   const bar=(l,v)=>`<div class="sbar"><span>${l}</span><div class="sbar-track"><i style="--w:${v}%"></i></div><b>${v}</b></div>`;
@@ -2472,7 +3042,7 @@ function flyCoins(x,y,amount){
     const ox=sx+(Math.random()-.5)*30,oy=sy+(Math.random()-.5)*20,mx=(ox+tx)/2+(Math.random()-.5)*120,my=Math.min(oy,ty)-60-Math.random()*60;
     const an=el.animate([{transform:`translate(${ox}px,${oy}px) scale(.4)`},{transform:`translate(${mx}px,${my}px) scale(1.15)`,offset:.45},{transform:`translate(${tx}px,${ty}px) scale(.6)`}],
       {duration:reduceMotion?10:620+i*70,easing:"cubic-bezier(.45,0,.7,1)",fill:"forwards"});
-    an.onfinish=()=>{el.remove();if(i===n-1){setCash(targetCash+amount);const p=$("cashPill");p.classList.remove("bump");void p.offsetWidth;p.classList.add("bump")}};
+    an.onfinish=()=>{el.remove();if(i===n-1&&Biz.on){setCash(targetCash+amount);const p=$("cashPill");p.classList.remove("bump");void p.offsetWidth;p.classList.add("bump")}};
   }
 }
 Hooks.revenue=(amount,x,y)=>{if(!$("game").hidden)flyCoins(x,y,amount)};
@@ -2650,9 +3220,12 @@ function showResults(L){
   if(L.complaintLoss)line(`미해결 민원 ${L.unresolvedAt}개 -${L.complaintPct}%`,"-"+won(L.complaintLoss),"bad");
   if(L.bonusPct)line(`민원 해결 보너스 +${L.bonusPct}%`,"+"+won(L.bonus),"bonus");
   if(L.vipSales)line("VIP 부자 결제 (×3)","+"+won(L.vipSales),"hl");
+  if(L.lodge)line(`숙박비 (객실 ${L.rooms}개 · 투숙률 ${L.occ}%)`,"+"+won(L.lodge),"hl");
+  if(L.lodgeCost)line("객실 관리비 (15%)","-"+won(L.lodgeCost));
   line(`식재료비 (${Math.round(L.foodRate*100)}%)`,"-"+won(L.foodCost));
   line("광고비","-"+won(L.ad));
   line("고정비","-"+won(L.fixed));
+  if(L.wages)line(`직원 월급 (하루치 · ${L.staffN}명)`,"-"+won(L.wages));
   line("영업 순이익",`<span class="${L.profit>=0?"pos":"neg"}">${signed(L.profit)}</span>`,"total");
   if(L.complaintCost)line("민원 처리비","-"+won(L.complaintCost),"bad");
   if(L.gift)line("산타 선물","+"+won(L.gift),"hl");
@@ -2675,22 +3248,25 @@ function showResults(L){
       :`<button id="rClose" class="b3 cream" type="button">가게 둘러보기</button><button id="rNext" class="b3 orange" type="button">다음 날 ▶</button>`}</div>`,true);
   countUp($("netNum"),L.net);
   if(state.bankrupt){$("rBank").onclick=()=>{closeModal();showBankrupt()};return}
-  $("rClose").onclick=closeModal;
-  $("rNext").onclick=()=>{closeModal();nextDay()};
+  $("rClose").onclick=()=>{closeModal();readyCheck()};
+  $("rNext").onclick=()=>{closeModal();nextDay();readyCheck()};
 }
 
 /* ---------- 확장 완료 ---------- */
-function showUpgradeDone(T,add,oldScale,before,after){
+function showUpgradeDone(T,add,ratio,before,after){
   const menus=menuOf(state.tier).map((d,i)=>{const x=dishOf(state.day+i);return `<span class="eff menu">${esc(x.name)} ${won(x.fair)}</span>`}).join("");
   openModal(`<div class="ribbon gold">확장 완료!</div>
     <canvas class="art" data-art="tier" width="320" height="320" aria-hidden="true"></canvas>
     <p class="muted" style="margin:0">Lv.${state.tier} · ${T.name}</p>
     <h2 id="modalTitle">${T.shop}</h2>
     <div class="stat-row">
-      <div class="stat"><span class="label">예상 손님 (+${korNum(add)}명)</span><b>${korNum(before)}→${korNum(after)}명</b></div>
-      <div class="stat"><span class="label">음식 가격</span><b>×${fmtX(priceScale()/oldScale)} 상승</b></div>
+      <div class="stat"><span class="label">건물 손님</span><b>+${korNum(add)}명</b></div>
+      <div class="stat"><span class="label">음식 가격</span><b>×${fmtX(ratio)} 상승</b></div>
       <div class="stat"><span class="label">메뉴</span><b>${menuOf(state.tier).length}종</b></div>
     </div>
+    <p style="margin:8px 0 0">예상 손님 <b>${korNum(before)}명 → ${korNum(after)}명</b></p>
+    ${Math.abs(after-before-add)>add*.01?`<p class="muted" style="margin:4px 0 0">건물 손님 +${korNum(add)}명에 ${custMultParts(+$("price").value).join(" · ")} 효과가 함께 적용돼서 예상 손님은 ${after>=before?"+":""}${korNum(after-before)}명 늘어요.</p>`:""}
+    <p class="muted" style="margin:6px 0 0">새 건물은 테이블 2개부터 다시 꾸며야 해요.${T.lodge?" 2층 객실도 꾸며 보세요!":""}</p>
     <div class="label" style="text-align:center;margin-top:6px">새 메뉴와 적정가</div>
     <div class="up-eff" style="justify-content:center;margin:6px 0 4px">${menus}</div>
     <div class="actions"><button id="upOk" class="b3" type="button">좋아요!</button></div>`);
@@ -2791,6 +3367,7 @@ function startBusiness(){
   if(state.opened||state.bankrupt||Biz.on)return;
   Snd.wake();Snd.door();ensurePending();
   state.opened=true;state.resultReady=false;cashDelta=null;
+  Shop.view=1;Shop.hover=Shop.sel=null;
   const level=+$("price").value, adLevel=+$("ad").value;
   today={level,adLevel,price:priceAt(level),ad:adLevel*priceScale()*custScale(),vip:Math.random()<vipChance()?pick(VIP_KEYS):null,complaintCost:0,complaintNote:null};
   if(Math.random()<COMPLAINT_CHANCE){
@@ -2817,7 +3394,12 @@ function finishBusiness(){
   state.bonus=[];
   const vipSales=vip==="rich"?price*3:0;
   const gift=vip==="santa"?santaGift():0;
-  const profit=sales+bonus+vipSales-foodCost-ad-fixed;
+  // 숙박비 (5성급 호텔부터): 꾸민 객실 × 1박 요금 × 투숙률, 관리비 15%
+  const rooms=lodgeOn()?roomsBuilt():0, occ=occupancy();
+  const lodge=Math.round(lodgingRevenue()*cp), lodgeCost=Math.round(lodge*.15);
+  // 직원 월급 (하루치)
+  const wages=dailyWages(), staffN=state.staff||0;
+  const profit=sales+bonus+vipSales+lodge-lodgeCost-foodCost-ad-fixed-wages;
   const net=profit+gift-today.complaintCost;
   state.cash+=profit+gift;
 
@@ -2830,12 +3412,14 @@ function finishBusiness(){
   if(vip==="influencer")state.influencerNext=true;
   if(vip)state.vipMet[vip]=(state.vipMet[vip]||0)+1;
 
-  const grade=gradeOf(net,sales+bonus+vipSales);
+  fit().days=(fit().days||0)+1;
+  const grade=gradeOf(net,sales+bonus+vipSales+lodge);
   const insp=today.inspect?{...today.inspect,day:state.day,from:state.grade,to:nextGradeFrom(state.grade,today.inspect.avg)}:null;
   if(insp){state.grade=insp.to;state.lastInspect=insp}
   state.last={day:state.day,food:foodOf(state.day),customers,price,gross,complaintLoss,
     unresolvedAt:n,complaintPct:Math.round((1-cp)*100),bonusPct,bonus,
     vip,vipSales,gift,foodRate:rate,foodCost,ad,fixed,profit,net,grade,
+    rooms,occ:Math.round(occ*100),lodge,lodgeCost,wages,staffN,
     complaintCost:today.complaintCost,complaintNote:today.complaintNote,
     ratingBefore,ratingBeforeVip,rating:state.rating,repBefore,rep:state.rep};
   state.records.unshift({day:state.day,food:foodOf(state.day),net,vip,grade});
@@ -2865,18 +3449,27 @@ function nextDay(){
   checkAch();save();render();dayBanner();
 }
 
+// 확장 = 다음 건물로 이사. 지금 건물의 꾸미기를 모두 마쳐야 한다.
 function buyUpgrade(){
   if(busy()||state.bankrupt||state.tier>=MAX_TIER)return;
+  if(!fitDone()){toast("아직 확장할 수 없어요","꾸미기 목록을 모두 마쳐야 해요","!");Snd.fail();return}
   const T=TIERS[state.tier+1];if(state.cash<T.cost)return;
-  const oldScale=priceScale(), add=Array.isArray(T.add)?randInt(T.add[0],T.add[1]):T.add;
+  const oldAvg=avgFair(), add=Array.isArray(T.add)?randInt(T.add[0],T.add[1]):T.add;
   const before=forecast(+$("price").value,+$("ad").value).customers;
   const mult=Math.round((2+Math.random()*3)*10)/10;   // 음식 가격 2~5배
-  state.cash-=T.cost;state.tier++;state.bonusCust+=add;
-  state.scale=Math.max(oldScale*mult,minScale(state.tier));
-  state.scaleLog=(state.scaleLog||[]).concat(+(state.scale/oldScale).toPrecision(3));
+  // 지금 가게에서 늘린 손님은 그대로 이어지고, 새 건물의 손님(add)이 정확히 더해진다
+  const carried=liveBonus();
+  state.cash-=T.cost;state.tier++;
+  state.fit=freshFit(state.tier);
+  state.bonusCust+=carried+add-liveBonus();
+  // 새 메뉴의 평균 적정가가 지금 메뉴 평균의 mult 배가 되게 (별 호텔부터는 건물값에 맞춘 최저 가격대)
+  state.scale=Math.max(oldAvg*mult/(8000*menuAvgM()),floorScale(state.tier));
+  const ratio=avgFair()/oldAvg;
+  state.scaleLog=(state.scaleLog||[]).concat(+ratio.toPrecision(3));
+  Shop.view=1;Shop.hover=Shop.sel=null;
   setCash(state.cash);cashDelta=null;
   checkAch();save();render();
-  showUpgradeDone(T,add,oldScale,before,forecast(+$("price").value,+$("ad").value).customers);
+  showUpgradeDone(T,add,ratio,before,forecast(+$("price").value,+$("ad").value).customers);
   Snd.fanfare();setTimeout(()=>Snd.register(),500);confetti(90);
 }
 
@@ -2909,16 +3502,17 @@ function showScreen(name){
   if(name==="game"){dexBuilt=false;menuDay=0;render()}
 }
 function restore(d){
+  if(d.state&&!d.state.fit)migrateState(d.state);
   state=Object.assign(freshState(),d.state);
   state.vipMet=Object.assign({rich:0,influencer:0,santa:0},state.vipMet);
   state.stats=Object.assign({fixed:0},state.stats);state.ach=state.ach||{};
-  if(!state.scale)state.scale=TIERS[state.tier].scale;
+  if(!state.scale)state.scale=1;
   state.staff=state.staff||0;state.grade=state.grade||0;
   if(state.opened&&!state.resultReady)state.opened=false;
   ensurePending();
   if(d.price)$("price").value=d.price;
   if(d.ad!=null)$("ad").value=d.ad;
-  Object.assign(Shop,{phase:state.resultReady?"closed":"prep",chefMood:"idle",gift:false,complainer:false});
+  Object.assign(Shop,{phase:state.resultReady?"closed":"prep",chefMood:"idle",gift:false,complainer:false,view:1,hover:null,sel:null});
   cashDelta=null;setCash(state.cash,true);
 }
 function newGame(){
@@ -2926,8 +3520,13 @@ function newGame(){
   Object.assign(Biz,{on:false,sprites:[],pops:[],progress:0,insp:null});Shop.parts=[];
   Object.assign(Shop,{phase:"prep",complainer:false,gift:false,chefMood:"idle"});
   $("price").value=8000;$("ad").value=0;setCash(START_CASH,true);
+  Shop.view=1;Shop.hover=Shop.sel=null;
 }
-function enterGame(){showScreen("game");Snd.door();setTimeout(dayBanner,150)}
+function enterGame(){
+  showScreen("game");Snd.door();setTimeout(dayBanner,150);
+  if(state.records.length===0&&state.tier===0&&tablesPlaced()<=2)
+    setTimeout(()=>toast("가게를 꾸며 보세요!","가게 안의 + 자리를 누르면 테이블을 놓을 수 있어요","+"),2600);
+}
 
 /* ================= 이벤트 ================= */
 $("tNew").onclick=()=>{Snd.wake();Snd.click();newGame();Opening.off=0;Opening.go(1);showScreen("opening")};
@@ -2971,7 +3570,7 @@ function frame(now){
     if(Math.abs(targetCash-dispCash)>.5){
       dispCash+=(targetCash-dispCash)*Math.min(1,dt*.008);
       if(Math.abs(targetCash-dispCash)<1)dispCash=targetCash;
-      $("cash").textContent=won(dispCash);
+      showCash(dispCash);
     }
     tagT+=dt;if(tagT>200){tagT=0;renderStageTags()}
     {const cv=$("menuIcon"),c=cv.getContext("2d");c.clearRect(0,0,cv.width,cv.height);drawDish(c,dishOf(state.day),60,66,46)}
@@ -2986,7 +3585,7 @@ function start(data){
   else showScreen("title");
   requestAnimationFrame(frame);
 }
-try{window.claude?.hot?.snapshot?.(()=>({v:4,state:JSON.parse(JSON.stringify(state)),price:+$("price").value,ad:+$("ad").value,screen:currentScreen()}))}catch(e){}
+try{window.claude?.hot?.snapshot?.(()=>({v:5,state:JSON.parse(JSON.stringify(state)),price:+$("price").value,ad:+$("ad").value,screen:currentScreen()}))}catch(e){}
 const hot=window.claude&&window.claude.hot;
 if(hot&&typeof hot.ready==="function")hot.ready(start);else start((hot&&hot.data)||{});
 })();
