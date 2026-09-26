@@ -190,6 +190,11 @@ input[type=range]:disabled{opacity:.5}
 .eff{font-size:13px;padding:2px 9px;border-radius:8px;border:2px solid var(--line)}
 .eff.plus{background:#d8ffe6;color:var(--green-deep)}
 .eff.gold{background:#fff0bf;color:var(--gold-deep)}
+.eff.menu{background:#ffe3ec;color:#b8325f}
+.fair{font-size:14px;color:var(--orange-deep)}
+.hint-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hint-row .b3{flex:none}
+.tier-row small.menus{display:block;color:#b8325f;margin-top:2px}
 #upBtn{display:flex;flex-direction:column;align-items:center;line-height:1.2;min-width:150px}
 #upBtn small{font-size:14px;opacity:.85}
 .up-bar{position:relative;height:26px;border-radius:99px;border:2.5px solid var(--line);background:#e9d6b2;overflow:hidden}
@@ -403,14 +408,14 @@ input[type=range]:disabled{opacity:.5}
     <aside class="panel dock" aria-label="오늘의 운영">
       <div class="menu-card">
         <canvas id="menuIcon" class="menu-plate" width="120" height="120" aria-hidden="true"></canvas>
-        <div><div class="label">오늘의 메뉴</div><div id="menuName" class="menu-name">김치찌개</div><div id="menuNext" class="muted">내일: 불고기</div></div>
+        <div><div class="label">오늘의 메뉴</div><div id="menuName" class="menu-name">김치찌개</div><div id="menuFair" class="fair">적정가 ₩8,000</div><div id="menuNext" class="muted">내일: 불고기</div></div>
       </div>
       <div class="ctrl">
         <div class="ctrl-head"><label class="label" for="price">음식 가격</label>
           <div class="stepper"><button class="b3 cream" type="button" data-step="price:-500" aria-label="가격 500원 내리기">−</button><output id="priceValue" for="price">₩8,000</output><button class="b3 cream" type="button" data-step="price:500" aria-label="가격 500원 올리기">+</button></div>
         </div>
         <input id="price" type="range" min="1000" max="30000" step="500" value="8000">
-        <div id="priceHint" class="hint"></div>
+        <div class="hint-row"><div id="priceHint" class="hint"></div><button id="fairBtn" class="b3 cream sm" type="button">적정가로</button></div>
       </div>
       <div class="ctrl">
         <div class="ctrl-head"><label class="label" for="ad">광고비</label>
@@ -448,7 +453,7 @@ input[type=range]:disabled{opacity:.5}
         <table>
           <tr><th>시작 자금</th><td>₩3,000,000 · 고정비 하루 ₩30,000 × 가격대 배수</td></tr>
           <tr><th>가게 확장</th><td>돈을 모아 가구 설치(₩1,000만)부터 졸라맨 유니버스(₩100양)까지 24단계로 확장해요. 단계마다 손님이 늘고 가격대가 올라가요.</td></tr>
-          <tr><th>음식 가격</th><td>싸면 손님과 평점이 늘지만 재료비 비율이 높아요. 기본 가격 ₩9,000(× 가격대 배수)을 넘기면 손님과 평점이 줄어요.</td></tr>
+          <tr><th>메뉴와 가격</th><td>메뉴는 날마다 바뀌고, 가게를 확장하면 더 고급 메뉴가 나와요. 메뉴마다 적정가가 있어요. 적정가의 112%까지는 평점이 조금 오르고, 62% 이하로 싸게 팔면 손님과 평점이 크게 늘지만 재료비 비율이 높아요. 그보다 비싸면 손님과 평점이 줄어요.</td></tr>
           <tr><th>평점</th><td>별이 1개 줄 때마다 손님이 1~2명 줄어요 (날마다 1명 또는 2명).</td></tr>
           <tr><th>민원</th><td>하루 55% 확률로 발생. 처음 비용은 구닥다리 ₩30,000 (성공 30%) · 일반 ₩50,000 (50%) · 최고급 ₩80,000~₩100,000 (100%). 가게가 커지면 하루 수입과 같은 비율로 비용도 커져요.</td></tr>
           <tr><th>해결 보너스</th><td>민원을 해결하면 그날 매출이 1%~10% 랜덤으로 올라요. 영업 전에 해결하면 다음 영업에 적용돼요.</td></tr>
@@ -509,27 +514,64 @@ const TIERS=[
   {name:"더 좋은 음식점 이주",shop:"졸라맨 음식점",cost:1e8,add:500,scale:50,theme:"bistro"},
   {name:"고급 레스토랑",shop:"졸라맨 고급 레스토랑",cost:1e9,add:1000,scale:100,theme:"fine"},
   {name:"작은 호텔",shop:"졸라맨 작은 호텔",cost:5e9,add:2000,scale:200,theme:"hotel"},
-  {name:"고급 호텔",shop:"졸라맨 고급 호텔",cost:1e10,add:3000,scale:500,theme:"hotel"},
+  {name:"고급 호텔",shop:"졸라맨 고급 호텔",cost:1e10,add:3000,scale:400,theme:"hotel"},
   {name:"5성급 호텔",shop:"졸라맨 5성급 호텔",cost:5e10,add:5000,scale:500,theme:"hotel5"},
-  {name:"우주선 호텔",shop:"졸라맨 우주선 호텔",cost:1e11,add:1e4,scale:500,theme:"ship"},
-  {name:"우주 호텔",shop:"졸라맨 우주 호텔",cost:2.5e11,add:5e4,scale:500,theme:"station"},
-  {name:"달 호텔",shop:"졸라맨 달 호텔",cost:5e11,add:1e5,scale:500,theme:"moon"},
+  {name:"우주선 호텔",shop:"졸라맨 우주선 호텔",cost:1e11,add:1e4,scale:600,theme:"ship"},
+  {name:"우주 호텔",shop:"졸라맨 우주 호텔",cost:2.5e11,add:5e4,scale:700,theme:"station"},
+  {name:"달 호텔",shop:"졸라맨 달 호텔",cost:5e11,add:1e5,scale:800,theme:"moon"},
   {name:"은하수 호텔",shop:"졸라맨 은하수 호텔",cost:1e12,add:5e5,scale:5e4,theme:"galaxy"},
-  {name:"별 호텔",shop:"졸라맨 별 호텔",cost:5e14,add:[1e6,3e6],scale:5e4,theme:"star"},
-  {name:"천국 호텔",shop:"졸라맨 천국 호텔",cost:1e15,add:1e8,scale:5e4,theme:"heaven"},
-  {name:"레전더리 호텔",shop:"졸라맨 레전더리 호텔",cost:1e17,add:9999e8,scale:5e4,theme:"legend"},
-  {name:"차원 호텔",shop:"졸라맨 차원 호텔",cost:1e21,add:1e13,scale:5e4,theme:"warp"},
-  {name:"시간여행 호텔",shop:"졸라맨 시간여행 호텔",cost:1e22,add:1e14,scale:5e4,theme:"time"},
-  {name:"블랙홀 호텔",shop:"졸라맨 블랙홀 호텔",cost:1e23,add:1e15,scale:5e4,theme:"blackhole"},
-  {name:"평행우주 호텔",shop:"졸라맨 평행우주 호텔",cost:1e24,add:1e16,scale:5e4,theme:"parallel"},
-  {name:"신들의 호텔",shop:"졸라맨 신들의 호텔",cost:1e25,add:1e17,scale:5e4,theme:"gods"},
-  {name:"무한 호텔",shop:"졸라맨 무한 호텔",cost:1e26,add:1e18,scale:5e4,theme:"infinite"},
-  {name:"빅뱅 호텔",shop:"졸라맨 빅뱅 호텔",cost:1e27,add:1e19,scale:5e4,theme:"bigbang"},
-  {name:"멀티버스 호텔",shop:"졸라맨 멀티버스 호텔",cost:1e28,add:1e20,scale:5e4,theme:"multiverse"},
-  {name:"우주의 끝 호텔",shop:"졸라맨 우주의 끝 호텔",cost:1e29,add:1e21,scale:5e4,theme:"edge"},
-  {name:"졸라맨 유니버스",shop:"졸라맨 유니버스",cost:1e30,add:1e22,scale:5e4,theme:"universe"}
+  {name:"별 호텔",shop:"졸라맨 별 호텔",cost:5e14,add:[1e6,3e6],scale:6e4,theme:"star"},
+  {name:"천국 호텔",shop:"졸라맨 천국 호텔",cost:1e15,add:1e8,scale:7e4,theme:"heaven"},
+  {name:"레전더리 호텔",shop:"졸라맨 레전더리 호텔",cost:1e17,add:9999e8,scale:8e4,theme:"legend"},
+  {name:"차원 호텔",shop:"졸라맨 차원 호텔",cost:1e21,add:1e13,scale:1e5,theme:"warp"},
+  {name:"시간여행 호텔",shop:"졸라맨 시간여행 호텔",cost:1e22,add:1e14,scale:1.2e5,theme:"time"},
+  {name:"블랙홀 호텔",shop:"졸라맨 블랙홀 호텔",cost:1e23,add:1e15,scale:1.5e5,theme:"blackhole"},
+  {name:"평행우주 호텔",shop:"졸라맨 평행우주 호텔",cost:1e24,add:1e16,scale:2e5,theme:"parallel"},
+  {name:"신들의 호텔",shop:"졸라맨 신들의 호텔",cost:1e25,add:1e17,scale:2.5e5,theme:"gods"},
+  {name:"무한 호텔",shop:"졸라맨 무한 호텔",cost:1e26,add:1e18,scale:3e5,theme:"infinite"},
+  {name:"빅뱅 호텔",shop:"졸라맨 빅뱅 호텔",cost:1e27,add:1e19,scale:4e5,theme:"bigbang"},
+  {name:"멀티버스 호텔",shop:"졸라맨 멀티버스 호텔",cost:1e28,add:1e20,scale:5e5,theme:"multiverse"},
+  {name:"우주의 끝 호텔",shop:"졸라맨 우주의 끝 호텔",cost:1e29,add:1e21,scale:7e5,theme:"edge"},
+  {name:"졸라맨 유니버스",shop:"졸라맨 유니버스",cost:1e30,add:1e22,scale:1e6,theme:"universe"}
 ];
 const MAX_TIER=TIERS.length-1;
+
+/* ================= 단계별 메뉴 =================
+   [이름, 적정가 배수, 그림]. 적정가 = 8,000원 × 가격대 × 배수 (유효숫자 2자리)
+   그림: 숫자면 기본 음식 그림, 배열이면 [모양, 색1, 색2] */
+const TIER_MENUS=[
+  [["김치찌개",1,0],["불고기",1.5,1],["돈까스",1.25,2],["제육볶음",1.125,3],["비빔밥",1.125,4],["떡볶이",.625,5],["라면",.5,6],["치킨",2.25,7],["카레",1,8],["오므라이스",1.125,9]],
+  [["갈비찜",1.1,["stew","#8a4a26","#f08a2d"]],["족발",1,["slices","#7a4a2a","#c9a07a"]],["보쌈",.9,["slices","#f0c8b0","#e84a3a"]],["해물찜",1.2,["crab","#e8543a"]],["닭볶음탕",.8,["stew","#e0482f","#fff6e0"]],["삼겹살 세트",.85,["meat","#f0a8a0","#4fb04a"]]],
+  [["한우 전골",.9,["stew","#8a4a26","#f7e35a"]],["장어구이",1,["meat","#6b3a1a","#f2c14e"]],["모둠회",.9,["slices","#ff8a7a","#fff"]],["대게찜",1.3,["crab","#e8703a"]],["한정식 코스",1.1,["fine","#8a4a26","#4fb04a"]]],
+  [["스시 오마카세",1,["sushi","#ff8a5a"]],["한우 오마카세",1.1,["meat","#c24a4a","#4fb04a"]],["랍스터 구이",.9,["crab","#d8342a"]],["트러플 파스타",.8,["pasta","#f3d27a","#2a2020"]],["킹크랩",1.2,["crab","#ff6a3a"]]],
+  [["프렌치 코스",1,["fine","#c86a4a","#4fb04a"]],["푸아그라",.9,["fine","#e8c8a0","#8a2a3a"]],["캐비아",1.3,["caviar"]],["와규 A5 스테이크",1.1,["meat","#d86a6a","#4fb04a"]],["트러플 리조또",.8,["pasta","#fff0c8","#2a2020"]]],
+  [["호텔 브런치",.8,["fine","#f2c14e","#e84a3a"]],["룸서비스 스테이크",1,["meat","#8a3a2a","#4fb04a"]],["샴페인 디너",1.1,["glass","#ffe79a","#ffffff"]],["애프터눈 티",.9,["cake","#ffc0d0","#ffffff"]]],
+  [["로열 디너 코스",1,["fine","#b03a4a","#f2c14e"]],["랍스터 테르미도르",1.1,["crab","#e04a2a"]],["골드 디저트",.9,["cake","#ffd84d","#fff4c0"]],["트러플 와규",1.2,["meat","#9a3a3a","#2a2020"]]],
+  [["펜트하우스 코스",1,["fine","#6e1224","#ffd84d"]],["캐비아 타워",1.3,["caviar"]],["황금 스테이크",1.1,["meat","#d4a64a","#ffd84d"]],["샴페인 타워",.9,["glass","#ffe9a8","#ffffff"]]],
+  [["무중력 스테이크",1,["meat","#c86a6a","#56b8ff"]],["우주 튜브 코스",.8,["tube","#56b8ff","#ff9340"]],["별자리 칵테일",.9,["glass","#56b8ff","#b28dff"]],["행성 버거",1.1,["burger","#e89a5a"]]],
+  [["지구 전망 코스",1,["fine","#2a7fd0","#43b36a"]],["오로라 파르페",.9,["glass","#43d17f","#56b8ff"]],["인공위성 초밥",1.1,["sushi","#9ff0ff"]],["운석 스테이크",1.2,["meat","#6b6a78","#ff9340"]]],
+  [["달토끼 찹쌀떡",.8,["orb","#fffaf0"]],["월석 스테이크",1.1,["meat","#8a8682","#ffd84d"]],["크레이터 파이",.9,["cake","#e8e4dc","#b9b6ad"]],["지구돋이 칵테일",1,["glass","#2a7fd0","#43d17f"]]],
+  [["은하수 파르페",.9,["glass","#b28dff","#ff7eb6"]],["성운 스테이크",1.1,["meat","#8e62c9","#ff7eb6"]],["우주먼지 케이크",1,["cake","#2a2150","#b28dff"]],["별사탕 코스",.8,["orb","#ffd84d"]]],
+  [["별빛 케이크",1,["cake","#fff4c0","#ffd84d"]],["태양 스테이크",1.2,["meat","#f08a2d","#ffd84d"]],["초신성 수프",.9,["stew","#ffb02e","#ffffff"]],["항성 구슬",.8,["orb","#ffe27a"]]],
+  [["천국의 과일",1,["fruit","#ffd84d"]],["구름 솜사탕",.8,["orb","#ffffff"]],["천사 케이크",.9,["cake","#ffffff","#ffe9a8"]],["황금 사과",1.3,["fruit","#f0a400"]]],
+  [["드래곤 스테이크",1.2,["dragon"]],["불사조 수프",1,["stew","#ff5a1f","#ffd84d"]],["전설의 라면",.7,6],["무지개 케이크",.9,["cake","#ff5b5f","#56b8ff"]]],
+  [["차원 수프",1,["stew","#5ff0ff","#ffffff"]],["4차원 큐브 젤리",.8,["orb","#5ff0ff"]],["웜홀 파스타",1.1,["pasta","#5ff0ff","#0b3d5a"]]],
+  [["공룡 스테이크",1.2,["meat","#7a4a2a","#4fb04a"]],["미래 알약 코스",.8,["orb","#ffcf6a"]],["영원의 케이크",1,["cake","#ffcf6a","#7a4a1a"]]],
+  [["블랙홀 버거",1.1,["burger","#2a2040"]],["사건의 지평선 커피",.8,["glass","#1c1a2a","#ff9340"]],["암흑물질 스튜",1,["stew","#2a2040","#ff9340"]]],
+  [["거울 초밥",1,["sushi","#7fffd4"]],["거꾸로 라면",.8,6],["두 배 스테이크",1.2,["meat","#ff7eb6","#7fffd4"]]],
+  [["암브로시아",1.1,["fruit","#ffd84d"]],["넥타르 칵테일",.9,["glass","#ffd84d","#ffffff"]],["올림포스 코스",1,["fine","#e0a400","#ffffff"]]],
+  [["무한 뷔페",1.2,["fine","#222222","#e84a3a"]],["끝없는 국수",.9,["pasta","#ffffff","#222222"]],["무한대 케이크",.9,["cake","#ffffff","#222222"]]],
+  [["빅뱅 스테이크",1.1,["dragon"]],["원시 수프",.9,["stew","#ff5a1f","#ffd84d"]],["최초의 별사탕",.8,["orb","#ffb02e"]]],
+  [["멀티버스 뷔페",1.1,["fine","#56b8ff","#ff7eb6"]],["우주 버블티",.8,["glass","#ff7eb6","#56b8ff"]],["차원 초밥 세트",1,["sushi","#b28dff"]]],
+  [["마지막 만찬",1.2,["fine","#ffffff","#ffd84d"]],["공허 수프",.9,["stew","#0a0a0f","#ffffff"]],["끝의 케이크",1,["cake","#ffffff","#0a0a0f"]]],
+  [["졸라맨 특제 김치찌개",1,0],["유니버스 코스",1.3,["fine","#ffd84d","#ff5b5f"]],["은하 치킨",.9,7],["전설의 라면",.8,6]]
+];
+const nice2=x=>{if(x<=0)return 0;const e=Math.pow(10,Math.floor(Math.log10(x))-1);return Math.round(x/e)*e};
+const nice3=x=>{if(x<=0)return 0;const e=Math.pow(10,Math.floor(Math.log10(x))-2);return Math.round(x/e)*e};
+const menuOf=(tier=state.tier)=>TIER_MENUS[tier]||TIER_MENUS[0];
+function dishOf(day,tier=state.tier){const m=menuOf(tier),d=m[(day-1)%m.length];return {name:d[0],m:d[1],art:d[2],fair:nice2(8000*TIERS[tier].scale*d[1])}}
+// 가격 슬라이더(level)는 적정가 대비 비율: level 8,000 = 적정가 100%
+const priceAt=(level,day=state.day)=>nice3(level/8000*dishOf(day).fair);
 const addText=a=>Array.isArray(a)?`${korNum(a[0])}~${korNum(a[1])}명`:`${korNum(a)}명`;
 const priceScale=()=>TIERS[state.tier].scale;
 const custScale=()=>+(1+state.bonusCust/280).toPrecision(2);   // 광고 효과와 광고비의 크기 (유효숫자 2자리)
@@ -559,8 +601,7 @@ const round1=n=>Math.round(n*10)/10;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
 const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
 const randInt=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
-const foodOf=day=>FOODS[(day-1)%FOODS.length];
-const foodIdx=day=>(day-1)%FOODS.length;
+const foodOf=day=>dishOf(day).name;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const reduceMotion=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -633,12 +674,13 @@ function ratingAfterPrice(rating,price){
   if(price<=13000) return Math.max(1,round1(rating-.25));
   return Math.max(1,round1(rating-.45));
 }
-function priceHint(price){
-  if(price<=3500) return "아주 싸요! 평점이 크게 오르지만 재료비 비율이 높아요.";
-  if(price<=5000) return "저렴해요. 평점이 오르고 손님도 많이 와요.";
-  if(price<=9000) return "적당한 가격이에요. 평점이 조금 오릅니다.";
-  if(price<=13000) return "조금 비싸요. 손님이 줄고 평점이 떨어져요.";
-  return "많이 비싸요! 손님이 크게 줄고 평점이 많이 떨어져요.";
+function priceHint(level){
+  const pct=` (적정가의 ${Math.round(level/80)}%)`;
+  if(level<=3500) return "아주 싸요! 평점이 크게 오르지만 재료비 비율이 높아요."+pct;
+  if(level<=5000) return "저렴해요. 평점이 오르고 손님도 많이 와요."+pct;
+  if(level<=9000) return "적당한 가격이에요. 평점이 조금 오릅니다."+pct;
+  if(level<=13000) return "조금 비싸요. 손님이 줄고 평점이 떨어져요."+pct;
+  return "많이 비싸요! 손님이 크게 줄고 평점이 많이 떨어져요."+pct;
 }
 // 등급은 매출 대비 이익률로 정한다 (가게 규모와 상관없이 공정하게)
 function gradeOf(net,revenue){
@@ -1273,6 +1315,111 @@ function drawTitle(ctx,t){
   drawStick(ctx,{x:X+BW+50,y:G+18,s:.95,dir:-1,pose:"wave",t:t*.001,hat:"chef",shadow:true,shirt:"#ffffff"});
 }
 
+/* ================= 고급 메뉴 그림 (모양 + 색) ================= */
+function plateBase(ctx,rx=31){blob(ctx,0,4,rx,13,0,"#ffffff");ctx.strokeStyle="#d9cbb0";ctx.beginPath();ctx.ellipse(0,4,rx-7,9,0,0,TAU);ctx.stroke();ctx.strokeStyle=INK}
+function drawDish(ctx,dish,x,y,r){
+  if(typeof dish.art==="number"){drawFood(ctx,dish.art,x,y,r);return}
+  const [k,c1="#c86a4a",c2="#4fb04a"]=dish.art, t=performance.now();
+  ctx.save();ctx.translate(x,y);ctx.scale(r/30,r/30);
+  ctx.lineWidth=2.2;ctx.strokeStyle=INK;ctx.lineJoin="round";ctx.lineCap="round";
+  switch(k){
+    case "stew":
+      ctx.fillStyle="#3b3434";ctx.beginPath();ctx.moveTo(-28,-4);ctx.quadraticCurveTo(-26,22,0,24);ctx.quadraticCurveTo(26,22,28,-4);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillRect(-34,-6,8,5);ctx.fillRect(26,-6,8,5);
+      blob(ctx,0,-4,28,11,0,c1);
+      [[-12,-6,6,4],[4,-8,7,4],[12,-2,5,3],[-3,-1,5,3]].forEach(([a,b,w,h],i)=>blob(ctx,a,b,w,h,i*.5,i%2?c2:mix(c1,"#ffffff",.35)));
+      break;
+    case "slices":
+      plateBase(ctx);
+      for(let i=0;i<5;i++){ctx.save();ctx.translate(-14+i*7,2);ctx.rotate(-.5+i*.25);blob(ctx,0,0,5,10,0,c1);ctx.strokeStyle=c2;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,3,8,0,-1,1);ctx.stroke();ctx.restore()}
+      blob(ctx,16,6,5,3,.3,"#4fb04a");
+      break;
+    case "crab":
+      plateBase(ctx);
+      ctx.strokeStyle=INK;ctx.lineWidth=2.4;
+      for(let i=0;i<3;i++){[[-1,1],[1,1]].forEach(([d])=>{ctx.beginPath();ctx.moveTo(d*8,2+i*3);ctx.lineTo(d*20,-2+i*5);ctx.lineTo(d*24,6+i*3);ctx.stroke()})}
+      blob(ctx,0,2,15,9,0,c1);
+      [[-1],[1]].forEach(([d])=>{ctx.beginPath();ctx.moveTo(d*10,-4);ctx.lineTo(d*18,-12);ctx.stroke();blob(ctx,d*20,-14,5,4,d*.5,c1)});
+      circle(ctx,-4,-3,1.5,INK);circle(ctx,4,-3,1.5,INK);
+      break;
+    case "meat":
+      plateBase(ctx);
+      ctx.fillStyle=c1;rr(ctx,-20,-6,32,17,8);ctx.fill();ctx.stroke();
+      ctx.strokeStyle="rgba(40,20,10,.55)";ctx.lineWidth=2;for(let i=-14;i<8;i+=6){ctx.beginPath();ctx.moveTo(i,-4);ctx.lineTo(i+6,9);ctx.stroke()}
+      ctx.strokeStyle=INK;[[16,0],[20,6],[14,7]].forEach(([a,b])=>blob(ctx,a,b,4,2.4,.6,c2));
+      break;
+    case "fine":
+      plateBase(ctx,33);
+      blob(ctx,0,2,9,6,0,c1);blob(ctx,0,-3,6,3,0,mix(c1,"#ffffff",.3));
+      [[-16,4],[-11,9],[12,8],[17,3],[5,11]].forEach(([a,b])=>circle(ctx,a,b,2,c2));
+      stroke(ctx,[[0,-6],[3,-12]],"#4fb04a",2);stroke(ctx,[[0,-6],[-3,-11]],"#4fb04a",2);
+      break;
+    case "sushi":
+      ctx.fillStyle="#c98f5a";rr(ctx,-30,-2,60,14,3);ctx.fill();ctx.stroke();
+      for(let i=0;i<3;i++){const sx=-18+i*18;ctx.fillStyle="#fffaf0";rr(ctx,sx-7,-6,14,9,4);ctx.fill();ctx.stroke();
+        ctx.fillStyle=c1;rr(ctx,sx-8,-11,16,7,3.5);ctx.fill();ctx.stroke();ctx.strokeStyle="rgba(255,255,255,.7)";ctx.lineWidth=1.2;
+        ctx.beginPath();ctx.moveTo(sx-5,-9);ctx.lineTo(sx-1,-6);ctx.moveTo(sx,-9);ctx.lineTo(sx+4,-6);ctx.stroke();ctx.strokeStyle=INK;ctx.lineWidth=2.2}
+      break;
+    case "pasta":
+      plateBase(ctx);
+      ctx.strokeStyle=c1;ctx.lineWidth=2.6;
+      for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(0,2,16-i*2.5,7-i,i*.6,0,TAU*.8);ctx.stroke()}
+      ctx.strokeStyle=INK;[[-5,-1],[4,0],[0,4],[7,5],[-8,5]].forEach(([a,b])=>blob(ctx,a,b,2.5,1.6,.4,c2));
+      break;
+    case "caviar":
+      plateBase(ctx);
+      blob(ctx,0,0,17,8,0,"#d4a64a");blob(ctx,0,-1,14,6,0,"#1a1a24");
+      for(let i=0;i<14;i++)circle(ctx,-10+(i%7)*3.4,-3+Math.floor(i/7)*3,1.1,"#5a5a70");
+      stroke(ctx,[[14,6],[24,10]],"#d4a64a",3);
+      break;
+    case "glass":{
+      ctx.fillStyle="rgba(200,230,255,.35)";ctx.beginPath();ctx.moveTo(-14,-24);ctx.lineTo(14,-24);ctx.quadraticCurveTo(12,2,0,6);ctx.quadraticCurveTo(-12,2,-14,-24);ctx.fill();ctx.stroke();
+      ctx.save();ctx.clip();ctx.fillStyle=c2;ctx.fillRect(-16,-12,32,20);ctx.fillStyle=c1;ctx.fillRect(-16,-4,32,12);ctx.restore();
+      ctx.beginPath();ctx.moveTo(-14,-24);ctx.lineTo(14,-24);ctx.quadraticCurveTo(12,2,0,6);ctx.quadraticCurveTo(-12,2,-14,-24);ctx.stroke();
+      stroke(ctx,[[0,6],[0,16]],INK,2.5);blob(ctx,0,17,10,3,0,"rgba(200,230,255,.6)");
+      sparkle(ctx,8+Math.sin(t*.004)*2,-20,4,"#ffffff");break;}
+    case "cake":
+      plateBase(ctx);
+      ctx.fillStyle=c2;ctx.beginPath();ctx.moveTo(-16,6);ctx.lineTo(14,6);ctx.lineTo(14,-8);ctx.lineTo(-16,-8);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle=c1;ctx.fillRect(-16,-4,30,4);ctx.fillRect(-16,2,30,3);ctx.strokeRect(-16,-8,30,14);
+      ctx.fillStyle="#fffaf0";ctx.beginPath();ctx.moveTo(-16,-8);ctx.lineTo(14,-8);ctx.lineTo(8,-14);ctx.lineTo(-10,-14);ctx.closePath();ctx.fill();ctx.stroke();
+      circle(ctx,0,-16,3.5,"#e23b2e",INK,1.8);
+      break;
+    case "tube":
+      [[-8,-.35,c1],[8,.35,c2]].forEach(([dx,rt,c])=>{ctx.save();ctx.translate(dx,0);ctx.rotate(rt);
+        ctx.fillStyle="#e8eef5";rr(ctx,-6,-18,12,28,3);ctx.fill();ctx.stroke();ctx.fillStyle=c;ctx.fillRect(-5,-8,10,10);
+        ctx.fillStyle="#9aa6b8";rr(ctx,-3,-24,6,6,2);ctx.fill();ctx.stroke();ctx.restore()});
+      break;
+    case "burger":
+      ctx.fillStyle=c1;ctx.beginPath();ctx.ellipse(0,10,22,5,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.fillStyle="#5a2e1a";rr(ctx,-21,0,42,8,4);ctx.fill();ctx.stroke();
+      ctx.fillStyle="#ffcf3a";ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(20,0);ctx.lineTo(14,5);ctx.lineTo(6,1);ctx.lineTo(-4,6);ctx.lineTo(-12,1);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#6fcf4f";ctx.fillRect(-21,-4,42,4);
+      ctx.fillStyle=c1;ctx.beginPath();ctx.moveTo(-22,-4);ctx.quadraticCurveTo(-20,-24,0,-24);ctx.quadraticCurveTo(20,-24,22,-4);ctx.closePath();ctx.fill();ctx.stroke();
+      [[-8,-15],[2,-19],[10,-13],[-2,-10]].forEach(([a,b])=>blob(ctx,a,b,1.6,1,0,"#fff6d0"));
+      break;
+    case "orb":
+      plateBase(ctx);
+      [[-10,0],[9,1],[0,-7]].forEach(([a,b],i)=>{const gl=ctx.createRadialGradient(a,b,0,a,b,14);gl.addColorStop(0,c1);gl.addColorStop(1,"rgba(255,255,255,0)");
+        ctx.fillStyle=gl;ctx.fillRect(a-14,b-14,28,28);circle(ctx,a,b,7,c1,INK,1.8);circle(ctx,a-2,b-2,2,"#fff")});
+      break;
+    case "fruit":
+      plateBase(ctx);
+      circle(ctx,0,-6,14,c1,INK,2.2);ctx.fillStyle="rgba(255,255,255,.55)";ctx.beginPath();ctx.ellipse(-5,-11,4,6,-.5,0,TAU);ctx.fill();
+      stroke(ctx,[[0,-20],[2,-26]],"#6b4a2b",2.5);blob(ctx,7,-24,6,3,-.4,"#4fb04a");
+      sparkle(ctx,14,-18,5+Math.sin(t*.005)*1.5,"#fff7b0");
+      break;
+    case "dragon":
+      plateBase(ctx);
+      for(let i=0;i<4;i++){const fx=-12+i*8,fh=12+Math.sin(t*.02+i*1.7)*4;ctx.fillStyle=i%2?"#ffb02e":"#ff5a1f";
+        ctx.beginPath();ctx.moveTo(fx-5,-4);ctx.quadraticCurveTo(fx,-4-fh*2,fx+5,-4);ctx.fill()}
+      ctx.fillStyle="#7a1f1f";rr(ctx,-20,-6,40,16,8);ctx.fill();ctx.stroke();
+      ctx.strokeStyle="rgba(255,176,46,.8)";ctx.lineWidth=2;for(let i=-14;i<16;i+=7){ctx.beginPath();ctx.moveTo(i,-4);ctx.lineTo(i+5,8);ctx.stroke()}
+      break;
+  }
+  ctx.restore();
+}
+
 /* ================= 확장 단계별 인테리어 테마 ================= */
 const TH=(wa,wb,trim,w1,w2,f1,f2,rug,rugT,cur,shade,lamp,out,helmet)=>({wa,wb,trim,w1,w2,f1,f2,rug,rugT,cur,shade,lamp,out,helmet:!!helmet});
 const THEMES={
@@ -1485,9 +1632,10 @@ function drawWall(ctx,t,tod){
   // 칠판 메뉴
   ctx.fillStyle="#2c3a36";ctx.strokeStyle="#8a6a4a";ctx.lineWidth=9;rr(ctx,566,44,178,136,8);ctx.fill();ctx.stroke();
   text(ctx,"오늘의 메뉴",655,66,16,"#b9d8cc");
-  drawFood(ctx,foodIdx(state.day),612,112,26);
-  text(ctx,foodOf(state.day),690,106,foodOf(state.day).length>4?19:23,"#fffdf7");
-  text(ctx,won(+$("price").value*priceScale()),690,138,19,MUSTARD);
+  const dish=dishOf(state.day),nl=dish.name.length;
+  drawDish(ctx,dish,612,112,26);
+  text(ctx,dish.name,690,106,nl>8?12:nl>6?14:nl>4?18:23,"#fffdf7");
+  text(ctx,won(priceAt(+$("price").value)),690,138,19,MUSTARD);
   ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(586,160);ctx.lineTo(724,160);ctx.stroke();
   const shop=TIERS[state.tier].shop;
   text(ctx,shop,655,170,shop.length>10?11:13,"#ffe7a0");
@@ -1828,7 +1976,7 @@ function drawShop(ctx,t,dt){
     T.seats.forEach(s=>drawChair(ctx,s,T.s,true));
     drawTable(ctx,T);
     eating.filter(c=>c.seat.table===T&&c.t>300).forEach(c=>{const fx=c.seat.x+c.seat.dir*20*T.s,fy=T.y-60*T.s;
-      drawFood(ctx,foodIdx(state.day),fx,fy,12*T.s);steam(ctx,fx+6*T.s,fy-10*T.s,t,.7)});
+      drawDish(ctx,dishOf(state.day),fx,fy,12*T.s);steam(ctx,fx+6*T.s,fy-10*T.s,t,.7)});
   }}));
   B.sprites.filter(c=>c.state!=="eat").forEach(c=>list.push({y:c.y,f:()=>drawSprite(ctx,c,t)}));
   for(let i=0;i<Math.min(4,state.unresolved);i++)list.push({y:TRASH[i][1],f:()=>drawTrash(ctx,TRASH[i],i,t)});
@@ -1886,7 +2034,8 @@ function render(){
   $("repText").textContent=state.rep;$("repBar").style.width=state.rep+"%";
   $("menuName").textContent=foodOf(state.day);$("menuNext").textContent="내일: "+foodOf(state.day+1);
   const S=priceScale(),G=custScale();
-  $("priceValue").textContent=won(price*S);$("adValue").textContent=won(ad*S*G);
+  $("priceValue").textContent=won(priceAt(price));
+  $("menuFair").textContent=`적정가 ${won(dishOf(state.day).fair)}`;$("adValue").textContent=won(ad*S*G);
   $("adHint").textContent=`끝까지 올리면 ${won(1e6*S*G)}로 손님 약 +${korNum(180*G)}명. 광고비는 그대로 비용이에요.`;
   $("shopPill").textContent=`Lv.${state.tier} ${TIERS[state.tier].shop}`;
   $("priceHint").textContent=priceHint(price);
@@ -1965,14 +2114,14 @@ function renderUpgrade(){
   const nx=TIERS[state.tier+1], can=state.cash>=nx.cost&&!busy()&&!state.bankrupt, pct=clamp(state.cash/nx.cost*100,0,100);
   box.innerHTML=`<div class="up-head"><span class="up-kicker">다음 확장 · Lv.${state.tier+1} / ${MAX_TIER}</span><span class="muted">지금: ${TIERS[state.tier].shop}</span></div>
     <div class="up-main"><div><div class="up-name">${nx.name}</div>
-      <div class="up-eff"><span class="eff plus">손님 +${addText(nx.add)}</span>${nx.scale!==priceScale()?`<span class="eff gold">가격대 ×${korNum(priceScale())} → ×${korNum(nx.scale)}</span>`:""}</div></div>
+      <div class="up-eff"><span class="eff plus">손님 +${addText(nx.add)}</span><span class="eff menu">새 메뉴 ${menuOf(state.tier+1).length}종</span>${nx.scale!==priceScale()?`<span class="eff gold">가격대 ×${korNum(priceScale())} → ×${korNum(nx.scale)}</span>`:""}</div></div>
       <button id="upBtn" class="b3 gold${can?" pulse":""}" type="button" ${can?"":"disabled"}>확장하기<small>${won(nx.cost)}</small></button></div>
     <div class="up-bar"><i style="width:${pct}%"></i><span>${won(Math.min(state.cash,nx.cost))} / ${won(nx.cost)}</span></div>`;
   $("upBtn").onclick=buyUpgrade;
 }
 function renderTiers(){
   $("tierList").innerHTML=TIERS.slice(1).map((T,i)=>{const lv=i+1,st=lv<=state.tier?"done":lv===state.tier+1?"next":"locked";
-    return `<div class="tier-row ${st}"><span class="tn">Lv.${lv}</span><div><b>${T.name}</b><small>${won(T.cost)} · 손님 +${addText(T.add)} · 가격대 ×${korNum(T.scale)}</small></div><span class="st">${st==="done"?"완료":st==="next"?"다음":"잠김"}</span></div>`}).join("");
+    return `<div class="tier-row ${st}"><span class="tn">Lv.${lv}</span><div><b>${T.name}</b><small>${won(T.cost)} · 손님 +${addText(T.add)} · 가격대 ×${korNum(T.scale)}</small><small class="menus">메뉴: ${menuOf(lv).map(d=>d[0]).join(", ")}</small></div><span class="st">${st==="done"?"완료":st==="next"?"다음":"잠김"}</span></div>`}).join("");
 }
 
 /* ================= 연출 ================= */
@@ -2200,7 +2349,8 @@ function showResults(L){
 }
 
 /* ---------- 확장 완료 ---------- */
-function showUpgradeDone(T,add,oldScale,oldLevelPrice){
+function showUpgradeDone(T,add,oldScale){
+  const menus=menuOf(state.tier).map((d,i)=>{const x=dishOf(state.day+i);return `<span class="eff menu">${esc(x.name)} ${won(x.fair)}</span>`}).join("");
   openModal(`<div class="ribbon gold">확장 완료!</div>
     <canvas class="art" data-art="tier" width="320" height="320" aria-hidden="true"></canvas>
     <p class="muted" style="margin:0">Lv.${state.tier} · ${T.name}</p>
@@ -2208,8 +2358,10 @@ function showUpgradeDone(T,add,oldScale,oldLevelPrice){
     <div class="stat-row">
       <div class="stat"><span class="label">손님</span><b>+${korNum(add)}명</b></div>
       <div class="stat"><span class="label">가격대</span><b>×${korNum(oldScale)}→×${korNum(T.scale)}</b></div>
-      <div class="stat"><span class="label">메뉴 가격</span><b>${won(oldLevelPrice*T.scale/oldScale)}</b></div>
+      <div class="stat"><span class="label">메뉴</span><b>${menuOf(state.tier).length}종</b></div>
     </div>
+    <div class="label" style="text-align:center;margin-top:6px">새 메뉴와 적정가</div>
+    <div class="up-eff" style="justify-content:center;margin:6px 0 4px">${menus}</div>
     <div class="actions"><button id="upOk" class="b3" type="button">좋아요!</button></div>`);
   $("upOk").onclick=closeModal;
 }
@@ -2254,7 +2406,7 @@ function startBusiness(){
   Snd.wake();Snd.door();ensurePending();
   state.opened=true;state.resultReady=false;cashDelta=null;
   const level=+$("price").value, adLevel=+$("ad").value;
-  today={level,adLevel,price:level*priceScale(),ad:adLevel*priceScale()*custScale(),vip:Math.random()<vipChance()?pick(VIP_KEYS):null,complaintCost:0,complaintNote:null};
+  today={level,adLevel,price:priceAt(level),ad:adLevel*priceScale()*custScale(),vip:Math.random()<vipChance()?pick(VIP_KEYS):null,complaintCost:0,complaintNote:null};
   if(Math.random()<COMPLAINT_CHANCE){
     Shop.complainer=true;render();
     setTimeout(()=>showComplaint(makeComplaint(),"new"),reduceMotion?0:700);
@@ -2330,7 +2482,7 @@ function buyUpgrade(){
   state.cash-=T.cost;state.tier++;state.bonusCust+=add;
   setCash(state.cash);cashDelta=null;
   checkAch();save();render();
-  showUpgradeDone(T,add,oldScale,+$("price").value*oldScale);
+  showUpgradeDone(T,add,oldScale);
   Snd.fanfare();setTimeout(()=>Snd.register(),500);confetti(90);
 }
 
@@ -2387,6 +2539,7 @@ document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>{
 $("openBtn").onclick=startBusiness;
 $("nextBtn").onclick=nextDay;
 $("resultBtn").onclick=()=>{Snd.click();if(state.last)showResults(state.last)};
+$("fairBtn").onclick=()=>{Snd.click();$("price").value=8000;render()};
 $("fastBtn").onclick=()=>{Biz.speed=5;$("fastBtn").hidden=true;Snd.whoosh()};
 $("setBtn").onclick=()=>{Snd.click();showSettings()};
 $("helpBtn").onclick=()=>{Snd.click();selectTab("help");document.querySelector(".tabs-panel").scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"start"})};
@@ -2414,10 +2567,7 @@ function frame(now){
       $("cash").textContent=won(dispCash);
     }
     tagT+=dt;if(tagT>200){tagT=0;renderStageTags()}
-    if(menuDay!==state.day){
-      menuDay=state.day;const cv=$("menuIcon"),c=cv.getContext("2d");
-      c.clearRect(0,0,cv.width,cv.height);drawFood(c,foodIdx(state.day),60,66,46);
-    }
+    {const cv=$("menuIcon"),c=cv.getContext("2d");c.clearRect(0,0,cv.width,cv.height);drawDish(c,dishOf(state.day),60,66,46)}
   }
   document.querySelectorAll("canvas[data-art]").forEach(cv=>{if(cv.offsetParent)drawArt(cv,now)});
   requestAnimationFrame(frame);
