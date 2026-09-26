@@ -435,6 +435,25 @@ input[type=range]:disabled{opacity:.5}
   .title-menu .b3{min-width:0;flex:1 1 140px}
   .stepper output{min-width:96px;font-size:21px}
 }
+/* 튜토리얼 */
+.tut{position:fixed;top:10px;right:10px;z-index:48;display:flex;align-items:flex-start;gap:2px;width:min(480px,calc(100vw - 20px));animation:tutIn .55s cubic-bezier(.3,1.5,.5,1) both}
+.tut[hidden]{display:none}
+.tut-box{flex:1;min-width:0;position:relative;margin-top:16px;padding:10px 14px;background:var(--cream);color:var(--brown);border:3px solid var(--line);border-radius:18px;box-shadow:0 5px 0 var(--line);cursor:pointer}
+.tut-box::after{content:"";position:absolute;right:-17px;top:38px;border:9px solid transparent;border-left:16px solid var(--line)}
+.tut-box::before{content:"";position:absolute;right:-11px;top:41px;z-index:1;border:6px solid transparent;border-left:11px solid var(--cream)}
+.tut-name{font-family:var(--display);font-size:14px;color:var(--orange-deep)}
+.tut-text{margin:2px 0 8px;font-size:16px;line-height:1.5;min-height:3em;word-break:keep-all}
+.tut-actions{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.tut-step{margin-right:auto;font-size:12px;color:var(--brown-soft)}
+.tut-skip{background:none;border:0;padding:4px;color:var(--brown-soft);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer}
+.tut-head{width:100px;height:100px;flex:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
+.tut-hi{outline:4px solid var(--gold);outline-offset:4px;animation:tutGlow 1s ease-in-out infinite}
+@keyframes tutIn{from{transform:translateY(-150%)}to{transform:none}}
+@keyframes tutGlow{50%{outline-color:#fff;box-shadow:0 0 0 10px rgba(255,200,61,.35)}}
+/* 오프닝 → 가게 전환 때 화면을 덮는 돈 */
+.money-curtain{position:fixed;inset:0;width:100vw;height:100vh;z-index:200}
+@media (max-width:560px){.tut-head{width:72px;height:72px}.tut-box{margin-top:8px;padding:8px 11px}.tut-text{font-size:14px;margin-bottom:4px;min-height:0}.tut-name{font-size:12px}
+  .tut-box::after{top:24px}.tut-box::before{top:27px}.tut-actions .b3{padding:6px 14px}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}
 }
@@ -454,19 +473,19 @@ input[type=range]:disabled{opacity:.5}
     <button id="tContinue" class="b3 xl gold" type="button" hidden>이어하기</button>
     <button id="tSettings" class="b3 xl dark" type="button">설정</button>
   </div>
-  <div class="title-foot">주운 돈 삼백만 원으로 시작하는 졸라맨의 식당 경험기</div>
+  <div class="title-foot">주운 돈 천만 원으로 시작하는 졸라맨의 식당 경험기</div>
 </section>
 
 <!-- ========== 오프닝 ========== -->
 <section id="opening" class="screen" aria-label="오프닝" hidden>
   <div class="cine">
-    <canvas id="openCanvas" width="720" height="440" aria-label="졸라맨이 돈을 모아 가게를 차리는 오프닝 장면"></canvas>
-    <div class="cine-top"><span id="sceneNo" class="cine-no">1 / 6</span><button id="openSkip" class="b3 sm dark" type="button">건너뛰기 ▶▶</button></div>
+    <canvas id="openCanvas" width="720" height="440" aria-label="졸라맨이 천만 원을 모아 가게를 차렸다가 망하고, 부자에게 천만 원을 받아 다시 시작하는 오프닝 장면"></canvas>
+    <div class="cine-top"><span id="sceneNo" class="cine-no">1 / 12</span><button id="openSkip" class="b3 sm dark" type="button">건너뛰기 ▶▶</button></div>
     <div id="sceneText" class="cine-sub" aria-live="polite"></div>
   </div>
   <div class="cine-actions">
     <button id="openNext" class="b3 dark" type="button">다음 장면</button>
-    <button id="openStart" class="b3 xl pulse" type="button" hidden>가게 문 열기</button>
+    <button id="openStart" class="b3 xl pulse" type="button" hidden>가게로 들어가기 ▶</button>
   </div>
 </section>
 
@@ -501,11 +520,11 @@ input[type=range]:disabled{opacity:.5}
     <aside class="panel dock" aria-label="오늘의 운영">
       <div class="menu-card">
         <canvas id="menuIcon" class="menu-plate" width="120" height="120" aria-hidden="true"></canvas>
-        <div><div class="label">오늘의 메뉴</div><div id="menuName" class="menu-name">김치찌개</div><div id="menuFair" class="fair">적정가 ₩8,000</div><div id="menuNext" class="muted">내일: 불고기</div></div>
+        <div><div class="label">오늘의 메뉴</div><div id="menuName" class="menu-name">김치찌개</div><div id="menuFair" class="fair">적정가 ₩15,000</div><div id="menuNext" class="muted">내일: 불고기</div></div>
       </div>
-      <div class="ctrl">
+      <div id="priceCtrl" class="ctrl">
         <div class="ctrl-head"><label class="label" for="price">음식 가격</label>
-          <div class="stepper"><button class="b3 cream" type="button" data-step="price:-500" aria-label="가격 500원 내리기">−</button><output id="priceValue" for="price">₩8,000</output><button class="b3 cream" type="button" data-step="price:500" aria-label="가격 500원 올리기">+</button></div>
+          <div class="stepper"><button class="b3 cream" type="button" data-step="price:-500" aria-label="가격 500원 내리기">−</button><output id="priceValue" for="price">₩15,000</output><button class="b3 cream" type="button" data-step="price:500" aria-label="가격 500원 올리기">+</button></div>
         </div>
         <input id="price" type="range" min="1000" max="30000" step="500" value="8000">
         <div class="hint-row"><div id="priceHint" class="hint"></div><button id="fairBtn" class="b3 cream sm" type="button">적정가로</button></div>
@@ -551,9 +570,9 @@ input[type=range]:disabled{opacity:.5}
         <table>
           <tr><th>시작 자금</th><td>₩3,000,000 · 고정비 하루 ₩30,000 × 가격대 배수</td></tr>
           <tr><th>가게 꾸미기</th><td>가게 안의 + 자리를 누르면 테이블을 놓고, 테이블을 누르면 더 좋은 가구(나무 → 원목 → 명품)로 바꿔요. 상자를 누르면 가게가 넓어져 자리가 생기고, 리모델링하면 음식값이 30%씩 올라요. 첫 식당은 리모델링할 때마다 고급 메뉴도 생겨요.</td></tr>
-          <tr><th>가게 확장</th><td>지금 가게의 꾸미기(테이블 8개, 가게 넓히기, 가구 바꾸기, 리모델링)를 모두 마치고 그 건물에서 하루 이상 영업해야 다음 건물로 확장할 수 있어요. 더 좋은 음식점(₩1억)부터 졸라맨 유니버스(₩100양)까지 22번 확장하고, 확장할 때마다 손님이 늘고 메뉴 평균 가격이 2~5배 올라요. 별 호텔부터는 음식값이 확장 비용에 걸맞게 더 크게 올라요.</td></tr>
+          <tr><th>가게 확장</th><td>지금 가게의 꾸미기(테이블 8개, 가게 넓히기, 가구 바꾸기, 리모델링)를 모두 마치고 그 건물에서 하루 이상 영업해야 다음 건물로 확장할 수 있어요. 더 좋은 음식점(₩1억)부터 졸라맨 월드까지 32번 확장하고, 확장할 때마다 손님이 늘고 메뉴 평균 가격이 2~5배 올라요. 확장 비용은 정해진 가격과 '그 가게를 다 꾸몄을 때 하루에 버는 돈의 2~2.6배' 중 큰 쪽이라, 뒤로 갈수록 버는 돈에 맞게 비싸져요. 별 호텔부터는 음식값이 확장 비용에 걸맞게 더 크게 올라요.</td></tr>
           <tr><th>호텔 숙박</th><td>5성급 호텔부터는 2층 이상 건물이에요. 층을 4층까지 올리고 층마다 객실 6개를 꾸미면 매일 숙박비(1박 요금 × 투숙률)가 들어와요. 호텔은 층과 객실까지 모두 꾸며야 확장할 수 있어요.</td></tr>
-          <tr><th>음식점 등급</th><td>등급사가 10일마다(10일, 20일, 30일…) 와서 가게 구석구석을 살피고 맛·환경·친절도를 점수로 매겨요. 평균 점수가 다음 등급 기준을 넘고 <b>세 점수가 모두 최소 점수 이상</b>이어야 한 단계 올라가요 (한 분야라도 모자라면 탈락). 너무 낮으면 내려가요. 초보부터 세상의 맛까지 15등급이고, 등급 하나마다 손님이 12% 늘어요.</td></tr>
+          <tr><th>음식점 등급</th><td>등급사가 10일마다(10일, 20일, 30일…) 와서 가게 구석구석을 살피고 맛·환경·친절도를 점수로 매겨요. 평균 점수가 다음 등급 기준을 넘고 <b>세 점수가 모두 최소 점수 이상</b>이어야 올라가요 (한 분야라도 모자라면 탈락). 기준을 넘는 가장 높은 등급까지 한 번에 올라가고, 너무 낮으면 한 단계 내려가요. 초보부터 세상의 맛까지 15등급이고, 등급 하나마다 손님이 12% 늘어요.</td></tr>
           <tr><th>직원</th><td>₩100만짜리 첫 직원부터 22명까지 고용할 수 있어요. 서빙은 친절도, 요리사는 맛, 청소·관리는 환경 점수를 올려 줘요. 월급은 고용비의 30%이고, 매일 하루치씩 나가요.</td></tr>
           <tr><th>메뉴와 가격</th><td>메뉴는 날마다 바뀌고, 가게를 확장하면 더 고급 메뉴가 나와요. 메뉴마다 적정가가 있어요. 적정가의 112%까지는 평점이 조금 오르고, 62% 이하로 싸게 팔면 손님과 평점이 크게 늘지만 재료비 비율이 높아요. 그보다 비싸면 손님과 평점이 줄어요.</td></tr>
           <tr><th>평점</th><td>별이 1개 줄 때마다 손님이 1~2명 줄어요 (날마다 1명 또는 2명).</td></tr>
@@ -573,6 +592,15 @@ input[type=range]:disabled{opacity:.5}
 <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="dialog" class="panel dialog"></div></div>
 <div id="dayBanner" class="day-banner" hidden aria-hidden="true"><div class="inner"><div id="bannerDay" class="d">DAY 1</div><div id="bannerMenu" class="m"></div></div></div>
 <div id="toasts" class="toasts" aria-live="polite"></div>
+<!-- 튜토리얼: 오른쪽 위에 졸라맨 머리 + 말풍선 -->
+<div id="tut" class="tut" hidden>
+  <div id="tutBox" class="tut-box">
+    <div class="tut-name">졸라맨 사장</div>
+    <p id="tutText" class="tut-text" aria-live="polite"></p>
+    <div class="tut-actions"><span id="tutStep" class="tut-step"></span><button id="tutSkip" class="tut-skip" type="button">그만 볼래</button><button id="tutNext" class="b3 sm gold" type="button">다음 ▶</button></div>
+  </div>
+  <canvas id="tutHead" class="tut-head" width="200" height="200" aria-hidden="true"></canvas>
+</div>
 <div id="fx" aria-hidden="true"></div>
 
 <script>
@@ -603,7 +631,8 @@ const VIP_KEYS=["rich","influencer","santa"];
 const VIP_CHANCE=0.05;          // 하루에 VIP가 올 확률 5%
 const COMPLAINT_CHANCE=0.55;    // 하루에 민원이 생길 확률 55%
 const FIXED_COST=30000;
-const START_CASH=3000000;
+const START_CASH=10000000;   // 부자 아저씨가 준 천만 원
+const PRICE_BASE=15000;      // 적정가 기준 (배수 1인 음식 = ₩15,000부터)
 const SAVE_KEY="jolaman-restaurant-v5";
 const OLD_SAVE_KEYS=["jolaman-restaurant-v4","jolaman-restaurant-v3"];
 const SETTINGS_KEY="jolaman-restaurant-settings";
@@ -636,7 +665,17 @@ const TIERS=[
   {name:"빅뱅 호텔",shop:"졸라맨 빅뱅 호텔",cost:1e27,add:1e19,theme:"bigbang",menu:21,lodge:true},
   {name:"멀티버스 호텔",shop:"졸라맨 멀티버스 호텔",cost:1e28,add:1e20,theme:"multiverse",menu:22,lodge:true},
   {name:"우주의 끝 호텔",shop:"졸라맨 우주의 끝 호텔",cost:1e29,add:1e21,theme:"edge",menu:23,lodge:true},
-  {name:"졸라맨 유니버스",shop:"졸라맨 유니버스",cost:1e30,add:1e22,theme:"universe",menu:24,lodge:true}
+  {name:"졸라맨 유니버스",shop:"졸라맨 유니버스",cost:1e30,add:1e22,theme:"universe",menu:24,lodge:true},
+  {name:"해저 용궁 호텔",shop:"졸라맨 해저 용궁 호텔",cost:1e31,add:1e23,theme:"sea",menu:25,lodge:true},
+  {name:"사탕 나라 호텔",shop:"졸라맨 사탕 나라 호텔",cost:1e32,add:1e24,theme:"candy",menu:26,lodge:true},
+  {name:"정글 신전 호텔",shop:"졸라맨 정글 신전 호텔",cost:1e33,add:1e25,theme:"jungle",menu:27,lodge:true},
+  {name:"픽셀 게임 호텔",shop:"졸라맨 픽셀 게임 호텔",cost:1e34,add:1e26,theme:"pixel",menu:28,lodge:true},
+  {name:"꿈나라 호텔",shop:"졸라맨 꿈나라 호텔",cost:1e35,add:1e27,theme:"dream",menu:29,lodge:true},
+  {name:"거인 나라 호텔",shop:"졸라맨 거인 나라 호텔",cost:1e36,add:1e28,theme:"giant",menu:30,lodge:true},
+  {name:"황금 엘도라도 호텔",shop:"졸라맨 황금 엘도라도 호텔",cost:1e37,add:1e29,theme:"gold",menu:31,lodge:true},
+  {name:"졸라맨 행성",shop:"졸라맨 행성 호텔",hud:"졸라맨 행성",cost:1e38,add:1e30,theme:"zplanet",menu:32,lodge:true},
+  {name:"졸라맨 은하 제국",shop:"졸라맨 은하 제국 호텔",hud:"졸라맨 은하 제국",cost:1e39,add:1e31,theme:"empire",menu:33,lodge:true},
+  {name:"졸라맨 월드",shop:"졸라맨 월드",cost:1e40,add:1e32,theme:"zworld",menu:34,lodge:true}
 ];
 const MAX_TIER=TIERS.length-1;
 
@@ -668,7 +707,17 @@ const TIER_MENUS=[
   [["빅뱅 스테이크",1.1,["dragon"]],["원시 수프",.9,["stew","#ff5a1f","#ffd84d"]],["최초의 별사탕",.8,["orb","#ffb02e"]]],
   [["멀티버스 뷔페",1.1,["fine","#56b8ff","#ff7eb6"]],["우주 버블티",.8,["glass","#ff7eb6","#56b8ff"]],["차원 초밥 세트",1,["sushi","#b28dff"]]],
   [["마지막 만찬",1.2,["fine","#ffffff","#ffd84d"]],["공허 수프",.9,["stew","#0a0a0f","#ffffff"]],["끝의 케이크",1,["cake","#ffffff","#0a0a0f"]]],
-  [["졸라맨 특제 김치찌개",1,0],["유니버스 코스",1.3,["fine","#ffd84d","#ff5b5f"]],["은하 치킨",.9,7],["전설의 라면",.8,6]]
+  [["졸라맨 특제 김치찌개",1,0],["유니버스 코스",1.3,["fine","#ffd84d","#ff5b5f"]],["은하 치킨",.9,7],["전설의 라면",.8,6]],
+  [["용궁 해물탕",1.1,["stew","#e8543a","#56b8ff"]],["인어 초밥",1,["sushi","#7fffd4"]],["진주 디저트",.9,["orb","#fffaf0"]],["거북이 수프",1,["stew","#43b36a","#fff6e0"]]],
+  [["솜사탕 스테이크",1.1,["meat","#ff9ecf","#ffffff"]],["초코 분수 코스",1,["glass","#6b3a1a","#ffd0e0"]],["젤리 피자",.9,["cake","#ff5b8a","#ffd84d"]],["막대사탕 파르페",.8,["glass","#ff7eb6","#56b8ff"]]],
+  [["바나나 스테이크",1,["meat","#f5d04a","#4fb04a"]],["코코넛 커리",.9,["stew","#fff6e0","#8a5a2a"]],["신전 황금 볶음밥",1.2,["stew","#f2c14e","#e84a3a"]],["열대 과일탑",.8,["fruit","#ff9340"]]],
+  [["8비트 버거",1,["burger","#e89a5a"]],["도트 라면",.8,6],["보스전 스테이크",1.2,["meat","#c24a4a","#ffd84d"]],["1UP 버섯 수프",.9,["stew","#e84a3a","#ffffff"]]],
+  [["구름 팬케이크",1,["cake","#fff4e0","#ffd84d"]],["달빛 우유 코스",.9,["glass","#fffaf0","#b28dff"]],["별똥별 파스타",1.1,["pasta","#ffd84d","#2a2150"]]],
+  [["거인 스테이크",1.3,["meat","#8a3a2a","#4fb04a"]],["콩나무 샐러드",.8,["fruit","#43d17f"]],["황금알 오믈렛",1.1,["orb","#ffd84d"]]],
+  [["황금 킹크랩",1.2,["crab","#f2c14e"]],["순금 초밥",1,["sushi","#ffd84d"]],["태양신 코스",1.1,["fine","#f0a400","#ffffff"]]],
+  [["졸라맨 행성 김밥",.9,["sushi","#ffffff"]],["막대 인간 스테이크",1.1,["meat","#1f1d2b","#ffffff"]],["동그라미 머리 푸딩",1,["cake","#ffffff","#1f1d2b"]]],
+  [["황제의 만찬",1.2,["fine","#b28dff","#ffd84d"]],["은하 제국 치킨",1,7],["함대 도시락",.9,["tube","#56b8ff","#ff9340"]]],
+  [["졸라맨 월드 한상",1.3,["fine","#ff5b5f","#ffd84d"]],["원조 김치찌개",1,0],["전설의 전설의 라면",.8,6],["엔딩 케이크",1.1,["cake","#ffd84d","#ff7eb6"]]]
 ];
 // 첫 식당은 리모델링할 때마다 고급 메뉴가 더해진다 (1단계: 갈비찜·족발…, 2단계: 한우·대게…)
 // 다음 건물 메뉴보다는 싸도록 배수를 적당히 둔다
@@ -692,7 +741,29 @@ const roomsBuilt=()=>fit().rooms.filter(Boolean).length;
 const roomsAvail=()=>Math.max(0,fit().floors-1)*ROOMS_PER_FLOOR;
 const lodgeOn=()=>!!TIERS[state.tier].lodge;
 const unitCust=(t=state.tier)=>t===0?125:(Array.isArray(TIERS[t].add)?(TIERS[t].add[0]+TIERS[t].add[1])/2:TIERS[t].add);
-const anchorCost=(t=state.tier)=>t<MAX_TIER?TIERS[t+1].cost:TIERS[t].cost*10;
+// 다음 확장의 정해 둔 가격 (마지막 단계는 꾸미기 기준용으로 10배)
+const listedNext=(t=state.tier)=>t<MAX_TIER?TIERS[t+1].cost:TIERS[t].cost*10;
+// 확장 비용은 "이 가게를 다 꾸몄을 때 하루 이익"의 2.0~2.6배 (단계마다 정해진 값), 정해 둔 가격보다 싸지는 않다
+const costDays=(t=state.tier)=>+(2+.6*seeded(t*13.7)).toFixed(1);
+function fullDayProfit(){
+  const t=state.tier,u=unitCust(t),T=TIERS[t],N=SLOTS_BY_SIZE[MAX_SIZE];
+  const full=u*(N*FIT_BONUS.table+N*MAX_FURN*FIT_BONUS.grade+MAX_REMODEL*FIT_BONUS.remodel+(T.lodge?MAX_ROOMS*FIT_BONUS.room:0));
+  const cust=((45+100*.55)*3+state.bonusCust+full)*1.05*gradeMult();
+  const sc=Math.max(state.scale||1,floorScale(t))*(1+.3*MAX_REMODEL);
+  const m=t===0?TIER_MENUS[0].concat(E0_EXTRA[0],E0_EXTRA[1]):menuOf(t);
+  const avg=PRICE_BASE*sc*m.reduce((a,d)=>a+d[1],0)/m.length;
+  const lodge=T.lodge?MAX_ROOMS*PRICE_BASE*sc*u/4*.63*.85:0;
+  return cust*avg*(1-.43)+lodge;
+}
+// 이사 온 날(처음 필요할 때) 한 번 정해서 저장 → 꾸미는 동안 값이 바뀌지 않는다
+function nextCost(){
+  const F=fit();
+  if(F.nextCost==null)F.nextCost=nice3(Math.max(listedNext(),fullDayProfit()*costDays()));
+  return F.nextCost;
+}
+const costByIncome=()=>nextCost()>listedNext();
+// 꾸미기 비용의 기준: 정해 둔 다음 확장 가격, 또는 실제 확장 비용의 10% 중 큰 쪽
+const anchorCost=()=>Math.max(listedNext(),nextCost()*.1);
 function fitCost(kind,lvl=0){const f=FIT_COST[kind];return nice3(anchorCost()*(Array.isArray(f)?f[lvl]:f))}
 const fitBonus=kind=>unitCust()*FIT_BONUS[kind];
 function liveBonus(){const F=fit();return tablesPlaced()*fitBonus("table")+furnSum()*fitBonus("grade")+F.remodel*fitBonus("remodel")+roomsBuilt()*fitBonus("room")}
@@ -710,12 +781,12 @@ function fitTasks(){
 const fitDone=()=>fitTasks().every(x=>x.have>=x.need);
 
 /* ================= 숙박 (5성급 호텔부터) ================= */
-const roomRate=()=>nice3(8000*priceScale()*unitCust()/4);           // 객실 1박 요금
+const roomRate=()=>nice3(PRICE_BASE*priceScale()*unitCust()/4);           // 객실 1박 요금
 const occupancy=()=>clamp(.6+.06*(state.rating-4)+.02*state.grade-.05*state.unresolved,.3,.98);
 const lodgingRevenue=()=>lodgeOn()?roomsBuilt()*roomRate()*occupancy():0;
 
 /* ================= 음식점 등급 =================
-   등급사가 10일마다 와서 맛·환경·친절도를 보고 등급을 한 단계씩 올리거나 내린다.
+   등급사가 10일마다 와서 맛·환경·친절도를 보고, 기준을 넘는 가장 높은 등급까지 한 번에 올리거나 한 단계 내린다.
    req: 이 등급으로 오르는 데 필요한 평균 점수, min: 맛·환경·친절도가 모두 넘어야 하는 최소 점수.
    (한 분야라도 모자라면 평균이 높아도 승급하지 못한다) 등급 하나마다 손님 +12% */
 const GRADES=[
@@ -782,8 +853,9 @@ function gradeShortfall(sc,G){
   if(low.length)out.push(`${low.join(", ")}이 최소 ${G.min}점보다 낮아요`);
   return out.join(" · ");
 }
+// 승급은 지금 점수로 받을 수 있는 가장 높은 등급까지 한 번에
 function nextGradeFrom(g,sc){
-  if(g<MAX_GRADE&&passesGrade(sc,GRADES[g+1]))return g+1;
+  if(g<MAX_GRADE&&passesGrade(sc,GRADES[g+1])){let k=g+1;while(k<MAX_GRADE&&passesGrade(sc,GRADES[k+1]))k++;return k}
   if(g>0&&sc.avg<GRADES[g].req-6)return g-1;
   return g;
 }
@@ -794,19 +866,20 @@ function menuOf(tier=state.tier){
   if(tier===0){const r=state.tier===0?fit().remodel:0;return TIER_MENUS[0].concat(r>=1?E0_EXTRA[0]:[],r>=2?E0_EXTRA[1]:[])}
   return TIER_MENUS[TIERS[tier].menu]||TIER_MENUS[0];
 }
-function dishOf(day){const m=menuOf(),d=m[(day-1)%m.length];return {name:d[0],m:d[1],art:d[2],fair:nice2(8000*priceScale()*d[1])}}
+function dishOf(day){const m=menuOf(),d=m[(day-1)%m.length];return {name:d[0],m:d[1],art:d[2],fair:nice2(PRICE_BASE*priceScale()*d[1])}}
 // 가격 슬라이더(level)는 적정가 대비 비율: level 8,000 = 적정가 100%
 const priceAt=(level,day=state.day)=>nice3(level/8000*dishOf(day).fair);
 const addText=a=>Array.isArray(a)?`${korNum(a[0])}~${korNum(a[1])}명`:`${korNum(a)}명`;
 // 가격대: 확장할 때마다 2~5배(랜덤) 올라 state.scale 에 쌓인다. 리모델링 한 단계마다 +30%.
-// 별 호텔부터는 음식값이 확장 비용에 걸맞게: 기본 음식값 ≥ 그 건물 확장 비용의 1/1,000
+// 별 호텔부터는 음식값이 확장 비용에 걸맞게: 기본 음식값 ≥ 그 건물 확장 비용의 1/1,000 × (PRICE_BASE/8,000)
+// (음식값을 전체적으로 올릴 때 후반 음식도 같은 비율로 비싸지게)
 const floorScale=t=>t>=10?TIERS[t].cost/1000/8000:0;
 const remodelMult=()=>1+.3*fit().remodel;
 const priceScale=()=>Math.max(state.scale||1,floorScale(state.tier))*remodelMult();
 // 메뉴 평균 적정가. 확장할 때 "음식 가격 ×N배"는 이 평균이 N배가 된다는 뜻
 const menuAvgM=(tier=state.tier)=>{const m=menuOf(tier);return m.reduce((a,d)=>a+d[1],0)/m.length};
-const avgFair=()=>8000*priceScale()*menuAvgM();
-const nextPriceRange=()=>{const f=floorScale(state.tier+1)*8000*menuAvgM(state.tier+1)/avgFair();return f>=5?[f,f]:[Math.max(2,f),5]};
+const avgFair=()=>PRICE_BASE*priceScale()*menuAvgM();
+const nextPriceRange=()=>{const f=floorScale(state.tier+1)*PRICE_BASE*menuAvgM(state.tier+1)/avgFair();return f>=5?[f,f]:[Math.max(2,f),5]};
 const custScale=()=>+(1+(state.bonusCust+liveBonus())/280).toPrecision(2);   // 광고 효과·광고비의 크기
 const fixedCost=()=>FIXED_COST*priceScale();
 // 가게 규모 배수: 처음엔 1이고, 하루 수입과 같은 비율로 커진다 (가격대 × 손님 규모)
@@ -816,7 +889,7 @@ const fmtX=x=>x<1e4?(+x.toPrecision(3)).toLocaleString("ko-KR"):korNum(x);
 /* ================= 유틸 ================= */
 const $=id=>document.getElementById(id);
 // 큰 수는 한국식 단위로: 1억 2,345만 → "1억 2,345만", 3조 → "3조"
-const UNITS=[[1e48,"극"],[1e44,"재"],[1e40,"정"],[1e36,"간"],[1e32,"구"],[1e28,"양"],[1e24,"자"],[1e20,"해"],[1e16,"경"],[1e12,"조"],[1e8,"억"],[1e4,"만"]];
+const UNITS=[[1e68,"무량대수"],[1e64,"불가사의"],[1e60,"나유타"],[1e56,"아승기"],[1e52,"항하사"],[1e48,"극"],[1e44,"재"],[1e40,"정"],[1e36,"간"],[1e32,"구"],[1e28,"양"],[1e24,"자"],[1e20,"해"],[1e16,"경"],[1e12,"조"],[1e8,"억"],[1e4,"만"]];
 function korNum(n,from=1e4){
   n=Math.max(0,Math.round(n));
   if(n<from||n<1e4)return n.toLocaleString("ko-KR");
@@ -955,7 +1028,9 @@ const ACHS=[
   {id:"c12",name:"조만장자",desc:"보유 자금 ₩1조 달성",test:s=>s.cash>=1e12},
   {id:"heaven",name:"천국의 문",desc:"천국 호텔로 확장했다",test:s=>s.tier>=11},
   {id:"legend",name:"전설",desc:"레전더리 호텔로 확장했다",test:s=>s.tier>=12},
-  {id:"final",name:"졸라맨 유니버스",desc:"마지막 단계까지 확장했다",test:s=>s.tier>=MAX_TIER},
+  {id:"final",name:"졸라맨 유니버스",desc:"졸라맨 유니버스로 확장했다",test:s=>s.tier>=22},
+  {id:"sea",name:"용궁 입성",desc:"해저 용궁 호텔로 확장했다",test:s=>s.tier>=23},
+  {id:"world",name:"졸라맨 월드",desc:"마지막 단계 졸라맨 월드까지 확장했다",test:s=>s.tier>=MAX_TIER},
   {id:"star",name:"별 다섯 개",desc:"평점 5.0 달성",test:s=>s.rating>=5},
   {id:"staff1",name:"첫 직원",desc:"첫 직원을 고용했다",test:s=>s.staff>=1},
   {id:"staff10",name:"든든한 팀",desc:"직원 10명을 고용했다",test:s=>s.staff>=10},
@@ -1063,6 +1138,22 @@ const Snd={
   thud(){this.tone(110,.18,"sine",.2);this.tone(70,.25,"triangle",.12,.02)},
   register(){this.tone(1568,.08,"square",.04);this.tone(2093,.3,"square",.035,.07);this.tone(2637,.25,"sine",.04,.12)},
   trophy(){[784,988,1175,1568].forEach((f,i)=>this.tone(f,.25,"triangle",.08,i*.09));this.tone(2093,.5,"sine",.05,.4)},
+  // 음높이가 미끄러지는 소리 (개그 효과음)
+  slide(f1,f2,dur,type="sawtooth",vol=.06,delay=0){
+    if(!this.ctx||!this.sfx)return;
+    const c=this.ctx,t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();
+    o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(this.sfxGain);o.start(t);o.stop(t+dur+.05);
+  },
+  scream(){this.slide(900,240,1.5,"sawtooth",.045);this.slide(680,200,1.5,"square",.025,.06)},
+  boing(){this.slide(200,700,.28,"sine",.14)},
+  crack(){this.tone(95,.06,"square",.12);this.tone(150,.05,"square",.1,.08)},
+  sparkle(){[1976,2349,2637,3136].forEach((f,i)=>this.tone(f,.2,"sine",.035,i*.06))},
+  thunder(){if(!this.ctx||!this.sfx)return;const c=this.ctx,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(),t=c.currentTime;
+    s.buffer=this.noise;s.loop=true;f.type="lowpass";f.frequency.setValueAtTime(900,t);f.frequency.exponentialRampToValueAtTime(120,t+1.2);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+1.3);
+    s.connect(f);f.connect(g);g.connect(this.sfxGain);s.start(t);s.stop(t+1.35)},
   whoosh(){if(!this.ctx||!this.sfx)return;const c=this.ctx,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(),t=c.currentTime;
     s.buffer=this.noise;s.loop=true;f.type="bandpass";f.frequency.setValueAtTime(400,t);f.frequency.exponentialRampToValueAtTime(3000,t+.35);
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.12);g.gain.exponentialRampToValueAtTime(.0001,t+.4);
@@ -1153,6 +1244,10 @@ function getPose(o){
       legs=[[.45*s,.45*s-.5*Math.max(0,c)],[-.45*s,-.45*s-.5*Math.max(0,-c)]];arms=[[1.05,2.35],[.4*s,.4*s+.3]];lean=.04;break;}
     case "mop":{const s=Math.sin(t*.6);legs=[[.18+.1*s,.1],[-.14+.1*s,-.08]];arms=[[.75+.2*s,.45+.2*s],[.55+.2*s,.35+.2*s]];lean=.25;break;}
     case "write": legs=standLegs;arms=[[1.15,2.05],[.95,1.75+.12*Math.sin(t*14)]];lean=.05;break;
+    // 무릎 꿇고 두 팔 들어 절규 (팔이 부들부들)
+    case "kneel":{const w=.2*Math.sin(t*16);legs=[[.25,-1.6],[.1,-1.7]];arms=[[2.45+w,3.05+w],[-2.45-w,-3.05-w]];lean=-.1;head=-.3;break;}
+    // 무릎 꿇고 고개 숙여 훌쩍
+    case "sob":{const w=.06*Math.sin(t*9);legs=[[.25,-1.6],[.1,-1.7]];arms=[[.9,2.6+w],[.7,2.5-w]];lean=.35;head=.45;break;}
     default:{const b=.04*Math.sin(t*2);legs=standLegs;arms=[[.22+b,.12+b],[-.22-b,-.12-b]]}
   }
   return {lean,legs,arms,head};
@@ -1212,7 +1307,14 @@ function drawStick(ctx,o){
   // 얼굴
   if(o.face!=="none"){
     const ex=hc[0]+dir*4, ey=hc[1]-2;
-    if(o.glasses){
+    if(o.face==="scream"){   // 질끈 감은 눈 > <
+      ctx.strokeStyle=ink;ctx.lineWidth=2;
+      [[ex,1],[ex+dir*7,-1]].forEach(([x,d])=>{ctx.beginPath();ctx.moveTo(x-2.5*d,ey-2.5);ctx.lineTo(x+1.5*d,ey);ctx.lineTo(x-2.5*d,ey+2.5);ctx.stroke()});
+    }else if(o.face==="cry"){ // 감은 눈 (울먹)
+      ctx.strokeStyle=ink;ctx.lineWidth=2;[ex,ex+dir*7].forEach(x=>{ctx.beginPath();ctx.arc(x,ey-1,2.4,.1*Math.PI,.9*Math.PI);ctx.stroke()});
+    }else if(o.face==="money"){ // 눈이 ₩
+      [ex,ex+dir*7].forEach(x=>outlinedText(ctx,"₩",x,ey,9,MUSTARD,ink,2.5));
+    }else if(o.glasses){
       ctx.fillStyle=ink;rr(ctx,ex-5,ey-4,15,7,3);ctx.fill();
       ctx.fillStyle="#fff";ctx.fillRect(ex+dir*6-1,ey-3,2,2);
     }else{
@@ -1224,6 +1326,10 @@ function drawStick(ctx,o){
     const mx=hc[0]+dir*6, my=hc[1]+5;
     if(o.face==="sad"){ctx.arc(mx,my+4,4,1.15*Math.PI,1.85*Math.PI)}
     else if(o.face==="wow"){ctx.arc(mx,my+1,2.6,0,TAU)}
+    else if(o.face==="scream"){ctx.save();ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(mx-dir,my+2,4.2,5.6+Math.sin((o.t||0)*30)*.8,0,0,TAU);ctx.fill();
+      ctx.fillStyle="#e2483d";ctx.beginPath();ctx.ellipse(mx-dir,my+5,2.6,1.8,0,0,TAU);ctx.fill();ctx.restore()}
+    else if(o.face==="cry"){ctx.moveTo(mx-5,my+3);ctx.quadraticCurveTo(mx-2.5,my,mx,my+3);ctx.quadraticCurveTo(mx+2.5,my+6,mx+5,my+3)}
+    else if(o.face==="money"){ctx.save();ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(mx,my+2,3.4,4.4,0,0,TAU);ctx.fill();ctx.restore()}
     else{ctx.arc(mx,my-1,4,.15*Math.PI,.85*Math.PI)}
     ctx.stroke();
   }
@@ -1235,6 +1341,20 @@ function drawStick(ctx,o){
     ctx.quadraticCurveTo(hc[0],hc[1]+8,hc[0]-R+1,hc[1]+1);
     ctx.fill();ctx.stroke();
   }
+  // 눈물 폭포 (양쪽으로 뿜어져 나온다)
+  if(o.tears){
+    const ex=hc[0]+dir*4,ey=hc[1]-2,ph=(o.t||0)*40;
+    ctx.save();ctx.lineCap="round";
+    [[ex,-1],[ex+dir*7,1]].forEach(([x,d])=>{
+      const k=o.tears, ox=x+d*dir*48*k, oy=ey+62*k;
+      ctx.strokeStyle="rgba(120,200,255,.9)";ctx.lineWidth=4.5;ctx.setLineDash([7,5]);ctx.lineDashOffset=-ph;
+      ctx.beginPath();ctx.moveTo(x,ey+1);ctx.quadraticCurveTo(x+d*dir*30*k,ey-22*k,ox,oy);ctx.stroke();
+      ctx.setLineDash([]);ctx.strokeStyle="rgba(255,255,255,.7)";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,ey+1);ctx.quadraticCurveTo(x+d*dir*30*k,ey-22*k,ox,oy);ctx.stroke();
+    });
+    ctx.restore();
+  }
+  if(o.sweat){ctx.save();ctx.fillStyle="#9fdcff";ctx.strokeStyle=ink;ctx.lineWidth=1.5;const sx=hc[0]-dir*(R-1),sy=hc[1]-R+4+((o.t||0)*20%6);
+    ctx.beginPath();ctx.moveTo(sx,sy-6);ctx.quadraticCurveTo(sx+4,sy,sx,sy+3);ctx.quadraticCurveTo(sx-4,sy,sx,sy-6);ctx.fill();ctx.stroke();ctx.restore()}
   drawHat(ctx,o,hc,R,dir,ink);
   if(o.halo){ctx.save();ctx.strokeStyle="#ffd84d";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(hc[0],hc[1]-R-9,11,3.5,0,0,TAU);ctx.stroke();ctx.restore()}
   if(o.antenna){[-1,1].forEach(d=>{stroke(ctx,[[hc[0]+d*5,hc[1]-R+2],[hc[0]+d*10,hc[1]-R-12]],ink,2);circle(ctx,hc[0]+d*10,hc[1]-R-13,3,"#43d17f",ink,1.5)})}
@@ -1391,15 +1511,21 @@ function drawPortrait(cv,key,t=0){
 }
 
 /* ================= 오프닝 ================= */
+// 장면마다 자막과 길이(ms)
 const SCENES=[
-  "졸라맨이 길을 따라 앞으로 걷는다...",
-  "1,000원을 발견했다! 허리를 숙여 돈을 줍는다.",
-  "계속 돈을 찾아본다...",
-  "1,000원 → 5,000원 → 10,000원 → 50,000원을 차례로 모았다!",
-  "드디어 삼백만원 모았다!",
-  "가게를 차려야겠다!"
+  {text:"졸라맨이 룰루랄라 길을 걷는다... ♪",ms:3800},
+  {text:"어? 1,000원이다! 허리를 숙이는데... 뚜둑!",ms:4800},
+  {text:"허리는 나갔지만 돈 냄새는 못 참지. 킁킁킁...",ms:3800},
+  {text:"1,000원 → 5,000원 → 10,000원 → 50,000원! 줍고 또 줍는다!",ms:4200},
+  {text:"그렇게 줍고 주워서... 드디어 천만원 모았다! 돈벼락!!",ms:4600},
+  {text:"가게를 차려야겠다!",ms:4200},
+  {text:"개업 첫날! ...그런데 손님이 한 명도 안 온다.",ms:5400},
+  {text:"통장 잔고가 녹아내린다... 그리고 결국, 파산!!",ms:4800},
+  {text:"으아아아아아악!!!",ms:4400},
+  {text:"그때, 번쩍번쩍 빛나는 부자가 다가왔다.",ms:4800},
+  {text:"\"옛다, 천만 원! 이번엔 망하지 말게나.\"",ms:5000},
+  {text:"돈이 쏟아진다!! 다시 가게로 GO!",ms:4000}
 ];
-const SCENE_MS=4200;
 
 function drawStreet(ctx,off){
   const g=ctx.createLinearGradient(0,0,0,340);g.addColorStop(0,"#b9e3f2");g.addColorStop(1,"#eef8f3");
@@ -1434,126 +1560,323 @@ function drawStreet(ctx,off){
   for(let x=-(off*1.0%90);x<720;x+=90)ctx.fillRect(x,400,46,6);
 }
 
+
+/* ================= 오프닝 (12장면 개그 스토리) =================
+   돈을 줍다 허리가 나가고 → 천만 원 모아 가게를 차렸지만 손님 0명 → 파산 → 절규
+   → 번쩍이는 부자가 천만 원을 주고 → 돈이 화면을 뒤덮으며 가게로 */
+// 장면 안에서 한 번만 일어나는 일 (효과음, 화면 흔들림)
+function openOnce(key,at,fn){const O=Opening;if(O.t>=at&&!O.fired[key]){O.fired[key]=1;fn()}}
+const RICH_LOOK={hat:"top",monocle:true,bowtie:true,suit:"#3b2a5a",shadow:true};
+
+// 가게 겉모습: rent(임대 문의) · open(졸라맨 식당) · broke(폐업)
+function drawFacade(ctx,t,mode,web=0){
+  const G=352,X=390,Y=112,W=290,H=G-Y;
+  ctx.strokeStyle=INK;ctx.lineWidth=3;
+  ctx.fillStyle=mode==="broke"?"#d9d2c4":"#f6efe0";ctx.fillRect(X,Y,W,H);ctx.strokeRect(X,Y,W,H);
+  ctx.fillStyle=mode==="open"?"#bfe8ff":"#c9c3b5";ctx.fillRect(X+22,Y+110,130,90);ctx.strokeRect(X+22,Y+110,130,90);
+  ctx.beginPath();ctx.moveTo(X+87,Y+110);ctx.lineTo(X+87,Y+200);ctx.stroke();
+  ctx.fillStyle="#9b6b43";ctx.fillRect(X+185,Y+120,74,H-120);ctx.strokeRect(X+185,Y+120,74,H-120);
+  circle(ctx,X+245,Y+185,4,MUSTARD,INK,2);
+  // 차양 (폐업하면 축 처진다)
+  for(let i=0;i<9;i++){
+    const droop=mode==="broke"?(i%3)*7:0;ctx.fillStyle=i%2?"#fff":(mode==="open"?MINT:"#9a9aa6");
+    ctx.beginPath();ctx.moveTo(X-10+i*34.4,Y+62);ctx.lineTo(X+24.4+i*34.4,Y+62);ctx.lineTo(X+24.4+i*34.4,Y+88+droop);
+    ctx.arc(X+7.2+i*34.4,Y+88+droop,17.2,0,Math.PI);ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  // 간판
+  ctx.save();
+  if(mode==="broke"){ctx.translate(X+W/2,Y+31);ctx.rotate(.09);ctx.translate(-X-W/2,-Y-31)}
+  ctx.fillStyle=mode==="open"?KETCHUP:mode==="broke"?"#8a8799":"#fff";rr(ctx,X+20,Y+8,W-40,46,8);ctx.fill();ctx.stroke();
+  if(mode==="open"){
+    text(ctx,"졸라맨 식당",X+W/2,Y+32,30,"#fff");
+    for(let i=0;i<9;i++)circle(ctx,X+34+i*28.5,Y+8,4,Math.floor(t/250+i)%2?"#fff7b0":MUSTARD,INK,1.5);
+  }else text(ctx,mode==="broke"?"폐   업":"임대 문의",X+W/2,Y+32,28,mode==="broke"?"#fff":INK);
+  ctx.restore();
+  if(mode==="rent"){ctx.fillStyle="#fff";ctx.fillRect(X+26,Y+130,90,30);ctx.strokeRect(X+26,Y+130,90,30);text(ctx,"빈 가게",X+71,Y+146,16,INK)}
+  if(mode==="open"){ctx.fillStyle="#fff";rr(ctx,X+196,Y+132,52,22,5);ctx.fill();ctx.stroke();text(ctx,"OPEN",X+222,Y+144,13,MINT)}
+  if(mode==="broke"){ // 창문과 문에 판자
+    ctx.save();ctx.lineCap="round";ctx.strokeStyle="#8a6a4a";ctx.lineWidth=10;
+    ctx.beginPath();ctx.moveTo(X+30,Y+118);ctx.lineTo(X+144,Y+192);ctx.moveTo(X+144,Y+118);ctx.lineTo(X+30,Y+192);ctx.moveTo(X+192,Y+160);ctx.lineTo(X+252,Y+176);ctx.stroke();
+    ctx.restore();
+  }
+  if(web>0){ // 문 위 구석의 거미줄
+    ctx.save();ctx.globalAlpha=web;ctx.strokeStyle="#ffffff";ctx.lineWidth=1.6;const cx=X+259,cy=Y+120;
+    for(let a=0;a<=4;a++){const an=Math.PI/2+a*Math.PI/8;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(an)*42,cy+Math.sin(an)*42);ctx.stroke()}
+    for(let r=12;r<=36;r+=12){ctx.beginPath();ctx.arc(cx,cy,r,Math.PI/2,Math.PI);ctx.stroke()}
+    circle(ctx,cx-20,cy+26,3.5,INK);ctx.restore();
+  }
+}
+function drawTumbleweed(ctx,x,y,r,rot){
+  ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.strokeStyle="#9b7a4a";ctx.lineWidth=2.5;
+  for(let i=0;i<7;i++){ctx.beginPath();ctx.ellipse(0,0,r,r*.55,i*.45,0,TAU);ctx.stroke()}ctx.restore();
+}
+function drawCrow(ctx,x,y,caw){
+  ctx.fillStyle=INK;ctx.beginPath();ctx.ellipse(x,y,15,10,-.2,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+10,y-2);ctx.lineTo(x+24,y+6);ctx.lineTo(x+8,y+6);ctx.fill();
+  circle(ctx,x-12,y-10,8,INK);circle(ctx,x-14,y-12,2,"#fff");
+  ctx.fillStyle="#f4b63f";ctx.beginPath();ctx.moveTo(x-19,y-11);ctx.lineTo(x-30,y-(caw?14:9));ctx.lineTo(x-19,y-7);ctx.fill();
+  if(caw){ctx.beginPath();ctx.moveTo(x-19,y-8);ctx.lineTo(x-29,y-2);ctx.lineTo(x-19,y-6);ctx.fill()}
+  stroke(ctx,[[x-3,y+8],[x-3,y+15]],"#f4b63f",2);stroke(ctx,[[x+3,y+8],[x+3,y+15]],"#f4b63f",2);
+}
+// 날개 달린 지폐 (훨훨 날아간다)
+function drawWingBill(ctx,x,y,val,t,sc){
+  const f=Math.sin(t*.03)*.7;
+  ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);ctx.fillStyle="#fff";ctx.strokeStyle=INK;ctx.lineWidth=2.5;
+  [-1,1].forEach(d=>{ctx.save();ctx.translate(d*22,-10);ctx.rotate(d*(-.5+f));ctx.beginPath();ctx.ellipse(d*16,-4,18,8,d*.25,0,TAU);ctx.fill();ctx.stroke();ctx.restore()});
+  ctx.restore();drawBill(ctx,x,y,val,Math.sin(t*.008)*.25,sc);
+}
+function drawStamp(ctx,x,y,str,k){
+  if(k<=0)return;const sc=lerp(2.8,1,ease(Math.min(1,k)));
+  ctx.save();ctx.translate(x,y);ctx.rotate(-.18);ctx.scale(sc,sc);ctx.globalAlpha=Math.min(1,k*2.5);
+  ctx.fillStyle="rgba(255,240,240,.55)";rr(ctx,-126,-58,252,116,18);ctx.fill();
+  ctx.strokeStyle="#d12b2b";ctx.lineWidth=9;rr(ctx,-122,-54,244,108,16);ctx.stroke();ctx.lineWidth=3;rr(ctx,-108,-40,216,80,10);ctx.stroke();
+  text(ctx,str,0,4,74,"#d12b2b");ctx.restore();
+}
+function drawRain(ctx,t,a){
+  if(a<=0)return;ctx.save();ctx.strokeStyle=`rgba(200,220,255,${.6*a})`;ctx.lineWidth=2;ctx.beginPath();
+  for(let i=0;i<80;i++){const x=(seeded(i)*820+t*.22)%820-50,y=(seeded(i+100)*480+t*.95)%480-20;ctx.moveTo(x,y);ctx.lineTo(x-6,y+18)}
+  ctx.stroke();ctx.restore();
+}
+function drawBolt(ctx,x0){
+  ctx.save();ctx.strokeStyle="#fff7b0";ctx.lineWidth=5;ctx.lineJoin="round";ctx.shadowColor="#fff";ctx.shadowBlur=18;
+  let x=x0,y=26;ctx.beginPath();ctx.moveTo(x,y);for(let i=0;i<6;i++){x+=(i%2?-1:1)*(16+seeded(i+x0)*14);y+=26;ctx.lineTo(x,y)}ctx.stroke();ctx.restore();
+}
+// 돈 가방 (x,y = 가방 아래 가운데)
+function drawCaseGlow(ctx,x,y,t){
+  ctx.save();ctx.translate(x,y);
+  const g=ctx.createRadialGradient(0,-40,4,0,-40,140);g.addColorStop(0,"rgba(255,232,120,.8)");g.addColorStop(1,"rgba(255,232,120,0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,-40,140,0,TAU);ctx.fill();
+  ctx.fillStyle="rgba(255,244,180,.35)";
+  for(let i=0;i<10;i++){const a=i/10*TAU+t*.0015;ctx.beginPath();ctx.moveTo(0,-36);ctx.lineTo(Math.cos(a-.08)*180,-36+Math.sin(a-.08)*180);ctx.lineTo(Math.cos(a+.08)*180,-36+Math.sin(a+.08)*180);ctx.closePath();ctx.fill()}
+  ctx.restore();
+}
+function drawCase(ctx,x,y,open){
+  ctx.save();ctx.translate(x,y);ctx.strokeStyle=INK;ctx.lineWidth=3;
+  if(open){
+    ctx.fillStyle="#7a4a26";rr(ctx,-44,-80,88,36,6);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#8a5a30";rr(ctx,-44,-38,88,38,6);ctx.fill();ctx.stroke();
+    for(let i=0;i<4;i++){ctx.fillStyle=BILL_COLOR[50000];ctx.fillRect(-38+i*19,-46,17,12);ctx.strokeRect(-38+i*19,-46,17,12)}
+  }else{
+    ctx.fillStyle="#8a5a30";rr(ctx,-44,-52,88,52,6);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-14,-52);ctx.lineTo(-14,-62);ctx.lineTo(14,-62);ctx.lineTo(14,-52);ctx.stroke();
+    ctx.fillStyle=MUSTARD;ctx.fillRect(-6,-32,12,8);ctx.strokeRect(-6,-32,12,8);
+  }
+  ctx.restore();
+}
+function goldGlow(ctx,x,y,r,a){
+  const g=ctx.createRadialGradient(x,y,10,x,y,r);g.addColorStop(0,`rgba(255,215,90,${a})`);g.addColorStop(1,"rgba(255,215,90,0)");
+  ctx.fillStyle=g;ctx.fillRect(0,0,720,440);
+}
+function redCarpet(ctx,x0,G){
+  if(x0>=720)return;
+  ctx.fillStyle="#c73a40";ctx.fillRect(x0,G-6,720-x0,14);ctx.fillStyle=MUSTARD;ctx.fillRect(x0,G-6,720-x0,3);ctx.fillRect(x0,G+5,720-x0,3);
+  circle(ctx,x0,G+1,9,"#a8323a",INK,2);
+}
+
 function drawOpening(ctx,dt){
   const O=Opening, n=O.scene, t=O.t;
   const G=352, FX=280, S=1.55;
-  let walking=n===1||n===3&&t<1800||n===2&&t<1400;
-  const speed=n===3?.1:.17;
-  if(walking)O.off+=dt*speed;
-  drawStreet(ctx,O.off);
-  const wt=O.off*.045;
+  const walking=n===1||n===3&&t<1800||n===2&&t<1400;
+  if(walking)O.off+=dt*(n===3?.1:.17);
+  const wt=O.off*.045, VALS=[1000,5000,10000,50000];
+  ctx.save();
+  if(O.shake>0){O.shake=Math.max(0,O.shake-dt);const a=Math.min(10,O.shake/30);ctx.translate((Math.random()-.5)*a*2,(Math.random()-.5)*a*2)}
 
-  if(n===1){
-    drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"walk",t:wt});
+  if(n===1){ // 룰루랄라
+    drawStreet(ctx,O.off);
+    drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"walk",t:wt,face:"happy"});
+    for(let i=0;i<3;i++){const ph=((t*.0006)+i/3)%1;ctx.globalAlpha=1-ph;text(ctx,i%2?"♫":"♪",FX+34+ph*52+i*8,G-150-ph*64,26,INK);ctx.globalAlpha=1}
+    if(t>1800)bubble(ctx,"오늘은 왠지 운이 좋을 것 같아~",FX+30,G-262,FX+10,G-226,18);
   }
-  else if(n===2){
+  else if(n===2){ // 1,000원 줍다가 허리가 뚜둑
+    drawStreet(ctx,O.off);
     const bx=t<1400?lerp(610,372,t/1400):372;
-    if(t<2600) drawBill(ctx,bx,G-6,1000,.12,.7);
-    if(t<1400) drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"walk",t:wt});
-    else if(t<2600) drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"bend",face:"wow"});
-    else{
-      drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"hold",item:"bill",billValue:1000,t:t*.001});
-      const k=Math.min(1,(t-2600)/400);
-      outlinedText(ctx,"+₩1,000",FX+130,G-200-k*20,34,MUSTARD);
+    if(t<2700)drawBill(ctx,bx,G-6,1000,.12,.7);
+    if(t<1400)drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"walk",t:wt,face:"wow"});
+    else if(t<2700){
+      const cracked=t>1950;
+      drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"bend",face:cracked?"scream":"wow",sweat:cracked,t:t*.001});
+      if(cracked){
+        openOnce("crack",1950,()=>{Snd.crack();O.shake=260});
+        const k=Math.min(1,(t-1950)/160);
+        outlinedText(ctx,"뚜둑!",FX-58,G-150-k*12,12+k*34,"#ff5a3c",INK,7);
+        ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(FX-22,G-120);ctx.lineTo(FX-10,G-110);ctx.lineTo(FX-20,G-102);ctx.lineTo(FX-6,G-94);ctx.stroke();
+      }
+    }else{
+      openOnce("coin",2700,()=>Snd.coin());
+      drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"hold",item:"bill",billValue:1000,t:t*.001,face:"happy",sweat:true});
+      const k=Math.min(1,(t-2700)/400);outlinedText(ctx,"+₩1,000",FX+130,G-200-k*20,34,MUSTARD);
+      if(t>3200)bubble(ctx,"허리는 잃었지만 돈을 얻었다...",FX+120,G-278,FX+40,G-244,18);
     }
   }
-  else if(n===3){
-    if(t<1800) drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"walk",t:wt});
+  else if(n===3){ // 킁킁
+    drawStreet(ctx,O.off);
+    ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle="#ff7eb6";ctx.lineWidth=4;
+    for(let i=0;i<3;i++){const y=G-70-i*28;ctx.beginPath();ctx.moveTo(720,y);for(let x=720;x>FX+70;x-=18)ctx.lineTo(x,y+Math.sin(x*.05+t*.006+i)*8);ctx.stroke()}
+    ctx.restore();text(ctx,"(돈 냄새)",640,G-150,16,"#d0508a");
+    if(t<1800)drawStick(ctx,{x:FX,y:G,s:S,dir:1,pose:"walk",t:wt});
     else{
       const flip=Math.floor((t-1800)/650)%2?-1:1;
       drawStick(ctx,{x:FX,y:G,s:S,dir:flip,pose:"look",face:"wow"});
-      outlinedText(ctx,"?",FX+flip*55,G-210,44,PAPER);
-      outlinedText(ctx,"?",FX+flip*85,G-185,30,PAPER);
+      for(let i=0;i<3;i++){const ph=((t-1800)*.0012+i/3)%1;ctx.globalAlpha=1-ph;text(ctx,"킁",FX+flip*(42+ph*60),G-130-i*12-ph*18,18+ph*10,INK);ctx.globalAlpha=1}
+      outlinedText(ctx,"?",FX-flip*50,G-212,44,PAPER);
     }
   }
-  else if(n===4){
-    const vals=[1000,5000,10000,50000];
-    const got=vals.filter((v,i)=>t>350+i*850+500).length;
-    drawStick(ctx,{x:190,y:G,s:S,dir:1,pose:t%850<380&&t>850?"cheer":"stand",t:t*.001,face:"happy"});
-    vals.forEach((v,i)=>{
+  else if(n===4){ // 줍고 또 줍고
+    drawStreet(ctx,O.off);
+    const got=VALS.filter((v,i)=>t>350+i*850+500).length;
+    drawStick(ctx,{x:190,y:G,s:S,dir:1,pose:t%850<380&&t>850?"cheer":"stand",t:t*.001,face:"happy",lift:t%850<380&&t>850?16:0});
+    VALS.forEach((v,i)=>{
       const st=350+i*850;if(t<st)return;
-      const k=ease(Math.min(1,(t-st)/500));
-      const sx=345+i*98, sy=190;
+      const k=ease(Math.min(1,(t-st)/500)),sx=345+i*98,sy=190;
       drawBill(ctx,lerp(760,sx,k),lerp(120,sy,k),v,(1-k)*1.4,1.05);
       if(k>=1&&i<3)text(ctx,"→",sx+49,sy,22,INK);
+      openOnce("c"+i,st+500,()=>Snd.coin());
     });
-    const total=vals.slice(0,got).reduce((a,b)=>a+b,0);
+    const total=VALS.slice(0,got).reduce((a,b)=>a+b,0);
     ctx.fillStyle=PAPER;ctx.strokeStyle=INK;ctx.lineWidth=3;rr(ctx,340,248,290,48,12);ctx.fill();ctx.stroke();
-    text(ctx,"모은 돈",362,272,18,"#56536a","left");
-    text(ctx,won(total),612,273,26,INK,"right");
+    text(ctx,"모은 돈",362,272,18,"#56536a","left");text(ctx,won(total),612,273,26,INK,"right");
   }
-  else if(n===5){
-    // 돈벼락! 하늘에서 돈이 쏟아지고 뒤에는 돈 산이 쌓인다
-    const k=Math.min(1,t/2400), VALS=[1000,5000,10000,50000];
-    // 금빛 후광
-    const glow=ctx.createRadialGradient(500,G-90,20,500,G-90,340);
-    glow.addColorStop(0,`rgba(255,220,90,${.55*k})`);glow.addColorStop(1,"rgba(255,220,90,0)");
-    ctx.fillStyle=glow;ctx.fillRect(0,0,720,440);
-    // 돈 산 (점점 높아진다)
+  else if(n===5){ // 천만 원 돈벼락
+    drawStreet(ctx,O.off);
+    const k=Math.min(1,t/2400);
+    goldGlow(ctx,500,G-90,340,.55*k);
     const pile=Math.floor(20+ease(k)*300);
     for(let i=0;i<pile;i++){
-      const row=Math.floor(Math.sqrt(i*1.15)), w=Math.max(30,400-row*23);
-      const x=505+(seeded(i)-.5)*w, y=G-6-row*11-seeded(i+3)*5;
-      drawBill(ctx,x,y,VALS[(i*7+row)%4],(seeded(i+7)-.5)*1.1,.78);
+      const row=Math.floor(Math.sqrt(i*1.15)),w=Math.max(30,400-row*23);
+      drawBill(ctx,505+(seeded(i)-.5)*w,G-6-row*11-seeded(i+3)*5,VALS[(i*7+row)%4],(seeded(i+7)-.5)*1.1,.78);
     }
-    // 앞쪽 돈다발과 돈자루
     const front=Math.floor(ease(k)*9);
-    for(let i=0;i<front;i++){const x=330+i*44+seeded(i+40)*10,y=G+2-(i%2)*8;drawBundle(ctx,x,y,(seeded(i+60)-.5)*.5,.8)}
+    for(let i=0;i<front;i++)drawBundle(ctx,330+i*44+seeded(i+40)*10,G+2-(i%2)*8,(seeded(i+60)-.5)*.5,.8);
     if(k>.5){drawMoneyBag(ctx,318,G-6,1.6);drawMoneyBag(ctx,694,G-8,1.4)}
-    // 졸라맨: 두 팔 들고 방방
-    const lift=Math.abs(Math.sin(t*.008))*34;
-    drawStick(ctx,{x:190,y:G,s:S,dir:1,pose:"cheer",t:t*.001,lift,face:"wow"});
-    // 졸라맨이 던져 올리는 돈
-    for(let i=0;i<6;i++){const ph=((t*.0011)+i/6)%1,x=190+Math.sin(i*2.3)*40+ph*60*(i%2?1:-1),y=G-190-Math.sin(ph*Math.PI)*120;
-      drawBill(ctx,x,y,VALS[i%4],ph*6+i,.55)}
-    // 하늘에서 쏟아지는 돈과 동전
+    drawStick(ctx,{x:190,y:G,s:S,dir:1,pose:"cheer",t:t*.001,lift:Math.abs(Math.sin(t*.008))*34,face:"money"});
+    for(let i=0;i<6;i++){const ph=((t*.0011)+i/6)%1,x=190+Math.sin(i*2.3)*40+ph*60*(i%2?1:-1),y=G-190-Math.sin(ph*Math.PI)*120;drawBill(ctx,x,y,VALS[i%4],ph*6+i,.55)}
     const rain=Math.floor(20+k*70);
-    for(let i=0;i<rain;i++){
-      const sp=.13+seeded(i+90)*.12, y=((t*sp+seeded(i+50)*620)%600)-70;
-      const x=seeded(i)*760-20+Math.sin(t*.003+i)*16;
-      drawBill(ctx,x,y,VALS[i%4],Math.sin(t*.004+i*1.7)*.7,.55+seeded(i+20)*.25);
-    }
-    for(let i=0;i<24;i++){
-      const y=((t*(.2+seeded(i+200)*.1)+seeded(i+150)*600)%600)-40,x=seeded(i+170)*720;
-      circle(ctx,x,y,7,MUSTARD,INK,2);circle(ctx,x-2,y-2,2.2,"#fff7c8");
-    }
-    // 금액
+    for(let i=0;i<rain;i++){const sp=.13+seeded(i+90)*.12,y=((t*sp+seeded(i+50)*620)%600)-70;drawBill(ctx,seeded(i)*760-20+Math.sin(t*.003+i)*16,y,VALS[i%4],Math.sin(t*.004+i*1.7)*.7,.55+seeded(i+20)*.25)}
+    for(let i=0;i<24;i++){const y=((t*(.2+seeded(i+200)*.1)+seeded(i+150)*600)%600)-40,x=seeded(i+170)*720;circle(ctx,x,y,7,MUSTARD,INK,2);circle(ctx,x-2,y-2,2.2,"#fff7c8")}
     const amt=Math.round(lerp(66000,START_CASH,ease(k))/1000)*1000;
     outlinedText(ctx,won(amt),360,80,60,MUSTARD,INK,9);
-    if(k>=1){outlinedText(ctx,"돈벼락!",360,134,30,"#ffffff",INK,7);
+    openOnce("rain",100,()=>Snd.register());
+    if(k>=1){openOnce("win",2400,()=>Snd.fanfare());outlinedText(ctx,"돈벼락!",360,134,30,"#ffffff",INK,7);
       for(let i=0;i<8;i++)sparkle(ctx,360+Math.cos(i+t*.003)*(200+i*6),84+Math.sin(i*2+t*.003)*50,8+4*Math.sin(t*.01+i))}
   }
-  else{
-    // 가게 건물
-    const X=390,Y=112,W=290,H=G-Y;
-    ctx.fillStyle="#f6efe0";ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.fillRect(X,Y,W,H);ctx.strokeRect(X,Y,W,H);
+  else if(n===6){ // 가게를 차려야겠다
+    drawStreet(ctx,O.off);
     const opened=t>1600;
-    ctx.fillStyle=opened?"#bfe8ff":"#c9c3b5";ctx.fillRect(X+22,Y+110,130,90);ctx.strokeRect(X+22,Y+110,130,90);
-    ctx.beginPath();ctx.moveTo(X+87,Y+110);ctx.lineTo(X+87,Y+200);ctx.stroke();
-    ctx.fillStyle="#9b6b43";ctx.fillRect(X+185,Y+120,74,H-120);ctx.strokeRect(X+185,Y+120,74,H-120);
-    circle(ctx,X+245,Y+185,4,MUSTARD,INK,2);
-    // 차양
-    for(let i=0;i<9;i++){ctx.fillStyle=i%2?"#fff":(opened?MINT:"#9a9aa6");
-      ctx.beginPath();ctx.moveTo(X-10+i*34.4,Y+62);ctx.lineTo(X+24.4+i*34.4,Y+62);ctx.lineTo(X+24.4+i*34.4,Y+88);
-      ctx.arc(X+7.2+i*34.4,Y+88,17.2,0,Math.PI);ctx.closePath();ctx.fill();ctx.stroke()}
-    // 간판
-    ctx.fillStyle=opened?KETCHUP:"#fff";rr(ctx,X+20,Y+8,W-40,46,8);ctx.fill();ctx.stroke();
-    if(opened){
-      text(ctx,"졸라맨 식당",X+W/2,Y+32,30,"#fff");
-      for(let i=0;i<9;i++)circle(ctx,X+34+i*28.5,Y+8,4,Math.floor(t/250+i)%2?"#fff7b0":MUSTARD,INK,1.5);
-    }else{
-      text(ctx,"임대 문의",X+W/2,Y+32,28,INK);
-      ctx.fillStyle="#fff";ctx.fillRect(X+26,Y+130,90,30);ctx.strokeRect(X+26,Y+130,90,30);
-      text(ctx,"빈 가게",X+71,Y+146,16,INK);
-    }
-    drawStick(ctx,{x:230,y:G,s:S,dir:1,pose:opened?"cheer":"look",t:t*.001,face:opened?"happy":"wow"});
-    if(t>250) bubble(ctx,"가게를 차려야겠다!",230,86,246,122,24);
-    if(!opened&&t>250){
-      // 전구 = 아이디어
+    drawFacade(ctx,t,opened?"open":"rent");
+    drawStick(ctx,{x:230,y:G,s:S,dir:1,pose:opened?"cheer":"look",t:t*.001,face:opened?"happy":"wow",hat:opened?"chef":null});
+    if(t>250)bubble(ctx,opened?"졸라맨 식당, 오픈이다!!":"가게를 차려야겠다!",230,86,246,122,24);
+    if(opened){openOnce("bells",1600,()=>Snd.bells());for(let i=0;i<10;i++){const ph=((t-1600)*.0008+i/10)%1;ctx.globalAlpha=1-ph;sparkle(ctx,420+seeded(i)*240,100-ph*60+seeded(i+9)*40,6+seeded(i+3)*6,["#ffd84d","#ff7eb6","#56b8ff"][i%3]);ctx.globalAlpha=1}}
+    else if(t>250){
       circle(ctx,158,160,15,"#fff3a0",INK,3);ctx.fillStyle="#b8b2a3";ctx.fillRect(151,174,14,9);ctx.strokeRect(151,174,14,9);
       for(let i=0;i<5;i++){const a=-Math.PI*.9+i*.45;stroke(ctx,[[158+Math.cos(a)*22,160+Math.sin(a)*22],[158+Math.cos(a)*30,160+Math.sin(a)*30]],INK,3)}
     }
   }
+  else if(n===7){ // 손님 0명
+    drawStreet(ctx,0);
+    drawFacade(ctx,t,"open",Math.max(0,Math.min(1,(t-2600)/1800)));
+    if(t>1400){const caw=t>2600&&t<3400;drawCrow(ctx,600,98,caw);if(caw){outlinedText(ctx,"까악~",640,66,22,PAPER,INK,5);openOnce("caw",2600,()=>Snd.slide(900,480,.35,"square",.04))}}
+    // 달력: 개업 1일째 → 30일째
+    const day=Math.min(30,1+Math.floor(Math.max(0,t-500)/120));
+    ctx.fillStyle=PAPER;ctx.strokeStyle=INK;ctx.lineWidth=3;rr(ctx,40,48,120,78,10);ctx.fill();ctx.stroke();
+    ctx.fillStyle=KETCHUP;ctx.fillRect(41.5,49.5,117,20);text(ctx,"개업",100,60,13,"#fff");
+    text(ctx,`${day}일째`,100,98,26,day>20?KETCHUP:INK);
+    outlinedText(ctx,"손님 0명",100,146,20,"#ff6b6b",INK,5);
+    if(t>900&&t<4600){const k=(t-900)/3700;drawTumbleweed(ctx,lerp(-40,760,k),G-16-Math.abs(Math.sin(k*18))*14,15,k*20)}
+    // 지나가던 사람: 가게를 보더니 휙 돌아간다
+    if(t>2000){
+      const tt=t-2000;let px,pdir=1,pose="walk",face="happy";
+      if(tt<900)px=lerp(-30,300,tt/900);else if(tt<1800){px=300;pose="look";face="wow"}else{px=300-(tt-1800)*.5;pdir=-1;pose="run";face="scream"}
+      drawStick(ctx,{x:px,y:G+4,s:1.2,dir:pdir,pose,t:tt*.012,face,hat:"cap",hatColor:"#43d17f",shirt:"#56b8ff"});
+      if(tt>900&&tt<1800)bubble(ctx,"...여기 맛집 맞아?",px,G-150,px+10,G-118,17);
+      if(tt>1800&&tt<2800){outlinedText(ctx,"휙!",px+60,G-120,30,PAPER,INK,6);openOnce("whoosh",3800,()=>Snd.whoosh())}
+    }
+    const sad=t>1800;
+    const OX=612,OS=1.25;
+    drawStick(ctx,{x:OX,y:G,s:OS,dir:-1,pose:t<1800?"wave":t<3200?"stand":"sad",t:t*.001,face:sad?"sad":"happy",sweat:t>3200,hat:"chef"});
+    if(t<1800)bubble(ctx,"어서오세요~!",520,G-196,596,G-168,20);
+    if(t>4000)bubble(ctx,"......",540,G-196,600,G-168,20);
+    if(t>3200)for(let i=0;i<3;i++){const a=t*.008+i*2.1,fx=OX+Math.cos(a)*30,fy=G-150+Math.sin(a*1.3)*14;
+      circle(ctx,fx,fy,2.5,INK);ctx.strokeStyle="rgba(31,29,43,.5)";ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(fx-2,fy-3,3,1.6,-.5,0,TAU);ctx.ellipse(fx+2,fy-3,3,1.6,.5,0,TAU);ctx.stroke()}
+  }
+  else if(n===8){ // 잔고가 녹고 파산
+    drawStreet(ctx,0);
+    const broke=t>=2900;
+    drawFacade(ctx,t,broke?"broke":"open",1);
+    const k=Math.min(1,t/2700),bal=Math.max(0,Math.round(START_CASH*(1-ease(k))/1000)*1000),jx=(Math.random()-.5)*5*k;
+    ctx.fillStyle="rgba(13,15,36,.85)";rr(ctx,200,34,320,80,14);ctx.fill();
+    text(ctx,"통장 잔고",360,54,16,"#c9c5e0");text(ctx,won(bal),360+jx,88,38,bal>START_CASH*.3?"#ffffff":"#ff6b6b");
+    if(!broke)for(let i=0;i<10;i++){const st=i*230;if(t<st)continue;const q=(t-st)/1400;if(q>1)continue;
+      drawWingBill(ctx,lerp(560,760+seeded(i)*80,q)+Math.sin(q*9+i)*20,lerp(G-120,-40,q),VALS[i%4],t+i*100,.7)}
+    drawStick(ctx,{x:612,y:G,s:1.25,dir:1,pose:broke?"sad":"look",t:t*.001,face:"wow",sweat:true,hat:"chef"});
+    if(!broke&&t>500)bubble(ctx,"안 돼~ 가지 마!!",500,G-196,596,G-166,20);
+    if(broke){openOnce("stamp",2900,()=>{Snd.thud();Snd.fail();O.shake=520});drawStamp(ctx,290,236,"파산",(t-2900)/220)}
+  }
+  else if(n===9){ // 절규
+    const k=Math.min(1,t/4400);
+    ctx.save();ctx.translate(300,300);ctx.scale(1+.09*k,1+.09*k);ctx.translate(-300,-300);
+    drawStreet(ctx,0);drawFacade(ctx,t,"broke",1);
+    ctx.fillStyle="rgba(18,16,40,.62)";ctx.fillRect(-20,-20,760,480);
+    drawRain(ctx,t,1);
+    const pw=30+Math.min(1,t/3000)*180;ctx.fillStyle="rgba(120,200,255,.55)";ctx.beginPath();ctx.ellipse(250,G+6,pw,10+pw*.05,0,0,TAU);ctx.fill();
+    drawStick(ctx,{x:250,y:G,s:S*1.05,dir:1,pose:"kneel",t:t*.001,face:"scream",tears:1+.15*Math.sin(t*.01),hat:"chef"});
+    ctx.restore();
+    [400,1900,3300].forEach((at,i)=>{openOnce("th"+i,at,()=>{Snd.thunder();O.shake=300});const d=t-at;
+      if(d>=0&&d<200){drawBolt(ctx,[560,110,450][i]);ctx.fillStyle=`rgba(255,255,255,${.7*(1-d/200)})`;ctx.fillRect(0,0,720,440)}});
+    openOnce("scream",150,()=>Snd.scream());openOnce("scream2",2300,()=>Snd.scream());
+    [..."으아아아아아악!!!"].forEach((c,i)=>outlinedText(ctx,c,130+i*46+(Math.random()-.5)*5,96+Math.sin(t*.02+i)*8+(Math.random()-.5)*5,48,"#ffffff",INK,8));
+    if(t>3000)text(ctx,"(3시간째 우는 중)",612,392,16,"#d8d4ee");
+  }
+  else if(n===10){ // 부자 등장
+    drawStreet(ctx,0);drawFacade(ctx,t,"broke",1);
+    const clear=Math.min(1,t/1000);
+    ctx.fillStyle=`rgba(18,16,40,${.62*(1-clear)})`;ctx.fillRect(0,0,720,440);
+    drawRain(ctx,t,1-clear);
+    const rx=t<600?790:t<2700?lerp(790,480,ease((t-600)/2100)):480;
+    goldGlow(ctx,rx,G-90,280,.55*clear);
+    redCarpet(ctx,t<500?720:lerp(720,330,ease(Math.min(1,(t-500)/1700))),G);
+    drawStick(ctx,{x:250,y:G,s:S,dir:1,pose:"sob",t:t*.001,face:"cry",tears:.45,hat:"chef"});
+    if(t<2400)bubble(ctx,"훌쩍... 훌쩍...",250,G-160,258,G-124,18);
+    drawStick(ctx,{...RICH_LOOK,x:rx,y:G,s:S*1.05,dir:-1,pose:t<2700?"walk":"stand",t:t<2700?t*.009:t*.001,face:"happy"});
+    for(let i=0;i<6;i++)sparkle(ctx,rx+Math.cos(i+t*.004)*(60+i*4),G-120+Math.sin(i*1.7+t*.005)*70,7+3*Math.sin(t*.01+i),"#ffe27a");
+    openOnce("sp",600,()=>Snd.sparkle());
+    if(t>2800){bubble(ctx,"허허, 딱하구먼.",rx,G-262,rx-6,G-226,20);outlinedText(ctx,"✨번쩍✨",rx+84,G-190,18,"#ffe27a",INK,5)}
+  }
+  else if(n===11){ // 천만 원 선물
+    drawStreet(ctx,0);drawFacade(ctx,t,"broke",1);
+    goldGlow(ctx,440,G-90,300,.5);redCarpet(ctx,330,G);
+    const open=t>700,up=t>1300;
+    if(open)drawCaseGlow(ctx,418,G-34,t);
+    drawStick(ctx,{...RICH_LOOK,x:480,y:G,s:S*1.05,dir:-1,pose:"give",t:t*.001,face:"happy"});
+    drawCase(ctx,418,G-34,open);
+    if(open){openOnce("open",700,()=>Snd.register());outlinedText(ctx,"₩10,000,000",418,G-160,26,MUSTARD,INK,6)}
+    if(t<2700)bubble(ctx,"옛다, 천만 원! 이번엔 망하지 말게나.",430,G-280,480,G-246,19);
+    if(!up)drawStick(ctx,{x:250,y:G,s:S,dir:1,pose:"sob",t:t*.001,face:"cry",tears:.3,hat:"chef"});
+    else{
+      openOnce("boing",1300,()=>Snd.boing());
+      const j=t<1600?Math.sin((t-1300)/300*Math.PI)*60:0;
+      drawStick(ctx,{x:250,y:G,s:S,dir:1,pose:t>2700?"cheer":"stand",lift:j,t:t*.001,face:"money",hat:"chef"});
+      if(t>1300&&t<2700)outlinedText(ctx,"벌떡!",250,G-230,26,PAPER,INK,6);
+      if(t>2700){bubble(ctx,"감사합니다 형님!!!",250,G-256,258,G-220,21);
+        for(let i=0;i<5;i++){const ph=((t*.0008)+i/5)%1;ctx.globalAlpha=1-ph;text(ctx,"♥",222+i*14+Math.sin(ph*9+i)*10,G-196-ph*80,22,"#ff5b8a");ctx.globalAlpha=1}}
+    }
+  }
+  else{ // 돈 폭발 → 화면을 뒤덮는다
+    drawStreet(ctx,0);drawFacade(ctx,t,"broke",1);
+    goldGlow(ctx,440,G-90,300,.55);redCarpet(ctx,330,G);
+    drawCaseGlow(ctx,418,G-34,t);
+    drawStick(ctx,{...RICH_LOOK,x:480,y:G,s:S*1.05,dir:-1,pose:"give",t:t*.001,face:"happy"});
+    drawCase(ctx,418,G-34,true);
+    drawStick(ctx,{x:250,y:G,s:S,dir:1,pose:"cheer",t:t*.001,face:"money",hat:"chef",lift:Math.abs(Math.sin(t*.01))*30});
+    openOnce("boom",80,()=>{Snd.fanfare();Snd.whoosh();O.shake=300});
+    for(let i=0;i<320;i++){
+      const st=i*6;if(t<st)continue;
+      const q=ease(Math.min(1,(t-st)/700)),tx=seeded(i)*800-40,ty=seeded(i+400)*500-30;
+      drawBill(ctx,lerp(418,tx,q),lerp(G-80,ty,q)-Math.sin(q*Math.PI)*90,VALS[i%4],seeded(i+800)*6.3*q,.6+q*.95);
+    }
+    if(t>1300){const k=Math.min(1,(t-1300)/300);outlinedText(ctx,"₩10,000,000",360,196,4+56*k,MUSTARD,INK,9);outlinedText(ctx,"다시 가게로 GO!",360,258,2+30*k,"#ffffff",INK,7)}
+  }
+  ctx.restore();
 }
 
 /* ================= 음식 그림 ================= */
@@ -1811,7 +2134,17 @@ const THEMES={
   bigbang:   TH("#2a1206","#3a1a08","#ffb02e","#4a220a","#2a1206","#301608","#5a2c10","#ff5a1f","#ffd84d","#5a1a06","#ffb02e","orb","bigbang",1),
   multiverse:TH("#1a1a3a","#221a4a","#ff7eb6","#2a2250","#1a1436","#1c1a3c","#2c2a5c","#56b8ff","#ff7eb6","#3a2a70","#56b8ff","orb","multiverse",1),
   edge:      TH("#0a0a0f","#101018","#ffffff","#16161f","#0a0a0f","#0e0e14","#1c1c26","#ffffff","#888888","#1a1a24","#ffffff","orb","edge",1),
-  universe:  TH("#1a1030","#2a1a50","#ffd84d","#2a1a50","#1a1036","#1c1440","#3a2a70","#ff5b5f","#ffd84d","#6a2ac0","#ffd84d","chandelier","universe",1)
+  universe:  TH("#1a1030","#2a1a50","#ffd84d","#2a1a50","#1a1036","#1c1440","#3a2a70","#ff5b5f","#ffd84d","#6a2ac0","#ffd84d","chandelier","universe",1),
+  sea:       TH("#d7f3f5","#c6ecef","#1f7a8c","#5fb8c8","#3f98aa","#4a8c9a","#6fb0bc","#ff7e6b","#ffd84d","#1f5f8c","#1f7a8c","orb","sea",1),
+  candy:     TH("#ffe3f1","#ffd3e8","#ff5b9a","#ffb3d4","#ff8fbf","#fff0f7","#ffe0ee","#56c8ff","#ffffff","#ff7eb6","#ff5b9a","chandelier","candy"),
+  jungle:    TH("#e8f3d8","#dcecc4","#3a6b2a","#7aa65a","#5a8a3a","#8a6a3a","#a8875a","#c73a40","#f2c14e","#2f6d3a","#3a6b2a","pendant","jungle"),
+  pixel:     TH("#2b2b4a","#33335a","#5ff05f","#22223c","#1a1a30","#3a3a60","#4a4a78","#ff5b5f","#5ff05f","#3d3d6a","#5ff05f","orb","pixel"),
+  dream:     TH("#efe6ff","#e4d8ff","#8a6ad8","#cbb8f5","#b39ce8","#e8dff8","#f6f1ff","#7fb0ff","#ffffff","#b28dff","#8a6ad8","chandelier","dream"),
+  giant:     TH("#f4ead8","#eadcc2","#6b4a2b","#c9a57a","#a8845a","#9a7a50","#b8966a","#2f7d4a","#f2c14e","#6b4a2b","#2f7d4a","pendant","giant"),
+  gold:      TH("#fff1c2","#ffe699","#b8860b","#f2cf6a","#d9b040","#f5dc8a","#fff3c4","#b8323f","#ffffff","#d4a017","#b8860b","chandelier","gold"),
+  zplanet:   TH("#ffffff","#f1f1f6","#1f1d2b","#e6e6ee","#cfcfdc","#dcdce6","#ffffff","#1f1d2b","#ffd84d","#e0e0ea","#1f1d2b","orb","zplanet",1),
+  empire:    TH("#1a1440","#221a52","#ffd84d","#2a2060","#1a1440","#1c1648","#2e2670","#b28dff","#ffd84d","#4a2a90","#ffd84d","chandelier","empire",1),
+  zworld:    TH("#fff8e8","#ffefd0","#ff5b5f","#ffd84d","#ffb02e","#fff3dc","#ffffff","#ff5b5f","#ffd84d","#56b8ff","#ff5b5f","chandelier","zworld")
 };
 const theme=()=>THEMES[state.tier===0&&fit().remodel>=1?"remodel":TIERS[state.tier].theme]||THEMES.diner;
 
@@ -1937,6 +2270,92 @@ const OUTSIDE={
   edge(ctx,X,Y,W,H,t){
     ctx.fillStyle="#000";ctx.fillRect(X,Y,W,H);starsIn(ctx,X,Y,W,H*.6,t,10,51);
     const g=ctx.createLinearGradient(0,Y+H*.6,0,Y+H);g.addColorStop(0,"rgba(255,255,255,0)");g.addColorStop(1,"rgba(255,255,255,.9)");ctx.fillStyle=g;ctx.fillRect(X,Y+H*.6,W,H*.4);
+  },
+  sea(ctx,X,Y,W,H,t){   // 바닷속: 빛줄기, 물고기, 해초, 거품
+    fillGrad(ctx,X,Y,W,H,"#1a7ab0","#06305a");
+    ctx.fillStyle="rgba(255,255,255,.08)";for(let i=0;i<4;i++){const x=X+i*W/4+Math.sin(t*.0008+i)*12;ctx.beginPath();ctx.moveTo(x,Y);ctx.lineTo(x+26,Y);ctx.lineTo(x+60,Y+H);ctx.lineTo(x+20,Y+H);ctx.fill()}
+    for(let i=0;i<6;i++){const bx=X+8+i*W/6;ctx.strokeStyle=i%2?"#2fae6a":"#43d17f";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(bx,Y+H);
+      for(let k=1;k<=5;k++)ctx.lineTo(bx+Math.sin(t*.002+i+k)*7,Y+H-k*11);ctx.stroke()}
+    for(let i=0;i<4;i++){const dir=i%2?-1:1,x=X+(((t*(.02+i*.006)*dir)+i*90)%(W+60)+W+60)%(W+60)-30,y=Y+30+i*22;
+      const c=["#ff9340","#ffd84d","#ff7eb6","#56d8ff"][i];ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,12,7,0,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.moveTo(x-dir*10,y);ctx.lineTo(x-dir*20,y-7);ctx.lineTo(x-dir*20,y+7);ctx.fill();circle(ctx,x+dir*6,y-2,1.8,INK)}
+    for(let i=0;i<10;i++){const y=Y+H-((t*.03+seeded(i)*H*3)%H),x=X+seeded(i+5)*W+Math.sin(t*.004+i)*4;circle(ctx,x,y,2+seeded(i+9)*3,null,"rgba(255,255,255,.7)",1.5)}
+  },
+  candy(ctx,X,Y,W,H,t){   // 사탕 나라: 솜사탕 구름, 줄무늬 언덕, 막대사탕
+    fillGrad(ctx,X,Y,W,H,"#ffc6e4","#fff4fa");
+    for(let i=0;i<3;i++){const x=X+((i*110-t*.012)%(W+80)+W+80)%(W+80)-40,y=Y+22+i*14;ctx.fillStyle=["#ffd0ea","#e6d4ff","#d4f4ff"][i];
+      ctx.beginPath();ctx.arc(x,y,14,0,TAU);ctx.arc(x+16,y-6,16,0,TAU);ctx.arc(x+32,y,13,0,TAU);ctx.fill()}
+    [[X+40,"#7fe0c4"],[X+W-50,"#ffb3d4"]].forEach(([cx,c],i)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(cx,Y+H+10,70,Math.PI,TAU);ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.8)";ctx.lineWidth=5;for(let k=-2;k<=2;k++){ctx.beginPath();ctx.arc(cx,Y+H+10,70,Math.PI+.5+k*.35,Math.PI+.62+k*.35);ctx.stroke()}});
+    for(let i=0;i<3;i++){const x=X+60+i*55,y=Y+H-50-(i%2)*14;stroke(ctx,[[x,y],[x,Y+H]],"#fff",4);
+      ctx.save();ctx.translate(x,y);ctx.rotate(t*.002*(i%2?1:-1));circle(ctx,0,0,14,["#ff5b8a","#56b8ff","#ffd84d"][i],INK,2);
+      ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.beginPath();for(let a=0;a<12;a+=.4)ctx.lineTo(Math.cos(a)*a,Math.sin(a)*a);ctx.stroke();ctx.restore()}
+  },
+  jungle(ctx,X,Y,W,H,t){   // 정글 신전: 계단식 신전, 큰 잎, 날아가는 앵무새
+    fillGrad(ctx,X,Y,W,H,"#8fd8a0","#e8f7d0");
+    for(let k=0;k<5;k++){const w=150-k*26;ctx.fillStyle=k%2?"#c9a36a":"#b8915a";ctx.fillRect(X+W/2-w/2,Y+H-22-k*16,w,16)}
+    ctx.fillStyle="#3a2a1a";ctx.fillRect(X+W/2-8,Y+H-38,16,16);
+    for(let i=0;i<5;i++){ctx.save();ctx.translate(i<2?X+6:X+W-6,Y+10+i%3*34);ctx.rotate((i<2?.6:-.6)+Math.sin(t*.002+i)*.08);
+      ctx.fillStyle=i%2?"#2f8a4a":"#3fae5a";ctx.beginPath();ctx.ellipse(0,20,14,34,0,0,TAU);ctx.fill();ctx.restore()}
+    const px=X+((t*.05)%(W+60))-30,py=Y+36+Math.sin(t*.004)*8;ctx.fillStyle="#e84a3a";ctx.beginPath();ctx.ellipse(px,py,10,6,0,0,TAU);ctx.fill();
+    ctx.fillStyle="#56b8ff";ctx.beginPath();ctx.ellipse(px-4,py-4+Math.sin(t*.03)*4,8,4,-.4,0,TAU);ctx.fill();ctx.fillStyle="#ffd84d";ctx.fillRect(px+8,py-2,5,3);
+  },
+  pixel(ctx,X,Y,W,H,t){   // 픽셀 게임: 네모 구름, 벽돌 바닥, ? 블록, 초록 파이프
+    ctx.fillStyle="#5c94fc";ctx.fillRect(X,Y,W,H);
+    for(let i=0;i<2;i++){const x=X+((i*140-t*.015)%(W+80)+W+80)%(W+80)-40,y=Y+20+i*22;ctx.fillStyle="#fff";ctx.fillRect(x,y,40,10);ctx.fillRect(x+8,y-8,24,8)}
+    for(let x=X;x<X+W;x+=16){ctx.fillStyle="#c84c0c";ctx.fillRect(x,Y+H-18,16,18);ctx.fillStyle="#000";ctx.fillRect(x,Y+H-18,16,2);ctx.fillRect(x+15,Y+H-18,1,18)}
+    const by=Y+H-70-Math.abs(Math.sin(t*.004))*4;ctx.fillStyle="#f8b800";ctx.fillRect(X+W/2-12,by,24,24);ctx.fillStyle="#000";ctx.fillRect(X+W/2-12,by+22,24,2);
+    text(ctx,"?",X+W/2,by+12,18,"#fff");
+    ctx.fillStyle="#00a800";ctx.fillRect(X+W-58,Y+H-52,32,34);ctx.fillRect(X+W-62,Y+H-58,40,10);ctx.fillStyle="#80d010";ctx.fillRect(X+W-54,Y+H-52,5,34);
+    if(Math.floor(t/400)%2){ctx.fillStyle="#ffd84d";ctx.fillRect(X+W/2-4,by-18,8,12)}
+  },
+  dream(ctx,X,Y,W,H,t){   // 꿈나라: 잠든 달님, 폴짝 뛰는 양, 별과 Z
+    fillGrad(ctx,X,Y,W,H,"#2a2160","#7a5ac0");starsIn(ctx,X,Y,W,H,t,18,77);
+    const mx=X+W-50,my=Y+34;circle(ctx,mx,my,22,"#fff4b8");circle(ctx,mx+10,my-6,20,"#4a3a90");
+    ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(mx-10,my+2,4,.1*Math.PI,.9*Math.PI);ctx.stroke();
+    for(let z=0;z<3;z++){const ph=(t*.0005+z*.33)%1;ctx.globalAlpha=1-ph;text(ctx,"Z",mx-26-ph*20,my-10-ph*26,10+z*3,"#fff");ctx.globalAlpha=1}
+    for(let i=0;i<2;i++){const ph=((t*.0006)+i*.5)%1,x=X+30+ph*(W-60),y=Y+H-26-Math.sin(ph*Math.PI)*40;
+      ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(x,y,9,0,TAU);ctx.arc(x+8,y-3,8,0,TAU);ctx.arc(x-7,y-2,7,0,TAU);ctx.fill();circle(ctx,x+13,y+1,4.5,INK);
+      stroke(ctx,[[x-5,y+7],[x-5,y+14]],INK,2);stroke(ctx,[[x+5,y+7],[x+5,y+14]],INK,2)}
+    ctx.fillStyle="#c8b8ff";ctx.fillRect(X,Y+H-10,W,10);
+  },
+  giant(ctx,X,Y,W,H,t){   // 거인 나라: 하늘까지 자란 콩나무와 구름 위 성
+    fillGrad(ctx,X,Y,W,H,"#8fd0ff","#e8f7ff");
+    ctx.fillStyle="#fff";[[X+W-70,Y+44],[X+W-40,Y+40],[X+W-100,Y+48]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,20,0,TAU);ctx.fill()});
+    ctx.fillStyle="#b9b0c8";ctx.fillRect(X+W-92,Y+6,44,26);[[X+W-92],[X+W-70],[X+W-54]].forEach(([x])=>ctx.fillRect(x,Y-2,8,10));ctx.fillStyle="#6a5a8a";ctx.fillRect(X+W-74,Y+16,8,16);
+    ctx.strokeStyle="#2f9d4a";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(X+70,Y+H);for(let k=0;k<=10;k++)ctx.lineTo(X+70+Math.sin(k*.9+t*.001)*18,Y+H-k*H/10);ctx.stroke();
+    for(let k=1;k<9;k++){const lx=X+70+Math.sin(k*.9+t*.001)*18,ly=Y+H-k*H/10;ctx.fillStyle="#43d17f";ctx.beginPath();ctx.ellipse(lx+(k%2?14:-14),ly,12,6,k%2?.5:-.5,0,TAU);ctx.fill()}
+    // 거인의 커다란 눈이 창 밖에서 빼꼼
+    const eo=Math.max(0,Math.sin(t*.0007));if(eo>.6){ctx.fillStyle="#ffe0c0";ctx.beginPath();ctx.ellipse(X+W/2+20,Y+H+10,60,40,0,0,TAU);ctx.fill();circle(ctx,X+W/2+20,Y+H-12,11,"#fff",INK,2);circle(ctx,X+W/2+22,Y+H-12,5,INK)}
+  },
+  gold(ctx,X,Y,W,H,t){   // 황금 엘도라도: 금빛 피라미드와 햇살
+    fillGrad(ctx,X,Y,W,H,"#ffb84a","#fff0b8");
+    const sx=X+W/2,sy=Y+40;ctx.fillStyle="rgba(255,255,255,.35)";for(let i=0;i<12;i++){const a=i/12*TAU+t*.0005;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+Math.cos(a-.1)*160,sy+Math.sin(a-.1)*160);ctx.lineTo(sx+Math.cos(a+.1)*160,sy+Math.sin(a+.1)*160);ctx.fill()}
+    circle(ctx,sx,sy,20,"#fff6c0");
+    [[X+50,70,"#e0a400"],[X+W-60,90,"#f2c14e"],[X+W/2,110,"#d49a10"]].forEach(([cx,w,c])=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(cx-w/2,Y+H);ctx.lineTo(cx,Y+H-w*.75);ctx.lineTo(cx+w/2,Y+H);ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.3)";ctx.beginPath();ctx.moveTo(cx,Y+H-w*.75);ctx.lineTo(cx+w/2,Y+H);ctx.lineTo(cx+w/6,Y+H);ctx.fill()});
+    for(let i=0;i<5;i++)sparkle(ctx,X+seeded(i+30)*W,Y+20+seeded(i+31)*(H-40),4+3*Math.abs(Math.sin(t*.004+i)),"#fff")
+  },
+  zplanet(ctx,X,Y,W,H,t){   // 졸라맨 얼굴 행성
+    fillGrad(ctx,X,Y,W,H,"#06081e","#1a1f4a");starsIn(ctx,X,Y,W,H,t,30,88);
+    const px=X+W/2,py=Y+H/2+6,r=38;circle(ctx,px,py,r,"#ffffff",INK,4);
+    circle(ctx,px-12,py-6,4,INK);circle(ctx,px+12,py-6,4,INK);ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.beginPath();ctx.arc(px,py+4,14,.15*Math.PI,.85*Math.PI);ctx.stroke();
+    ctx.strokeStyle="#ffd84d";ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(px,py,64,14,-.25,.1*Math.PI,.9*Math.PI,true);ctx.stroke();
+    const a=t*.001;circle(ctx,px+Math.cos(a)*70,py+Math.sin(a)*22,6,"#ff9340",INK,2);
+  },
+  empire(ctx,X,Y,W,H,t){   // 졸라맨 은하 제국: 은하와 함대
+    OUTSIDE.galaxy(ctx,X,Y,W,H,t);
+    for(let i=0;i<6;i++){const x=X+((t*(.03+i*.004)+i*60)%(W+60))-30,y=Y+20+(i%3)*30+Math.sin(t*.003+i)*4;
+      ctx.fillStyle="#d8deea";ctx.strokeStyle=INK;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x+14,y);ctx.lineTo(x-10,y-7);ctx.lineTo(x-6,y);ctx.lineTo(x-10,y+7);ctx.closePath();ctx.fill();ctx.stroke();
+      circle(ctx,x+2,y,3,"#fff",INK,1.2);ctx.fillStyle="#ff9340";ctx.fillRect(x-14,y-2,4,4)}
+    ctx.fillStyle="#b28dff";ctx.fillRect(X+W-40,Y+H-48,3,40);ctx.fillStyle="#ffd84d";ctx.beginPath();ctx.moveTo(X+W-37,Y+H-48);ctx.lineTo(X+W-14,Y+H-42+Math.sin(t*.006)*2);ctx.lineTo(X+W-37,Y+H-36);ctx.fill();
+  },
+  zworld(ctx,X,Y,W,H,t){   // 졸라맨 월드: 무지개, 불꽃놀이, 거대한 졸라맨 동상
+    fillGrad(ctx,X,Y,W,H,"#56b8ff","#ffe8f4");
+    ["#ff5b5f","#ff9340","#ffd84d","#43d17f","#56b8ff","#b28dff"].forEach((c,i)=>{ctx.strokeStyle=c;ctx.lineWidth=6;ctx.beginPath();ctx.arc(X+W/2,Y+H+30,130-i*6,Math.PI,TAU);ctx.stroke()});
+    for(let i=0;i<3;i++){const ph=((t*.0006)+i/3)%1,fx=X+40+i*(W-80)/2,fy=Y+30+i%2*16;ctx.globalAlpha=1-ph;
+      for(let k=0;k<10;k++){const a=k/10*TAU;circle(ctx,fx+Math.cos(a)*ph*30,fy+Math.sin(a)*ph*30,2.5,["#ffd84d","#ff7eb6","#fff"][k%3])}ctx.globalAlpha=1}
+    drawStick(ctx,{x:X+W/2,y:Y+H-4,s:.55,dir:1,pose:"cheer",t:t*.001,face:"happy",ink:"#b8860b",headFill:"#ffd84d"});
   },
   universe(ctx,X,Y,W,H,t,tod){
     OUTSIDE.galaxy(ctx,X,Y,W,H,t,tod);
@@ -2577,7 +2996,7 @@ function drawShop(ctx,t,dt){
   B.pops.forEach(p=>{const q=p.t/1300;ctx.save();ctx.globalAlpha=1-Math.max(0,q-.6)/.4;outlinedText(ctx,p.str,p.x,p.y-q*50,p.size,p.color,INK,6);ctx.restore()});
   if(B.on&&B.V===0&&!vip&&!B.insp)bubble(ctx,"오늘은 손님이 없네...",740,120,880,168,22);
   ctx.restore();
-  drawFitTooltip(ctx);
+  drawFitTooltip(ctx);drawTutArrow(ctx,t);
 }
 
 /* ================= 호텔 객실 층 (5성급 호텔부터, 2~4층) ================= */
@@ -2890,8 +3309,8 @@ function render(){
   $("menuFair").textContent=`적정가 ${won(dishOf(state.day).fair)}`;$("adValue").textContent=won(ad*S*G);
   $("adHint").textContent=`끝까지 올리면 ${won(1e6*S*G)}로 손님 약 +${korNum(180*G)}명. 광고비는 그대로 비용이에요.`;
   // 상단 표시는 짧게: "졸라맨 레전더리 호텔" → "레전더리 호텔" (한 단어만 남으면 그대로)
-  {const full=TIERS[state.tier].shop,short=full.replace(/^졸라맨 /,"");
-   $("shopPill").textContent=`Lv.${state.tier} ${short.includes(" ")?short:full}`;$("shopPill").title=full}
+  {const T=TIERS[state.tier],full=T.shop,short=full.replace(/^졸라맨 /,"");
+   $("shopPill").textContent=`Lv.${state.tier} ${T.hud||(short.includes(" ")?short:full)}`;$("shopPill").title=full}
   $("gradeText").textContent=GRADES[state.grade].name;
   $("priceHint").textContent=priceHint(price);
   setFill($("price"));setFill($("ad"));
@@ -2999,12 +3418,13 @@ function renderUpgrade(){
   if(state.tier>=MAX_TIER){
     foot=`<div class="fit-next ready"><div><div class="label">최종 단계</div><div class="up-name">${T.shop}</div><small class="muted">모든 확장을 마쳤어요. 졸라맨이 우주 최고의 사장님이 됐어요!</small></div></div>`;
   }else{
-    const nx=TIERS[state.tier+1],ready=fitDone(),[lo,hi]=nextPriceRange(),ok=ready&&can&&state.cash>=nx.cost,pct=clamp(state.cash/nx.cost*100,0,100);
+    const nx=TIERS[state.tier+1],cost=nextCost(),ready=fitDone(),[lo,hi]=nextPriceRange(),ok=ready&&can&&state.cash>=cost,pct=clamp(state.cash/cost*100,0,100);
     foot=`<div class="fit-next ${ready?"ready":""}"><div class="fit-next-info"><div class="label">다음 확장 · Lv.${state.tier+1} / ${MAX_TIER}</div><div class="up-name">${nx.name}</div>
       <div class="up-eff"><span class="eff plus">확장하면 손님 +${addText(nx.add)}</span><span class="eff gold">음식 가격 ×${lo===hi?fmtX(lo):`${fmtX(lo)}~${fmtX(hi)}`}배</span><span class="eff menu">새 메뉴 ${menuOf(state.tier+1).length}종</span>${nx.lodge&&!T.lodge?`<span class="eff role">숙박 시작 · 2층부터</span>`:""}</div>
+      ${costByIncome()?`<small class="muted" style="display:block">확장 비용은 이 가게를 다 꾸몄을 때 하루에 버는 돈의 ${costDays()}배예요</small>`:""}
       ${ready?"":`<small class="fit-lock">위 목록을 모두 마쳐야 확장할 수 있어요 (${doneN}/${tasks.length})</small>`}</div>
-      <button id="upBtn" class="b3 gold${ok?" pulse":""}" type="button" ${ok?"":"disabled"}>${ready?"확장하기":"준비 중"}<small>${won(nx.cost)}</small></button></div>
-      ${ready?`<div class="up-bar"><i style="width:${pct}%"></i><span>${won(Math.min(state.cash,nx.cost))} / ${won(nx.cost)}</span></div>`:""}`;
+      <button id="upBtn" class="b3 gold${ok?" pulse":""}" type="button" ${ok?"":"disabled"}>${ready?"확장하기":"준비 중"}<small>${won(cost)}</small></button></div>
+      ${ready?`<div class="up-bar"><i style="width:${pct}%"></i><span>${won(Math.min(state.cash,cost))} / ${won(cost)}</span></div>`:""}`;
   }
   box.innerHTML=`<div class="up-head"><span class="up-kicker">Lv.${state.tier} ${T.shop} · 꾸미기</span><span class="fit-count ${doneN===tasks.length?"all":""}">${doneN} / ${tasks.length} 완료</span></div>
     <div class="fit-list">${rows}</div>${foot}`;
@@ -3031,7 +3451,7 @@ function renderTiers(){
   $("tierList").innerHTML=TIERS.map((T,lv)=>{const st=lv<state.tier?"done":lv===state.tier?"now":lv===state.tier+1?"next":"locked";
     const prog=lv===state.tier?` · 꾸미기 ${fitTasks().filter(x=>x.have>=x.need).length}/${fitTasks().length}`:"";
     return `<div class="tier-row ${st==="now"?"next":st}"><span class="tn">Lv.${lv}</span><div><b>${T.shop}</b>
-      <small>${lv?`${won(T.cost)} · 손님 +${addText(T.add)} · 음식 가격 ${state.scaleLog&&state.scaleLog[lv-1]&&lv<=state.tier?`×${state.scaleLog[lv-1]}`:"×2~5배"}`:"시작 가게"}${T.lodge?" · 숙박 (2~4층)":""}${prog}</small>
+      <small>${lv?`${lv===state.tier+1?won(nextCost()):lv>state.tier+1?`${won(T.cost)}부터`:won(T.cost)} · 손님 +${addText(T.add)} · 음식 가격 ${state.scaleLog&&state.scaleLog[lv-1]&&lv<=state.tier?`×${state.scaleLog[lv-1]}`:"×2~5배"}`:"시작 가게"}${T.lodge?" · 숙박 (2~4층)":""}${prog}</small>
       <small class="menus">메뉴: ${menuOf(lv).map(d=>d[0]).join(", ")}</small></div>
       <span class="st">${st==="done"?"완료":st==="now"?"지금":st==="next"?"다음":"잠김"}</span></div>`}).join("");
 }
@@ -3379,7 +3799,7 @@ function showInspection(R,after){
     <h2 id="modalTitle">${up?"승급!":down?"강등...":"등급 유지"}</h2>
     <div class="grade-change"><span class="gtag">${GRADES[R.from].name}</span>→<span class="gtag ${up?"up":down?"down":""}">${GRADES[R.to].name}</span></div>
     ${scoreBars(R,!up&&!down&&GRADES[R.from+1]?GRADES[R.from+1].min:0)}
-    <p>평균 <b>${R.avg}점</b>${up?` · 손님 +12%`:""}${!up&&!down&&GRADES[R.from+1]?`<br><b class="neg">승급 실패: ${gradeShortfall(R,GRADES[R.from+1])}</b>`:""}
+    <p>평균 <b>${R.avg}점</b>${up?` · ${R.to-R.from>1?`<b>${R.to-R.from}단계 한 번에 승급!</b> · `:""}손님 +${(R.to-R.from)*12}%`:""}${!up&&!down&&GRADES[R.from+1]?`<br><b class="neg">승급 실패: ${gradeShortfall(R,GRADES[R.from+1])}</b>`:""}
     <br>${nx?`다음 심사(10일 뒤)에서 평균 ${nx.req}점 이상, 세 점수 모두 ${nx.min}점 이상이면 '${nx.name}'${roEuro(nx.name)} 올라가요.`:"최고 등급이에요!"}</p>
     <p class="muted">${low}</p>
     <div class="actions"><button id="inspOk" class="b3" type="button">확인</button></div>`);
@@ -3407,11 +3827,11 @@ function showSettings(){
   const inGame=!$("game").hidden;
   openModal(`<div class="ribbon blue">설정</div><h2 id="modalTitle">게임 설정</h2>
     ${sw("swMusic",Snd.music,"배경 음악")}${sw("swSfx",Snd.sfx,"효과음")}
-    <div class="actions">${inGame?`<button id="sRestart" class="b3 red" type="button">처음부터 다시</button>`:""}<button id="sClose" class="b3" type="button">닫기</button></div>`);
+    <div class="actions">${inGame?`<button id="sTut" class="b3 cream" type="button">튜토리얼 다시 보기</button><button id="sRestart" class="b3 red" type="button">처음부터 다시</button>`:""}<button id="sClose" class="b3" type="button">닫기</button></div>`);
   $("swMusic").onclick=e=>{Snd.music=!Snd.music;e.currentTarget.setAttribute("aria-checked",Snd.music);Snd.wake();if(!Snd.music)Snd.stopMusic();Snd.savePrefs()};
   $("swSfx").onclick=e=>{Snd.sfx=!Snd.sfx;e.currentTarget.setAttribute("aria-checked",Snd.sfx);Snd.wake();Snd.click();Snd.savePrefs()};
   $("sClose").onclick=closeModal;
-  if(inGame)$("sRestart").onclick=confirmRestart;
+  if(inGame){$("sRestart").onclick=confirmRestart;$("sTut").onclick=()=>{closeModal();Tut.end();Tut.start()}}
 }
 function confirmRestart(){
   openModal(`<div class="ribbon red">처음부터</div><h2 id="modalTitle">처음부터 다시 할까요?</h2>
@@ -3420,6 +3840,125 @@ function confirmRestart(){
   $("noBtn").onclick=closeModal;
   $("yesBtn").onclick=()=>{closeModal();newGame();showScreen("title")};
 }
+
+/* ================= 돈 커튼: 오프닝 → 가게 =================
+   지폐가 쏟아져 화면 전체를 뒤덮고(onCovered 에서 가게 화면으로 바꿈),
+   다시 우수수 떨어져 사라지면 가게 안이 보인다(onDone) */
+function moneyCurtain(onCovered,onDone){
+  if(reduceMotion){onCovered();onDone&&onDone();return}
+  const cv=document.createElement("canvas");cv.className="money-curtain";cv.setAttribute("aria-hidden","true");document.body.appendChild(cv);
+  const W=innerWidth,H=innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+  const sc=clamp(Math.min(W,H)/300,1.1,2.6),sx=72*sc*.62,sy=36*sc*.62,B=[];
+  for(let y=-sy;y<H+sy;y+=sy)for(let x=-sx*.5;x<W+sx;x+=sx)
+    B.push({x:x+(Math.random()-.5)*sx*.5,y:y+(Math.random()-.5)*sy*.5,r:(Math.random()-.5)*1.1,v:[1000,5000,10000,50000][Math.floor(Math.random()*4)],d:Math.random()*520,d2:Math.random()*450});
+  const COVER=950,HOLD=300;let t0=null,covered=false;
+  Snd.whoosh();Snd.register();
+  const step=now=>{
+    if(t0==null)t0=now;const t=now-t0;ctx.clearRect(0,0,W,H);let alive=0;
+    for(const b of B){
+      let x=b.x,y,rot;
+      if(t<COVER+HOLD){const q=clamp((t-b.d)/380,0,1);if(q<=0){alive++;continue}y=lerp(-90,b.y,ease(q));rot=b.r+(1-q)*2}
+      else{const u=Math.max(0,t-COVER-HOLD-b.d2)/1000;y=b.y+u*u*1900;rot=b.r+u*3*Math.sign(b.r||1);x=b.x+u*140*b.r}
+      if(y>H+90)continue;alive++;drawBill(ctx,x,y,b.v,rot,sc);
+    }
+    if(!covered&&t>=COVER){covered=true;onCovered()}
+    if(covered&&t>COVER+HOLD+200&&alive===0){cv.remove();onDone&&onDone();return}
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ================= 튜토리얼: 졸라맨 머리가 오른쪽 위에서 알려 준다 (반말, 장난스럽게) ================= */
+const TUT_STEPS=[
+  {say:"짜잔~ 여기가 내 가게야! 부자 형님 돈으로 다시 차렸지 헤헤. 이번엔 진짜 안 망해. 진짜로. ...아마?",mood:"sweat"},
+  {say:"가게 안에 초록색 + 보이지? 거기 누르면 테이블이 뿅! 테이블 없으면 손님들 바닥에서 먹어야 돼 ㅋㅋ",el:"#stage",arrow:"slot"},
+  {say:"테이블을 누르면 나무 → 원목 → 명품으로 바뀌어. 명품은 촛불까지 켜진다구. 분위기 미쳤다 진짜",el:"#stage",arrow:"table"},
+  {say:"테이프 붙은 상자 보이지? 그거 치우면 가게가 넓어져. 치우는 데 돈 드는 건... 쉿, 비밀~",el:"#stage",arrow:"box",mood:"wink"},
+  {say:"여기 꾸미기 목록 다 채우고 그 가게에서 하루 장사하면 다음 건물로 확장! 목표는 졸라맨 유니버스다!!",el:"#upgrade"},
+  {say:"음식값은 여기서 정해. '적정가로' 누르면 딱 좋아. 욕심부려서 비싸게 받으면 손님 다 도망간다? 나처럼 망하고 싶어?",el:"#priceCtrl",mood:"sweat"},
+  {say:"준비 끝났으면 '영업 시작' 꾹! 손님들 밥 먹는 거 구경하는 게 꿀잼이야.",el:"#openBtn"},
+  {say:"민원 들어오면 웬만하면 해결해 줘. 무시하면 손님이 팍 줄어... 진짜 팍. 등급사 아저씨는 10일마다 오니까 깔끔하게!",el:"#effects"},
+  {say:"돈 좀 모이면 직원도 뽑자. 근데 월급은 매일 나가니까 통장 조심~ 나 또 절규하기 싫거든",el:"#hire",mood:"sweat"},
+  {say:"모르는 건 오른쪽 위 ? 눌러 봐. 자, 가자고! 이번엔 파산 금지다!!!",el:"#helpBtn",mood:"wink"}
+];
+const tutCv=makeCanvas($("tutHead"),100,100);
+const Tut={on:false,i:0,shown:0,hi:null,
+  start(){
+    if(this.on||$("game").hidden)return;
+    this.on=true;this.i=0;const el=$("tut");el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
+    Snd.boing();this.show();
+  },
+  show(){
+    const S=TUT_STEPS[this.i];this.shown=0;
+    $("tutStep").textContent=`${this.i+1} / ${TUT_STEPS.length}`;
+    $("tutNext").textContent=this.i===TUT_STEPS.length-1?"알겠어!":"다음 ▶";
+    $("tutText").textContent="";
+    if(this.hi)this.hi.classList.remove("tut-hi");
+    this.hi=S.el?document.querySelector(S.el):null;
+    if(this.hi){this.hi.classList.add("tut-hi");this.hi.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"center"})}
+    Shop.tutArrow=S.arrow||null;
+  },
+  // 글자가 다 나오기 전에 누르면 한 번에 보여 주고, 다 나왔으면 다음으로
+  next(){
+    const S=TUT_STEPS[this.i];
+    if(this.shown<S.say.length){this.shown=S.say.length;$("tutText").textContent=S.say;return}
+    Snd.click();
+    if(this.i>=TUT_STEPS.length-1){this.end();return}
+    this.i++;this.show();
+  },
+  end(){
+    this.on=false;$("tut").hidden=true;
+    if(this.hi)this.hi.classList.remove("tut-hi");this.hi=null;Shop.tutArrow=null;
+    window.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"});
+  },
+  frame(dt,now){
+    if(!this.on)return;
+    const S=TUT_STEPS[this.i];
+    if(this.shown<S.say.length){
+      const before=Math.floor(this.shown);this.shown=Math.min(S.say.length,this.shown+dt*.032);
+      const n=Math.floor(this.shown);
+      if(n!==before){$("tutText").textContent=S.say.slice(0,n);if(n%3===0&&S.say[n-1]!==" ")Snd.tone(760+Math.random()*260,.03,"square",.012)}
+    }
+    drawTutHead(tutCv,now,this.shown<S.say.length,S.mood||"happy");
+  }
+};
+function drawTutHead(tc,now,talking,mood){
+  tc.fit();const ctx=tc.ctx;ctx.clearRect(0,0,100,100);
+  const x=50,y=67+Math.sin(now*.004)*2;
+  ctx.lineCap="round";ctx.lineJoin="round";
+  stroke(ctx,[[x,y+26],[x,y+46]],INK,5);
+  circle(ctx,x,y,26,PAPER,INK,5);
+  // 요리사 모자 (캔버스 위로 잘리지 않게)
+  ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.fillStyle="#fff";rr(ctx,x-16,y-40,32,15,3);ctx.fill();ctx.stroke();
+  [[-11,-44,9],[0,-50,10.5],[11,-44,9]].forEach(([dx,dy,r])=>circle(ctx,x+dx,y+dy,r,"#fff",INK,3));
+  ctx.fillStyle="#fff";ctx.fillRect(x-14,y-43,28,9);
+  // 눈 (깜빡, 윙크)
+  const blink=now%3400<130;ctx.strokeStyle=INK;ctx.lineWidth=3;
+  if(mood==="wink"){circle(ctx,x-9,y-3,3.6,INK);ctx.beginPath();ctx.moveTo(x+4,y-2);ctx.quadraticCurveTo(x+9,y-7,x+14,y-2);ctx.stroke()}
+  else if(blink){ctx.beginPath();ctx.moveTo(x-13,y-3);ctx.lineTo(x-5,y-3);ctx.moveTo(x+5,y-3);ctx.lineTo(x+13,y-3);ctx.stroke()}
+  else{circle(ctx,x-9,y-3,3.6,INK);circle(ctx,x+9,y-3,3.6,INK);circle(ctx,x-8,y-4.5,1.2,"#fff");circle(ctx,x+10,y-4.5,1.2,"#fff")}
+  ctx.fillStyle="rgba(255,120,140,.35)";ctx.beginPath();ctx.ellipse(x-17,y+7,5,3,0,0,TAU);ctx.ellipse(x+17,y+7,5,3,0,0,TAU);ctx.fill();
+  // 입 (말할 때 뻐끔뻐끔)
+  if(talking){const o=2+Math.abs(Math.sin(now*.03))*6;ctx.fillStyle=INK;ctx.beginPath();ctx.ellipse(x,y+12,6,o,0,0,TAU);ctx.fill()}
+  else{ctx.beginPath();ctx.arc(x,y+8,8,.15*Math.PI,.85*Math.PI);ctx.stroke()}
+  if(mood==="sweat"){const sy=y-20+(now*.02%6);ctx.fillStyle="#9fdcff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+24,sy-7);ctx.quadraticCurveTo(x+29,sy,x+24,sy+4);ctx.quadraticCurveTo(x+19,sy,x+24,sy-7);ctx.fill();ctx.stroke()}
+}
+// 가게 그림 위에 튜토리얼 화살표 (빈 자리 / 테이블 / 상자)
+function drawTutArrow(ctx,t){
+  if(!Shop.tutArrow||Biz.on||Shop.view>1)return;
+  const r=fitRegions().find(q=>q.kind===Shop.tutArrow);if(!r)return;
+  // 화살표 끝: 빈 자리는 + 표시 바로 위, 테이블·상자는 그 윗부분
+  const [sx,sy]=SLOT_POS[r.i],s=depthScale(sy),tip=sy-({slot:78,table:96,box:92}[r.kind]||90)*s;
+  r.cx=sx;const y=tip-Math.abs(Math.sin(t*.006))*14;
+  ctx.save();ctx.fillStyle=MUSTARD;ctx.strokeStyle=INK;ctx.lineWidth=4;ctx.lineJoin="round";
+  ctx.beginPath();ctx.moveTo(r.cx,y);ctx.lineTo(r.cx-22,y-24);ctx.lineTo(r.cx-9,y-24);ctx.lineTo(r.cx-9,y-50);ctx.lineTo(r.cx+9,y-50);ctx.lineTo(r.cx+9,y-24);ctx.lineTo(r.cx+22,y-24);ctx.closePath();ctx.fill();ctx.stroke();
+  outlinedText(ctx,"여기!",r.cx,y-66,20,PAPER,INK,5);ctx.restore();
+}
+$("tutNext").onclick=e=>{e.stopPropagation();Tut.next()};
+$("tutSkip").onclick=e=>{e.stopPropagation();Snd.click();Tut.end()};
+$("tutBox").onclick=()=>Tut.next();
 
 /* ================= 하루 흐름 ================= */
 function startBusiness(){
@@ -3512,17 +4051,17 @@ function nextDay(){
 function buyUpgrade(){
   if(busy()||state.bankrupt||state.tier>=MAX_TIER)return;
   if(!fitDone()){toast("아직 확장할 수 없어요","꾸미기 목록을 모두 마쳐야 해요","!");Snd.fail();return}
-  const T=TIERS[state.tier+1];if(state.cash<T.cost)return;
+  const T=TIERS[state.tier+1],cost=nextCost();if(state.cash<cost)return;
   const oldAvg=avgFair(), add=Array.isArray(T.add)?randInt(T.add[0],T.add[1]):T.add;
   const before=forecast(+$("price").value,+$("ad").value).customers;
   const mult=Math.round((2+Math.random()*3)*10)/10;   // 음식 가격 2~5배
   // 지금 가게에서 늘린 손님은 그대로 이어지고, 새 건물의 손님(add)이 정확히 더해진다
   const carried=liveBonus();
-  state.cash-=T.cost;state.tier++;
+  state.cash-=cost;state.tier++;
   state.fit=freshFit(state.tier);
   state.bonusCust+=carried+add-liveBonus();
   // 새 메뉴의 평균 적정가가 지금 메뉴 평균의 mult 배가 되게 (별 호텔부터는 건물값에 맞춘 최저 가격대)
-  state.scale=Math.max(oldAvg*mult/(8000*menuAvgM()),floorScale(state.tier));
+  state.scale=Math.max(oldAvg*mult/(PRICE_BASE*menuAvgM()),floorScale(state.tier));
   const ratio=avgFair()/oldAvg;
   state.scaleLog=(state.scaleLog||[]).concat(+ratio.toPrecision(3));
   Shop.view=1;Shop.hover=Shop.sel=null;
@@ -3544,15 +4083,20 @@ function hireStaff(){
 }
 
 /* ================= 화면 전환 ================= */
-const Opening={scene:1,t:0,off:0,
+const Opening={scene:1,t:0,off:0,shake:0,fired:{},leaving:false,
   go(n){
-    this.scene=n;this.t=0;
-    $("sceneNo").textContent=`${n} / 6`;
-    const s=$("sceneText");s.textContent=SCENES[n-1];s.style.animation="none";void s.offsetWidth;s.style.animation="";
-    $("openNext").hidden=n===6;$("openSkip").hidden=n===6;$("openStart").hidden=n!==6;
-    if(n===6)Snd.bells();
+    const last=n===SCENES.length;
+    this.scene=n;this.t=0;this.fired={};
+    $("sceneNo").textContent=`${n} / ${SCENES.length}`;
+    const s=$("sceneText");s.textContent=SCENES[n-1].text;s.style.animation="none";void s.offsetWidth;s.style.animation="";
+    $("openNext").hidden=last;$("openSkip").hidden=last;$("openStart").hidden=!last;
   }
 };
+// 마지막 장면: 돈이 화면을 뒤덮었다가 사라지면 가게 안, 그리고 졸라맨 튜토리얼
+function leaveOpening(){
+  if(Opening.leaving)return;Opening.leaving=true;
+  moneyCurtain(()=>enterGame(),()=>setTimeout(()=>Tut.start(),1500));
+}
 function currentScreen(){return ["title","opening","game"].find(n=>!$(n).hidden)||"title"}
 function showScreen(name){
   ["title","opening","game"].forEach(n=>$(n).hidden=n!==name);
@@ -3579,22 +4123,20 @@ function newGame(){
   Object.assign(Biz,{on:false,sprites:[],pops:[],progress:0,insp:null});Shop.parts=[];
   Object.assign(Shop,{phase:"prep",complainer:false,gift:false,chefMood:"idle"});
   $("price").value=8000;$("ad").value=0;setCash(START_CASH,true);
-  Shop.view=1;Shop.hover=Shop.sel=null;
+  Shop.view=1;Shop.hover=Shop.sel=null;Tut.end();
 }
 function enterGame(){
   showScreen("game");Snd.door();setTimeout(dayBanner,150);
-  if(state.records.length===0&&state.tier===0&&tablesPlaced()<=2)
-    setTimeout(()=>toast("가게를 꾸며 보세요!","가게 안의 + 자리를 누르면 테이블을 놓을 수 있어요","+"),2600);
 }
 
 /* ================= 이벤트 ================= */
-$("tNew").onclick=()=>{Snd.wake();Snd.click();newGame();Opening.off=0;Opening.go(1);showScreen("opening")};
+$("tNew").onclick=()=>{Snd.wake();Snd.click();newGame();Tut.end();Opening.off=0;Opening.leaving=false;Opening.go(1);showScreen("opening")};
 $("tContinue").onclick=()=>{Snd.wake();Snd.click();const d=loadSave();if(d)restore(d);enterGame()};
 $("tSettings").onclick=()=>{Snd.wake();Snd.click();showSettings()};
-$("openNext").onclick=()=>{Snd.click();Opening.go(Math.min(6,Opening.scene+1))};
-$("openSkip").onclick=()=>{Snd.click();Opening.go(6);Opening.t=1700};
-$("openStart").onclick=()=>{Snd.click();enterGame()};
-$("openCanvas").addEventListener("click",()=>{if(Opening.scene<6){Snd.click();Opening.go(Opening.scene+1)}});
+$("openNext").onclick=()=>{Snd.click();Opening.go(Math.min(SCENES.length,Opening.scene+1))};
+$("openSkip").onclick=()=>{Snd.click();Opening.go(SCENES.length);Opening.t=1200};
+$("openStart").onclick=()=>{Snd.click();leaveOpening()};
+$("openCanvas").addEventListener("click",()=>{if(Opening.scene<SCENES.length){Snd.click();Opening.go(Opening.scene+1)}});
 $("price").addEventListener("input",render);
 $("ad").addEventListener("input",render);
 document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>{
@@ -3620,12 +4162,13 @@ function frame(now){
   if(scr==="title"){tc.fit();drawTitle(tc.ctx,now)}
   else if(scr==="opening"){
     Opening.t+=dt;
-    if(Opening.scene<6&&Opening.t>=SCENE_MS)Opening.go(Opening.scene+1);
+    if(Opening.scene<SCENES.length&&Opening.t>=SCENES[Opening.scene-1].ms)Opening.go(Opening.scene+1);
+    else if(Opening.scene===SCENES.length&&Opening.t>=2700)leaveOpening();
     oc.fit();const c=oc.ctx;drawOpening(c,dt);
     c.fillStyle="#000";c.fillRect(0,0,720,26);c.fillRect(0,414,720,26);
     const f=Math.max(0,1-Opening.t/380);if(f>0){c.globalAlpha=f;c.fillRect(0,0,720,440);c.globalAlpha=1}
   }else{
-    Shop.t+=dt;updateBiz(dt);sc.fit();drawShop(sc.ctx,Shop.t,dt);
+    Shop.t+=dt;updateBiz(dt);sc.fit();drawShop(sc.ctx,Shop.t,dt);Tut.frame(dt,now);
     if(Math.abs(targetCash-dispCash)>.5){
       dispCash+=(targetCash-dispCash)*Math.min(1,dt*.008);
       if(Math.abs(targetCash-dispCash)<1)dispCash=targetCash;
