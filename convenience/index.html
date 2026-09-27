@@ -2810,7 +2810,7 @@ function currentHint(){
   if(C&&C.state==="counter"&&!PLAYER.inRegister())return "손님이 계산대에서 기다려요! 계산대 안으로 돌아가요";
   if(MW.carry)return MW.carry.hot?"뜨끈한 음식을 손님 자리에 갖다 주기 (자리 누르기)":"음식을 들었다! 테이블 옆 전자레인지를 눌러 넣기";
   if(MW.state==="done")return "띵! 테이블 옆 전자레인지를 눌러 꺼내기";
-  if(isMarket()&&SVCQ[0]&&SVCQ[0].state==="svc"){const o=SVCQ[0].orders.find(o=>!o.done);if(o)return `서비스 코너 손님: "${nameOf(o.key)} 주세요!" → ${MACHINES[o.machine].name} 누르기`}
+  if(isMarket()&&SVCQ.some(c=>c.state==="svc")){const o=SVCQ.find(c=>c.state==="svc").orders.find(o=>!o.done);if(o)return `서비스 코너 손님: "${nameOf(o.key)} 주세요!" → ${MACHINES[o.machine].name} 누르기`}
   if(isMarket()&&!autoShelf()&&openBoxes().length&&!C)return "창고에 졸팡 박스 도착! 가게 뒤쪽 창고에서 박스 눌러 뜯기";
   if(!C&&PHONE.ringing)return "☎ 따르릉! 계산대 위 전화기를 눌러 받기 (위 ☎ 버튼도 돼요)";
   if(CUST.some(c=>c.heatReq&&!c.heatTaken))return "손님이 전자레인지 돌려 달래요! 테이블 가서 음식 누르기";
@@ -4489,15 +4489,16 @@ function goSvc(C){C.state="toSvc";SVCQ.push(C);placeSvc()}
 function placeSvc(){SVCQ.forEach((C,j)=>{C.path=hallRoute(C.obj.position,svcSpot(j))})}
 function stepSvc(C,dt){
   C.obj.rotation.y=angLerp(C.obj.rotation.y,0,Math.min(1,dt*.008));
-  if(SVCQ[0]!==C)return;
+  if(SVCQ.indexOf(C)>1)return;   // 앞의 두 명만 부른다
   C.callT=(C.callT==null?0:C.callT)-dt;
   if(C.callT<=0){C.callT=9000;const o=C.orders.find(o=>!o.done);if(o){sayC(C,`${nameOf(o.key)} 하나 주세요~!`);Snd.chime()}}
 }
-const svcCustomer=m=>{const C=SVCQ[0];return C&&C.state==="svc"&&C.orders.some(o=>o.machine===m&&!o.done)?C:null};
+// 줄 선 손님 중 이 기계 주문이 있는 사람 (앞사람부터)
+const svcCustomer=m=>SVCQ.find(C=>C.state==="svc"&&C.orders.some(o=>o.machine===m&&!o.done))||null;
 // 기계에서 만든 걸 손님한테 건넨다
 async function handToSvc(C,it){
   await tween(it,C.obj.position.clone().setY(1.0*(C.def.scale||1)),420,{lift:.2});scene.remove(it);
-  if(!C.orders.some(o=>!o.done)){sayC(C,"감사합니다! 계산은 셀프로 할게요~","love");SVCQ.shift();placeSvc();goSelf(C)}
+  if(!C.orders.some(o=>!o.done)){sayC(C,"감사합니다! 계산은 셀프로 할게요~","love");const i=SVCQ.indexOf(C);if(i>=0)SVCQ.splice(i,1);placeSvc();goSelf(C)}
 }
 
 /* ---------- 자동 진열 기계 (두 번째 리모델링부터): 1초에 30개 ---------- */
