@@ -168,6 +168,8 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .stick .knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:var(--brand);border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink);pointer-events:none}
 @media (pointer:coarse){.stick{display:block}.keys{display:none}}
 #gl{touch-action:none;cursor:grab}#gl:active{cursor:grabbing}
+/* 게임용 손 커서 (마우스 화살표 대신 졸라맨 낙서 손) */
+.app.handcur,.app.handcur *{cursor:var(--hc)!important}
 .banner{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:5;animation:bannerIn 2.2s ease-in-out forwards}
 .banner b{display:block;font-family:var(--fd);font-weight:400;font-size:clamp(40px,8vw,72px);color:var(--brand);text-shadow:0 5px 0 var(--ink),0 0 30px rgba(0,0,0,.7)}
 .banner span{font-size:20px;background:rgba(0,0,0,.6);padding:4px 14px;border-radius:999px}
@@ -274,7 +276,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
     <div class="bottom">
       <div id="actions" class="row"></div>
     </div>
-    <div id="keysHelp" class="keys">WASD 걷기 · Shift 달리기 · 화면 끌기로 둘러보기 · 클릭/E 누르기</div>
+    <div id="keysHelp" class="keys">WASD 걷기 · Shift 달리기 · 우클릭 끌기로 둘러보기 · 클릭/E 누르기</div>
     <div id="stick" class="stick" aria-label="이동 조이스틱"><div id="stickKnob" class="knob"></div></div>
   </section>
 
@@ -497,7 +499,7 @@ function clearSave(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
 /* ================= 사운드 =================
    효과음: 스캐너 삐빅, 편의점 문 딩동, 금고 철컥, 동전, 카드 승인, 전자레인지 띵. 배경음악: 새벽 편의점 로파이 */
 const Snd={
-  sfx:true,music:true,ctx:null,sfxGain:null,musicGain:null,noise:null,timer:null,step:0,next:0,hum:null,
+  sfx:true,music:true,ctx:null,sfxGain:null,musicGain:null,noise:null,timer:null,step:0,next:0,humNode:null,
   loadPrefs(){try{const p=JSON.parse(localStorage.getItem(PREF_KEY)||"{}");if(p.sfx===false)this.sfx=false;if(p.music===false)this.music=false}catch(e){}},
   savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({sfx:this.sfx,music:this.music}))}catch(e){}},
   wake(){
@@ -565,9 +567,10 @@ const Snd={
   coin(){this.tone(2637,.08,"triangle",.05);this.tone(3136,.14,"sine",.04,.05)},
   card(){this.tone(1568,.1,"sine",.07);this.tone(2093,.25,"sine",.07,.1)},                  // 띠링
   ding(){this.tone(2093,.9,"sine",.08);this.tone(4186,.5,"sine",.02)},                      // 띵!
+  // 전자레인지 웅~ (소리 노드는 humNode 에. 예전엔 함수 이름과 겹쳐서 두 번째 부를 때 멈췄다)
   hum(on){if(!this.ctx)return;
-    if(on&&!this.hum&&this.sfx){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type="sawtooth";o.frequency.value=110;g.gain.value=.012;o.connect(g);g.connect(this.sfxGain);o.start();this.hum={o,g}}
-    if(!on&&this.hum){try{this.hum.o.stop()}catch(e){}this.hum=null}},
+    if(on&&!this.humNode&&this.sfx){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type="sawtooth";o.frequency.value=110;g.gain.value=.012;o.connect(g);g.connect(this.sfxGain);o.start();this.humNode={o,g}}
+    if(!on&&this.humNode){try{this.humNode.o.stop()}catch(e){}this.humNode=null}},
   pour(){this.noiseHit(900,1.4,.08,"lowpass")},
   sizzle(){this.noiseHit(5000,.8,.05,"highpass")},
   bag(){this.noiseHit(3000,.18,.12,"highpass")},
@@ -1190,7 +1193,7 @@ function initThree(){
   ANISO=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   scene=new T.Scene();scene.background=skyTex();
   scene.fog=new T.Fog(0x0b0f24,14,40);
-  camera=new T.PerspectiveCamera(50,1,.03,90);camera.rotation.order="YXZ";
+  camera=new T.PerspectiveCamera(50,1,.03,90);camera.rotation.order="YXZ";scene.add(camera);   // 들고 다니는 음식이 카메라에 붙는다
   W3.skies={};
   buildEnv();buildLights();buildStore();buildCounter();buildShelves();buildFridges();buildMachines();buildStreet();buildEatArea();buildPhone();
   CAM.set("pov");
@@ -1420,8 +1423,13 @@ function buildMachines(){
   const place=(grp,z)=>{grp.position.set(1.38,.95,z);grp.rotation.y=.62;g.add(grp)};
   const steel=mStd(0xd6d9de,.28,.85),black=mStd(0x1c1d21,.35,.3);
   const mk={};
-  // 전자레인지
-  mk.micro=new T.Group();place(mk.micro,-1.5);
+  // 전자레인지: 먹고 가는 테이블 옆 (왼쪽 벽) 작은 장 위. 문이 가게 안쪽(+x)을 본다
+  const mc=new T.Group();mc.position.set(-3.05,0,.3);g.add(mc);W3.microCorner=mc;
+  mesh(box(.5,.9,.62),mStd(0xffffff,.55,0,{map:woodTex()}),{y:.45,cast:true,receive:true,parent:mc});
+  mesh(box(.54,.04,.66),mStd(0xffffff,.28,0,{map:stoneTex()}),{y:.92,cast:true,receive:true,parent:mc});
+  const msign=tex("microsign",256,96,(x,w,h)=>{x.fillStyle="#16141d";x.fillRect(0,0,w,h);tx(x,"전자레인지",128,38,32,"#ffcc2e");tx(x,"데워 드려요~ (알바가)",128,74,17,"#fff",{font:FJ})});
+  mesh(new T.PlaneGeometry(.5,.19),new T.MeshStandardMaterial({map:msign,roughness:.6}),{x:-.23,y:1.55,ry:Math.PI/2,parent:mc});
+  mk.micro=new T.Group();mk.micro.position.set(-3.02,.94,.3);mk.micro.rotation.y=Math.PI;g.add(mk.micro);
   mesh(box(.36,.26,.46),steel,{y:.13,cast:true,parent:mk.micro});
   const doorGlass=new T.MeshStandardMaterial({color:0x111418,roughness:.08,metalness:.3,envMapIntensity:1.3});
   mesh(box(.02,.2,.32),doorGlass,{x:-.181,y:.13,z:-.05,parent:mk.micro});
@@ -1822,7 +1830,7 @@ const HANDS={
   shoulder(h){return h.side>0?[OV.W*.9,OV.H+OV.H*.2]:[OV.W*.08,OV.H+OV.H*.22]},
   reset(){["R","L"].forEach(k=>{const h=this[k];const [x,y]=this.idle(h);h.x=h.tx=x;h.y=h.ty=y+OV.H*.3;h.pose="open";h.follow=null})},
   go(k,x,y,pose,speed=.22){const h=this[k];h.tx=x;h.ty=y;if(pose)h.pose=pose;h.speed=speed;h.follow=null},
-  rest(k,pose="open"){const h=this[k];const [x,y]=this.idle(h);this.go(k,x,y,pose,.16)},
+  rest(k,pose="open"){if(k==="R"&&MW.carry){this.hold("R",MW.carry.obj,[10,8],"grab");return}const h=this[k];const [x,y]=this.idle(h);this.go(k,x,y,pose,.16)},
   // 3D 물건을 잡고 따라간다
   hold(k,obj,off=[0,0],pose="grab"){const h=this[k];h.follow=obj;h.off=off;h.pose=pose},
   step(dt){
@@ -2092,7 +2100,7 @@ function makeCustomer(type,opt={}){
   const heatKey=items.find(k=>PRODUCTS[k].heat);
   const C={id:++custSeq,type,def,doodle,obj,items,orders,
     wantBag:opt.bag!=null?opt.bag:(!def.vip&&(items.length+orders.length>=3?Math.random()<.75:Math.random()<.3)),
-    heat:heatKey&&(opt.heat!=null?opt.heat:Math.random()<.65)?heatKey:null,heated:false,
+    heat:null,heated:false,   // 데우기는 이제 테이블 옆 전자레인지에서 (먹고 가는 손님이 부탁한다)
     pay:opt.pay||(def.pays?"cash":Math.random()<def.card?"card":"cash"),
     state:"enter",path:[],speed:1.1+Math.random()*.25,phase:Math.random()*6,
     patMax:def.pat*(hasUp("interior")?1.3:1),pat:0,line:"",lineT:0,mood:null,
@@ -2127,7 +2135,7 @@ function stepCustomer(C,dt,now){
   poseCustomer(C,now);
   // 인내심 (계산대 앞은 1배, 줄 선 손님은 0.5배)
   if((C.state==="counter"||C.state==="queue")&&!C.paidDone&&GAME.running){
-    C.pat-=dt/1000*2*(C.state==="queue"?.5:1)*(GAME.tut?.35:1);   // 인내심은 2배 빠르게 준다
+    C.pat-=dt/1000*1.5*(C.state==="queue"?.5:1)*(GAME.tut?.35:1);   // 인내심 막대: 원래의 1.5배 속도 (2배에서 0.5배 완화)
     if(C.pat<=0)angryLeave(C);
     else if(C.pat<C.patMax*.3&&!C.warned){C.warned=1;sayC(C,pick(C.def.angry),"angry");Snd.angry()}
   }
@@ -2199,20 +2207,21 @@ function renderBubbles(){
   const root=$("bubbles"),seen={};
   CUST.forEach(C=>{
     if(C.state==="gone"||C.state==="enter"||C.state==="browse")return;
-    const show=C.state==="counter"||C.state==="queue"||C.state==="toQueue"||(C.state==="leave"&&performance.now()-C.lineT<2200);
+    const heatWait=C.state==="eating"&&C.heatReq;
+    const show=C.state==="counter"||C.state==="queue"||C.state==="toQueue"||heatWait||((C.state==="leave"||C.state==="eating")&&performance.now()-C.lineT<2400);
     if(!show)return;
     seen[C.id]=1;
     let el=BUB[C.id];if(!el){el=document.createElement("div");el.className="cb";root.appendChild(el);BUB[C.id]=el;el._h=""}
-    const head=C.obj.position.clone();head.y+=1.8;
+    const head=C.obj.position.clone();head.y+=C.state==="eating"?1.35:1.8;
     const s=toScreen(head),side=C.state==="counter"&&OV.W>=700;el.classList.toggle("side",side);
     el.style.display=s.behind||s.x<-200||s.x>OV.W+200?"none":"";
     if(side){el.style.left=Math.max((el.offsetWidth||200)+12,s.x-60)+"px";el.style.top=clamp(s.y+OV.H*.2,170,OV.H-190)+"px"}
     else{el.style.left=clamp(s.x,90,OV.W-90)+"px";el.style.top=Math.max((el.offsetHeight||60)+(OV.W<700?96:100),s.y)+"px"}
-    const pr=clamp(C.pat/C.patMax,0,1),cls=pr<.3?"low":pr<.6?"mid":"";
-    const talkNow=C.state==="counter"||C.state==="leave";
+    const pr=clamp(heatWait?C.heatPat/C.heatPatMax:C.pat/C.patMax,0,1),cls=pr<.3?"low":pr<.6?"mid":"";
+    const talkNow=C.state==="counter"||C.state==="leave"||C.state==="eating";
     const req=C.state==="counter"?reqChips(C):"";
     const html=(talkNow&&C.line?`<div class="say"><span class="who">${esc(C.def.name)}</span>${esc(C.line)}${req}</div>`:"")+
-      (C.state!=="leave"?`<div class="pat"><i class="${cls}" style="width:${Math.round(pr*100)}%"></i></div>`:"");
+      (C.state!=="leave"&&(C.state!=="eating"||heatWait)?`<div class="pat"><i class="${cls}" style="width:${Math.round(pr*100)}%"></i></div>`:"");
     if(html!==el._h){el.innerHTML=html;el._h=html}
   });
   Object.keys(BUB).forEach(id=>{if(!seen[id]){BUB[id].remove();delete BUB[id]}});
@@ -2245,8 +2254,10 @@ function sitDown(C){
   if(s.trash){removeTrash(s);state.rating=clamp(state.rating-.05,1,5);const p=toScreen(V3(s.x,1.4,s.z));floatText("테이블이 더러워요...",p.x,p.y,"#ff8a7a",20);Snd.angry();
     GAME.night.dirty=(GAME.night.dirty||0)+1}
   const food=makeProduct(C.eatKey);food.position.copy(seatFood(s));food.rotation.y=s.ry+Math.PI;scene.add(food);C.food=food;
+  maybeAskHeat(C);
 }
 function stepEating(C,dt,now){
+  if(stepHeatWait(C,dt,now))return;
   C.eatT-=dt;C.eatPh+=dt;
   const lift=Math.max(0,Math.sin(C.eatPh*.0024));
   setPose(C.obj,lift>.3?"eat":"sit",now/1000,"happy",{sitY:-.46*DP_PX},"sit");
@@ -2277,7 +2288,7 @@ async function cleanTrash(s){
 }
 // 뜨거운 음식 김 (낙서)
 function drawSteam(ctx,now){
-  CUST.forEach(C=>{if(C.state!=="eating"||!C.food||!HOT_KINDS[PRODUCTS[C.eatKey].kind])return;
+  CUST.forEach(C=>{if(C.state!=="eating"||!C.food||C.heatReq||!(C.hot||HOT_KINDS[PRODUCTS[C.eatKey].kind]))return;
     const p=toScreen(C.food.position.clone().setY(C.food.position.y+.12));if(p.behind)return;
     for(let i=0;i<3;i++){const ph=((now*.0006)+i/3)%1;ctx.globalAlpha=(1-ph)*.8;
       wobbleLine(ctx,[[p.x-12+i*12,p.y-ph*40],[p.x-6+i*12,p.y-10-ph*40],[p.x-12+i*12,p.y-20-ph*40]],3,"#ffffff",40+i)}
@@ -2370,37 +2381,7 @@ async function giveBag(){
 }
 const xy=s=>[s.x,s.y];
 
-/* ---------- 전자레인지 ---------- */
-async function useMicro(){
-  const C=GAME.cur;
-  const it=C&&C.heat&&!C.heated&&!C.heating?C.itemObjs.find(o=>o.userData.key===C.heat&&o.userData.state!=="moving"&&o.parent):null;
-  if(!it){
-    GAME.busy=true;HANDS.go("R",...xy(toScreen(machinePos("micro"))),"point",.25);await sleep(300);
-    Snd.hum(true);W3.microLight.emissiveIntensity=1.2;await sleep(900);Snd.hum(false);W3.microLight.emissiveIntensity=0;Snd.ding();
-    HANDS.rest("R");GAME.busy=false;
-    Talk.say(pick(["(빈 전자레인지를 돌렸다... 왜 그랬지?)","(전자레인지 안에 아무것도 없다. 내 손을 데울 뻔했다)"]),"sweat");return;
-  }
-  GAME.busy=true;C.heating=true;const back=it.position.clone(),st=it.userData.state;it.userData.state="heating";
-  HANDS.hold("R",it,[16,6],"grab");await sleep(120);
-  await tween(it,machinePos("micro"),380,{lift:.12});it.visible=false;
-  HANDS.R.follow=null;HANDS.go("R",...xy(toScreen(machinePos("micro"))),"point",.3);
-  Snd.hum(true);W3.microLight.emissiveIntensity=1.3;
-  const mp=toScreen(machinePos("micro"));floatText("위이이잉~",mp.x,mp.y-40,"#fff",20);
-  HANDS.rest("R");GAME.busy=false;
-  // 데우는 동안 다른 일도 할 수 있다
-  sleep(2200).then(()=>{
-    Snd.hum(false);W3.microLight.emissiveIntensity=0;Snd.ding();floatText("띵!",mp.x,mp.y-40,"#ffcc2e",30);
-    queueAct(async()=>{
-      if(C.state!=="counter"||!it.parent){C.heating=false;return}
-      GAME.busy=true;it.visible=true;HANDS.hold("R",it,[16,6],"grab");
-      await tween(it,back,380,{lift:.12});it.userData.state=st==="queued"||st==="heating"?"counter":st;
-      C.heated=true;C.heating=false;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;
-      const s=toScreen(it.position);floatText("모락모락~",s.x,s.y-40,"#fff",20);
-      if(GAME.tut)tutEvent("heat");
-      checkReady(C);
-    });
-  });
-}
+/* ---------- 전자레인지: 테이블 옆으로 옮겼다 (g9_micro.js) ---------- */
 function machinePos(m){const g=W3.mk[m],p=new T.Vector3();g.getWorldPosition(p);p.y+=m==="micro"?.13:m==="coffee"?.08:.12;return p}
 
 /* ---------- 기계 주문 (커피, 핫바, 호빵) ---------- */
@@ -2652,7 +2633,10 @@ function stepNight(dt){
 function currentHint(){
   const C=GAME.cur,t=nextTask(C);
   if(C&&C.state==="counter"&&!PLAYER.inRegister())return "손님이 계산대에서 기다려요! 계산대 안으로 돌아가요";
+  if(MW.carry)return MW.carry.hot?"뜨끈한 음식을 손님 자리에 갖다 주기 (자리 누르기)":"음식을 들었다! 테이블 옆 전자레인지를 눌러 넣기";
+  if(MW.state==="done")return "띵! 테이블 옆 전자레인지를 눌러 꺼내기";
   if(!C&&PHONE.ringing)return "☎ 따르릉! 계산대 위 전화기를 눌러 받기 (위 ☎ 버튼도 돼요)";
+  if(CUST.some(c=>c.heatReq&&!c.heatTaken))return "손님이 전자레인지 돌려 달래요! 테이블 가서 음식 누르기";
   if(!C&&CHORES.spills.length)return "바닥에 음료가 쏟아졌어요! 가까이 가서 눌러 닦기";
   if(!C&&SEATS.some(s=>s.trash))return "테이블에 먹고 간 쓰레기! 가까이 가서 눌러 치우기";
   if(!C&&CHORES.gaps.length)return `진열대 ${CHORES.gaps.length}칸이 비었어요! 가까이 가서 눌러 채우기`;
@@ -2669,7 +2653,7 @@ function currentHint(){
   }
 }
 function renderActions(){
-  const list=[["bag","봉투","₩100"],["micro","전자레인지",""]];
+  const list=[["bag","봉투","₩100"]];
   ["coffee","grill","steamer"].forEach(m=>{if(hasUp(m))list.push([m,MACHINES[m].name,""])});
   $("actions").innerHTML=list.map(([k,n,s])=>`<button class="abtn" type="button" data-act="${k}">${n}${s?`<small>${s}</small>`:""}</button>`).join("");
   $("actions").querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{Snd.wake();doAction(b.dataset.act)});
@@ -2727,7 +2711,7 @@ function endNight(){
     L.self=hasUp("kiosk")?Math.round(randInt(8,14)*3500*MARGIN*tierNow().pm):0;
     L.cost=runCost();L.income=L.profit+L.self+N.tips-N.over-L.cost;
   }
-  L.restock=N.restock||0;L.clean=N.clean||0;L.slips=N.slips||0;L.trash=N.trash||0;L.dirty=N.dirty||0;L.leftGaps=CHORES.gaps.length;L.leftSpills=CHORES.spills.length;
+  L.restock=N.restock||0;L.clean=N.clean||0;L.slips=N.slips||0;L.trash=N.trash||0;L.heat=N.heat||0;L.dirty=N.dirty||0;L.leftGaps=CHORES.gaps.length;L.leftSpills=CHORES.spills.length;
   L.leftTrash=SEATS.filter(s=>s.trash&&performance.now()-s.trash.userData.t0>20000).length;
   const left=L.leftGaps+L.leftSpills+L.leftTrash;if(left)state.rating=clamp(state.rating-.05*left,1,5);
   L.grade=N.angry===0&&!L.slips&&!L.dirty&&!left&&N.served&&N.perfect/N.served>=.7?"S":N.angry===0&&!left?"A":N.angry<=1?"B":N.angry<=3?"C":"D";
@@ -2743,7 +2727,7 @@ function showReceipt(L,quiet){
   else{rows.push(ln(`판매 이익 (${Math.round(MARGIN*100)}%${hasUp("parttimer")?" +10%":""})`,"+"+won(L.profit)));if(L.self)rows.push(ln("셀프 계산대","+"+won(L.self)));rows.push(ln("운영비 (전기·월세)","-"+won(L.cost)))}
   if(L.tips)rows.push(ln("팁","+"+won(L.tips)));
   if(L.over)rows.push(ln(L.owner?"거스름돈 더 줌":"시재 부족 (알바비에서 깜)","-"+won(L.over),"neg"));
-  const jobs=[L.restock?`진열 ${L.restock}칸`:"",L.clean?`청소 ${L.clean}번`:"",L.trash?`테이블 ${L.trash}번`:""].filter(Boolean).join(" · ");
+  const jobs=[L.restock?`진열 ${L.restock}칸`:"",L.clean?`청소 ${L.clean}번`:"",L.trash?`테이블 ${L.trash}번`:"",L.heat?`데워 드림 ${L.heat}번`:""].filter(Boolean).join(" · ");
   if(jobs)rows.push(ln("매장 관리",jobs));
   if(L.slips)rows.push(ln("미끄러진 손님",`${L.slips}명`,"neg"));
   if(L.dirty)rows.push(ln("더러운 테이블에 앉은 손님",`${L.dirty}명`,"neg"));
@@ -2827,8 +2811,8 @@ function showSettings(){
 
 
 /* ================= 1인칭으로 걸어 다니기 =================
-   WASD(또는 방향키) 이동, 화면을 끌어서 둘러보기, 가까이 가서 누르기.
-   휴대폰은 왼쪽 아래 조이스틱. 벽·계산대·진열대·손님은 지나갈 수 없다 */
+   WASD(또는 방향키) 이동, 우클릭으로 끌어서 둘러보기, 왼쪽 클릭(또는 E)으로 누르기.
+   휴대폰은 화면을 끌어서 둘러보고 왼쪽 아래 조이스틱으로 걷는다. 벽·계산대·진열대·손님은 지나갈 수 없다 */
 const EYE=1.56, RADIUS=.26;
 const PLAYER={pos:new T.Vector3(0,0,.95),yaw:0,pitch:-.3,keys:{},walkT:0,speed:0,stick:{x:0,y:0},
   reset(){this.pos.set(0,0,camera.aspect<.8?.72:.95);this.yaw=0;this.pitch=camera.aspect<.8?-.36:-.3;this.speed=0;this.keys={};this.apply()},
@@ -2874,8 +2858,8 @@ function obstacles(){
     [2.94,-6.95,3.4,-2.25]               // 오른쪽 벽 선반
   ];
   if(hasUp("freezer"))O.push([-2.52,-7.28,-1.38,-6.62]);
-  // 먹고 가는 곳: 테이블 + 의자 4개
-  O.push([-2.78,-1.97,-2.12,-.53]);
+  // 먹고 가는 곳: 테이블 + 의자 4개 + 전자레인지 장
+  O.push([-2.78,-1.97,-2.12,-.53]);O.push([-3.35,-.02,-2.78,.62]);
   SEATS.forEach(s=>O.push([s.x-.22,s.z-.22,s.x+.22,s.z+.22]));
   if(hasUp("kiosk"))O.push([2.2,-6.7,2.8,-6.1]);
   if(hasUp("parttimer"))O.push([-1.55,.35,-1.15,.75]);
@@ -2895,7 +2879,7 @@ function canMove(){return Scr.name==="game"&&$("modal").hidden&&$("drawer").hidd
 addEventListener("keydown",e=>{
   if(Scr.name!=="game")return;
   const onBtn=e.target&&e.target.closest&&e.target.closest("button")&&e.target.offsetParent;
-  if(e.code==="KeyE"||((e.code==="Space"||e.code==="Enter")&&!onBtn)){if(canMove()&&!e.repeat){e.preventDefault();interactAt(OV.W/2,OV.H/2,true)}return}
+  if(e.code==="KeyE"||((e.code==="Space"||e.code==="Enter")&&!onBtn)){if(canMove()&&!e.repeat){e.preventDefault();CUR.on&&MOUSE.seen?interactAt(MOUSE.x,MOUSE.y,false):interactAt(OV.W/2,OV.H/2,true)}return}
   const k=KEYMAP[e.code];
   if(k){PLAYER.keys[k]=true;if(e.code.startsWith("Arrow"))e.preventDefault();Snd.wake();noteMoved()}
 });
@@ -2903,29 +2887,37 @@ addEventListener("keyup",e=>{const k=KEYMAP[e.code];if(k)PLAYER.keys[k]=false});
 addEventListener("blur",()=>{PLAYER.keys={}});
 function noteMoved(){if(!noteMoved.t)noteMoved.t=setTimeout(()=>$("keysHelp").classList.add("gone"),9000);if(!state.talked||state.talked.move1)return;setTimeout(()=>Talk.say("오, 걸어진다! 현실 세계에서도 다리는 멀쩡하네. 계산은 계산대 안에서만 할 수 있어","wink","move1"),400)}
 
-// 화면 끌기 = 둘러보기, 짧게 누르기 = 누르기
-const DRAG={id:null,x:0,y:0,moved:false,sx:0,sy:0};
+// 마우스: 우클릭 끌기 = 둘러보기, 왼쪽 클릭 = 누르기.  터치: 끌기 = 둘러보기, 짧게 누르기 = 누르기
+const DRAG={id:null,x:0,y:0,moved:false,sx:0,sy:0,look:false};
+const LOOK={on:false,id:null};
 function onDown(e){
-  if(Scr.name==="opening"){if(Op.i<OPENING.length){Snd.click();Op.go(Op.i+1)}return}
+  if(Scr.name==="opening"){if(e.button===2)return;if(Op.i<OPENING.length){Snd.click();Op.go(Op.i+1)}return}
   if(Scr.name!=="game")return;
-  Snd.wake();DRAG.id=e.pointerId;DRAG.x=DRAG.sx=e.clientX;DRAG.y=DRAG.sy=e.clientY;DRAG.moved=false;
+  Snd.wake();
+  if(e.pointerType==="mouse"&&e.button===2){LOOK.on=true;LOOK.id=e.pointerId;DRAG.x=e.clientX;DRAG.y=e.clientY;try{$("gl").setPointerCapture(e.pointerId)}catch(err){}e.preventDefault();return}
+  if(e.button>0)return;
+  DRAG.id=e.pointerId;DRAG.x=DRAG.sx=e.clientX;DRAG.y=DRAG.sy=e.clientY;DRAG.moved=false;DRAG.look=e.pointerType!=="mouse";
   try{$("gl").setPointerCapture(e.pointerId)}catch(err){}
 }
 function onMove(e){
+  if(LOOK.on&&e.pointerId===LOOK.id){
+    if(canMove()){const mx=e.movementX!=null?e.movementX:e.clientX-DRAG.x,my=e.movementY!=null?e.movementY:e.clientY-DRAG.y;PLAYER.yaw-=mx*.0036;PLAYER.pitch=clamp(PLAYER.pitch-my*.0036,-1.2,1.05)}
+    DRAG.x=e.clientX;DRAG.y=e.clientY;return}
   if(DRAG.id!==e.pointerId||!canMove())return;
   const dx=e.clientX-DRAG.x,dy=e.clientY-DRAG.y;
   if(!DRAG.moved&&Math.hypot(e.clientX-DRAG.sx,e.clientY-DRAG.sy)>7)DRAG.moved=true;
-  if(DRAG.moved){const k=e.pointerType==="touch"?.006:.0042;PLAYER.yaw-=dx*k;PLAYER.pitch=clamp(PLAYER.pitch-dy*k,-1.2,1.05)}
+  if(DRAG.moved&&DRAG.look){const k=.006;PLAYER.yaw-=dx*k;PLAYER.pitch=clamp(PLAYER.pitch-dy*k,-1.2,1.05)}
   DRAG.x=e.clientX;DRAG.y=e.clientY;
 }
 function onUp(e){
+  if(LOOK.on&&e.pointerId===LOOK.id&&(e.button===2||e.buttons===0)){LOOK.on=false;LOOK.id=null;return}
   if(DRAG.id!==e.pointerId)return;DRAG.id=null;
   if(!DRAG.moved&&canMove()){const r=$("gl").getBoundingClientRect();interactAt(e.clientX-r.left,e.clientY-r.top,false)}
 }
 $("gl").addEventListener("pointerdown",onDown);
 $("gl").addEventListener("pointermove",onMove);
 $("gl").addEventListener("pointerup",onUp);
-$("gl").addEventListener("pointercancel",()=>{DRAG.id=null});
+$("gl").addEventListener("pointercancel",()=>{DRAG.id=null;LOOK.on=false;LOOK.id=null});
 
 // 휴대폰 조이스틱
 const touchUI=!!(window.matchMedia&&matchMedia("(pointer:coarse)").matches);
@@ -2957,7 +2949,7 @@ function edgeArrow(ctx,worldP,label,t){
   ctx.fillStyle="#ffcc2e";ctx.strokeStyle=INK;ctx.lineWidth=3;rr(ctx,lx-w/2,ly-15,w,30,10);ctx.fill();ctx.stroke();rawText(ctx,label,lx,ly,Math.round(16*ctx.__ts),INK);
 }
 // 가운데 점 (E 키로 누르는 곳)
-function crosshair(ctx){if(touchUI)return;const x=OV.W/2,y=OV.H/2;circle(ctx,x,y,4,"#fff",INK,2)}
+function crosshair(ctx){if(touchUI||CUR.on)return;const x=OV.W/2,y=OV.H/2;circle(ctx,x,y,4,"#fff",INK,2)}
 
 
 /* ================= 편의점 잡일: 진열 채우기, 바닥 닦기 =================
@@ -2968,7 +2960,7 @@ function resetChores(){
   CHORES.gaps.slice().forEach(s=>fillSection(s,true));CHORES.gaps=[];
   CHORES.spills.slice().forEach(s=>{scene.remove(s.mesh);scene.remove(s.hit)});CHORES.spills=[];
   CHORES.nextGap=35+Math.random()*25;CHORES.nextSpill=60+Math.random()*50;CHORES.mop=null;
-  SEATS.forEach(s=>{removeTrash(s);s.by=null});
+  SEATS.forEach(s=>{removeTrash(s);s.by=null});resetMicro();
 }
 function stepChores(){
   if(GAME.tut||!GAME.running||GAME.t>=SHIFT_SEC)return;
@@ -3179,6 +3171,221 @@ function remodelRow(){
   return `<div class="rm"><div class="ln"><span>다음 리모델링 · ${esc(nx.name)}</span><span>${shortWon(nx.cost)}</span></div><div class="ph-bar"><i style="width:${pct}%"></i></div><small>${pct>=100?"공사비 다 모였다! 리모델링 회사에 전화하자":`${pct}% 모였어요`}</small></div>`;
 }
 $("hPhone").onclick=()=>{if(Scr.name!=="game"||!$("modal").hidden||PHONE.building)return;Snd.wake();openPhone()};
+
+
+/* ================= 게임용 손 커서 =================
+   마우스 화살표 대신 졸라맨 낙서 손이 커서가 된다 (하드웨어 커서라 느린 기기에서도 부드럽다).
+   point: 검지 쭉, hover: 누를 수 있는 물건 위 (노란 손), press: 누르는 중, grab: 우클릭으로 둘러보는 중.
+   120ms 마다 조금씩 다른 그림으로 바꿔서 1편처럼 선이 끓는다 */
+const MOUSE={x:0,y:0,in:false,seen:false,down:false};
+const HOVER={h:null,t:0};
+const CUR={urls:null,kind:"",boil:-1,on:false};
+const CUR_HOT={point:[9,4],hover:[9,4],press:[10,6],grab:[24,24]};
+function cursorImg(kind,seed,sc){
+  const c=mkCanvas(48*sc,48*sc),x=c.getContext("2d");x.scale(sc,sc);x.lineCap="round";x.lineJoin="round";
+  const j=(i,a=.7)=>(seeded(i*5.3+seed*17.9+kind.length*3.1)-.5)*2*a;
+  const line=(pts,w,col,s0)=>{x.beginPath();pts.forEach(([px,py],i)=>{const X=px+j(s0+i),Y=py+j(s0+i+20);i?x.lineTo(X,Y):x.moveTo(X,Y)});x.strokeStyle=col;x.lineWidth=w;x.stroke()};
+  const circ=(cx,cy,r,fill,s0,lw=3,col=INK)=>{x.beginPath();for(let i=0;i<=12;i++){const a=i/12*TAU,rr=r+j(s0+i%12,.6);x.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr)}x.closePath();if(fill){x.fillStyle=fill;x.fill()}x.strokeStyle=col;x.lineWidth=lw;x.stroke()};
+  const palm=kind==="hover"?"#ffcc2e":PAPER;
+  if(kind==="grab"){   // 주먹 (오므린 손가락 넷)
+    const F=[[-9,-12],[-3,-14],[3,-14],[9,-12]];
+    F.forEach(([dx,dy],i)=>line([[24+dx*.6,26+dy*.5],[24+dx,26+dy]],8,"#fff",40+i));
+    circ(24,27,12.4,"#fff",61,0,"#fff");
+    F.forEach(([dx,dy],i)=>line([[24+dx*.6,26+dy*.5],[24+dx,26+dy]],4.4,INK,40+i));
+    circ(24,27,10,palm,60);
+    return c.toDataURL("image/png");
+  }
+  if(kind==="press"){x.translate(9,4);x.scale(.86,.86);x.translate(-9,-4)}   // 손끝을 기준으로 살짝 작아진다
+  // 오므린 손가락 셋 (검지 옆으로 짧게) — 손바닥 동그라미 밖으로 살짝
+  const stubs=[-1.45,-1.0,-.55].map((a,i)=>[[28+Math.cos(a)*8,30+Math.sin(a)*8],[28+Math.cos(a)*(15-i),30+Math.sin(a)*(15-i)]]);
+  // 흰 테두리 (어두운 곳에서도 보이게) → 먹선
+  line([[9,4],[22,21]],9,"#fff",1);line([[21,34],[12,39]],9,"#fff",5);stubs.forEach((st,i)=>line(st,8.5,"#fff",70+i));circ(28,30,12.6,"#fff",9,0,"#fff");
+  line([[9,4],[22,21]],4.6,INK,1);line([[21,34],[12,39]],4.6,INK,5);stubs.forEach((st,i)=>line(st,4.2,INK,70+i));
+  circ(28,30,10.4,palm,9);
+  return c.toDataURL("image/png");
+}
+// 브라우저가 받아 주는 커서 문법을 고른다 (image-set → -webkit-image-set → 그냥 url)
+function validCursor(list){const el=document.createElement("div");for(const v of list){el.style.cursor="";el.style.cursor=v;if(el.style.cursor)return v}return ""}
+function buildCursors(){
+  const out={};
+  ["point","hover","press","grab"].forEach(k=>{const [hx,hy]=CUR_HOT[k];
+    out[k]=[0,1,2].map(seed=>{const u1=cursorImg(k,seed,1),u2=cursorImg(k,seed,2);
+      return validCursor([`image-set(url("${u1}") 1x, url("${u2}") 2x) ${hx} ${hy}, pointer`,`-webkit-image-set(url("${u1}") 1x, url("${u2}") 2x) ${hx} ${hy}, pointer`,`url("${u1}") ${hx} ${hy}, pointer`])})});
+  return out;
+}
+function setCursor(kind){
+  if(!CUR.on)return;
+  const b=OV.boil%3;if(kind===CUR.kind&&b===CUR.boil)return;CUR.kind=kind;CUR.boil=b;
+  const v=CUR.urls[kind]&&CUR.urls[kind][b];if(v)$("app").style.setProperty("--hc",v);
+}
+// 처음 마우스가 움직이면 손 커서를 켠다 (터치만 되는 기기는 그대로)
+function useHandCursor(){
+  if(CUR.on)return;
+  try{CUR.urls=buildCursors()}catch(e){return}
+  if(!CUR.urls.point[0])return;
+  CUR.on=true;$("app").classList.add("handcur");setCursor("point");
+}
+addEventListener("pointermove",e=>{
+  if(e.pointerType!=="mouse")return;
+  useHandCursor();
+  const r=$("gl").getBoundingClientRect();MOUSE.x=e.clientX-r.left;MOUSE.y=e.clientY-r.top;
+  MOUSE.in=e.target===$("gl");if(MOUSE.in)MOUSE.seen=true;
+},{passive:true});
+document.addEventListener("pointerleave",()=>{MOUSE.in=false});
+addEventListener("blur",()=>{MOUSE.in=false;MOUSE.down=false});
+addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button===0)MOUSE.down=true},true);
+addEventListener("pointerup",e=>{if(e.pointerType==="mouse"&&e.button===0)MOUSE.down=false},true);
+// 게임 화면에서는 우클릭 메뉴 대신 둘러보기
+$("app").addEventListener("contextmenu",e=>e.preventDefault());
+
+/* ---------- 손 옆 안내: 지금 누르면 뭘 하는지 ---------- */
+function stepHover(now){
+  if(!CUR.on)return;
+  if(Scr.name!=="game"||!MOUSE.in||!canMove()||LOOK.on){HOVER.h=null;setCursor(LOOK.on?"grab":MOUSE.down?"press":"point");return}
+  if(now-HOVER.t>90){HOVER.t=now;scene.updateMatrixWorld();HOVER.h=pickAt(MOUSE.x,MOUSE.y,false)}
+  const h=HOVER.h;setCursor(MOUSE.down?"press":h&&h.ok&&h.label?"hover":"point");
+}
+function drawHoverLabel(ctx){
+  const h=HOVER.h;if(!CUR.on||!h||!h.label||!MOUSE.in||LOOK.on)return;
+  const txt=h.ok?h.label:`${h.label} · ${h.short}`,px=15;
+  ctx.font=`${px}px ${FONT_D}`;const w=ctx.measureText(txt).width+18,x=clamp(MOUSE.x+30,8,OV.W-w-8),y=clamp(MOUSE.y+40,20,OV.H-20);
+  ctx.save();ctx.fillStyle=h.ok?"#ffcc2e":"rgba(28,30,42,.88)";ctx.strokeStyle=h.ok?INK:"rgba(255,255,255,.5)";ctx.lineWidth=2.5;
+  rr(ctx,x,y-14,w,28,10);ctx.fill();ctx.stroke();rawText(ctx,txt,x+w/2,y,px,h.ok?INK:"#fff");ctx.restore();
+}
+
+
+/* ================= 테이블 옆 전자레인지 =================
+   먹고 가는 손님이 가끔 "전자레인지 좀 돌려 주세요~" 한다.
+   테이블의 음식 누르기(집기) → 전자레인지 누르기(넣고 돌리기) → 띵! → 다시 눌러 꺼내기 → 손님 자리 누르기(갖다 주기) */
+const MW={carry:null,inside:null,state:"idle",serveHit:null};   // carry/inside: {obj, C, hot}
+const CARRY_POS=V3(.19,-.26,-.5);
+const HEATABLE=k=>{const P=PRODUCTS[k];return !!(P&&(P.heat||P.kind==="kimbap"||P.kind==="dosirak"))};
+function resetMicro(){
+  if(MW.carry&&MW.carry.obj.parent)MW.carry.obj.parent.remove(MW.carry.obj);
+  if(MW.inside&&MW.inside.obj.parent)MW.inside.obj.parent.remove(MW.inside.obj);
+  MW.carry=null;MW.inside=null;MW.state="idle";Snd.hum(false);if(W3.microLight)W3.microLight.emissiveIntensity=0;
+}
+// 앉은 손님이 가끔 데워 달라고 한다 (sitDown 에서)
+function maybeAskHeat(C){
+  if(GAME.tut||!C.food||!HEATABLE(C.eatKey)||Math.random()>.42)return;
+  C.heatReq=true;C.heatTaken=false;C.heatPatMax=C.heatPat=70;
+  sayC(C,pick(["저기요~ 이거 전자레인지 좀 돌려 주세요!","전자레인지 좀 부탁해요~ 차가워요 ㅠㅠ","이거 데워 주실 수 있어요?"]));
+  C.heatHit=hitBoxAt(C.food,[.34,.26,.34],[0,.08,0],"heatTake");C.heatHit.userData.cust=C;
+  Snd.chime();
+  Talk.say(state.talked.micro1?pick(["또 데워 달래! 테이블로 출동","전자레인지 손님이다. 음식 집어서 전자레인지로!"]):
+    "손님이 전자레인지 돌려 달래! 테이블 음식을 누르면 집고, 테이블 옆 전자레인지를 누르면 데워져. 띵! 하면 꺼내서 손님 자리를 눌러 갖다 주기","wink",state.talked.micro1?null:"micro1");
+}
+// 데워 달라는 손님: 기다리는 동안은 안 먹는다. 너무 오래 걸리면 포기하거나 화낸다
+function stepHeatWait(C,dt,now){
+  if(!C.heatReq)return false;
+  C.heatPat-=dt/1000*(C.heatTaken?.6:1);
+  const r=C.heatPat/C.heatPatMax;
+  setPose(C.obj,"sit",now/1000,r<.3?"angry":r<.6?"sad":"happy",{sitY:-.46*DP_PX,sweat:r<.6},"sitw"+(r<.6?1:0));
+  if(C.heatPat>0)return true;
+  C.heatReq=false;
+  if(C.heatTaken){   // 음식을 가져가 놓고 안 돌려줬다
+    sayC(C,"제 음식 어디 갔어요?!","angry");Snd.angry();GAME.night.angry++;state.rating=clamp(state.rating-.15,1,5);
+    if(MW.carry&&MW.carry.C===C){MW.carry.obj.parent&&MW.carry.obj.parent.remove(MW.carry.obj);MW.carry=null;HANDS.R.follow=null;HANDS.rest("R")}
+    if(MW.inside&&MW.inside.C===C){MW.inside.obj.parent&&MW.inside.obj.parent.remove(MW.inside.obj);MW.inside=null;if(MW.state==="done")MW.state="idle";else MW.orphan=true}
+    leaveSeat(C);
+  }else{
+    sayC(C,"에이... 그냥 차갑게 먹을게요","angry");state.rating=clamp(state.rating-.05,1,5);
+    if(C.heatHit){C.heatHit.parent&&C.heatHit.parent.remove(C.heatHit);C.heatHit=null}
+  }
+  return true;
+}
+function leaveSeat(C){
+  const s=C.seat;if(s){s.by=null;C.path=s.out.map(([x,z])=>V3(x,0,z))}else C.path=[];
+  C.path.push(SPOT.door.clone(),SPOT.outside.clone().setX((Math.random()-.5)*4));
+  C.seat=null;C.food=null;C.state="leave";C.obj.position.y=0;setPose(C.obj,"stand",0,"angry");
+}
+// 들고 다니기: 카메라 앞(화면 오른쪽 아래)에 붙인다
+function carryObj(f){if(f.parent)f.parent.remove(f);camera.add(f);f.visible=true;f.position.copy(CARRY_POS);f.rotation.set(.35,.5,0);f.scale.setScalar(.8)}
+function uncarry(f){const wp=V3(0,0,0);f.getWorldPosition(wp);camera.remove(f);scene.add(f);f.position.copy(wp);f.rotation.set(0,0,0);f.scale.setScalar(1)}
+async function takeFood(C){
+  if(!C.heatReq||C.heatTaken||!C.food)return;
+  if(MW.carry){toast("손이 모자라요! 들고 있는 것부터 처리해요");Snd.errBeep();return}
+  GAME.busy=true;const f=C.food;
+  if(C.heatHit){f.remove(C.heatHit);C.heatHit=null}
+  HANDS.hold("R",f,[12,6],"grab");await sleep(150);
+  carryObj(f);C.heatTaken=true;C.food=null;MW.carry={obj:f,C,hot:false};
+  sayC(C,"네~ 기다릴게요!");Snd.bag();
+  HANDS.hold("R",f,[10,8],"grab");GAME.busy=false;
+  if(!state.talked.micro2)Talk.say("음식 들었다! 테이블 옆 전자레인지를 누르자","happy","micro2");
+}
+async function serveFood(){
+  const it=MW.carry;if(!it||!it.hot)return;const C=it.C,f=it.obj;
+  if(!C.seat||C.state!=="eating"){camera.remove(f);MW.carry=null;HANDS.R.follow=null;HANDS.rest("R");toast("손님이 이미 가 버렸어요...");return}
+  GAME.busy=true;uncarry(f);HANDS.hold("R",f,[12,6],"grab");
+  await tween(f,seatFood(C.seat),420,{lift:.12});f.rotation.y=C.seat.ry+Math.PI;
+  C.food=f;C.hot=true;MW.carry=null;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;
+  sayC(C,pick(["감사합니다! 따끈따끈~","와 뜨끈하다! 최고예요","역시 데워 먹어야 제맛이지~"]),"love");
+  const tip=randInt(3,8)*100*moneyScale();GAME.night.tips+=tip;GAME.night.heat=(GAME.night.heat||0)+1;state.rating=clamp(state.rating+.05,1,5);
+  const s=toScreen(f.position);floatText(`팁 +${won(tip)}`,s.x,s.y-50,"#ffcc2e",24);Snd.coin();Snd.happy();
+  C.eatT=Math.max(C.eatT,9000);
+}
+// 전자레인지 누르기: 넣고 돌리기 / 꺼내기 / (빈 채로 돌리기 개그)
+async function useMicro(){
+  const mp=machinePos("micro"),ms=toScreen(mp);
+  if(MW.state==="running"){toast("데우는 중! 띵 할 때까지 기다려요");return}
+  if(MW.state==="done"&&MW.inside){
+    if(MW.carry){toast("손이 모자라요! 들고 있는 것부터 처리해요");Snd.errBeep();return}
+    GAME.busy=true;const f=MW.inside.obj;f.visible=true;f.position.copy(mp);
+    HANDS.hold("R",f,[12,6],"grab");await sleep(160);
+    carryObj(f);MW.carry={obj:f,C:MW.inside.C,hot:true};MW.inside=null;MW.state="idle";
+    floatText("앗 뜨거! 모락모락~",ms.x,ms.y-40,"#fff",22);Snd.happy();
+    HANDS.hold("R",f,[10,8],"grab");GAME.busy=false;
+    if(!state.talked.micro3)Talk.say("뜨끈하다! 이제 손님 자리를 눌러서 갖다 주자","wink","micro3");
+    return;
+  }
+  if(MW.carry&&MW.carry.hot){toast("이미 데웠어요! 손님한테 갖다 줘요");return}
+  if(MW.carry){
+    GAME.busy=true;const it=MW.carry,f=it.obj;uncarry(f);
+    HANDS.hold("R",f,[16,6],"grab");
+    await tween(f,mp,380,{lift:.1});f.visible=false;
+    MW.inside={obj:f,C:it.C};MW.carry=null;MW.state="running";MW.orphan=false;
+    HANDS.R.follow=null;HANDS.go("R",ms.x,ms.y,"point",.3);await sleep(220);
+    Snd.hum(true);W3.microLight.emissiveIntensity=1.3;floatText("위이이잉~",ms.x,ms.y-40,"#fff",20);
+    HANDS.rest("R");GAME.busy=false;
+    sleep(3200).then(()=>{if(MW.state!=="running")return;Snd.hum(false);W3.microLight.emissiveIntensity=0;Snd.ding();
+      const s=toScreen(machinePos("micro"));floatText("띵!",s.x,s.y-40,"#ffcc2e",30);
+      if(MW.orphan||!MW.inside){MW.state="idle";MW.inside=null;return}
+      MW.state="done";if(!state.talked.micro4)Talk.say("띵! 다 데워졌다. 전자레인지를 눌러서 꺼내자","happy","micro4")});
+    return;
+  }
+  GAME.busy=true;HANDS.go("R",ms.x,ms.y,"point",.25);await sleep(300);
+  Snd.hum(true);W3.microLight.emissiveIntensity=1.2;await sleep(900);Snd.hum(false);W3.microLight.emissiveIntensity=0;Snd.ding();
+  HANDS.rest("R");GAME.busy=false;
+  Talk.say(pick(["(빈 전자레인지를 돌렸다... 왜 그랬지?)","(전자레인지 안에 아무것도 없다. 내 손을 데울 뻔했다)"]),"sweat");
+}
+// 누를 거리 (pickAt 에 더해진다)
+function microHits(cands){
+  CUST.forEach(C=>{if(C.heatHit&&C.heatReq&&!C.heatTaken)cands.push(C.heatHit)});
+  if(MW.carry&&MW.carry.hot&&MW.carry.C.seat){
+    if(!MW.serveHit){MW.serveHit=new T.Mesh(box(.9,1.3,.9),HIT_MAT);MW.serveHit.userData.act="heatServe";scene.add(MW.serveHit)}
+    const s=MW.carry.C.seat,p=seatFood(s);MW.serveHit.position.set((s.x+p.x)/2,.65,(s.z+p.z)/2);MW.serveHit.updateMatrixWorld();cands.push(MW.serveHit);
+  }
+}
+function microLabel(H){
+  if(H.act==="heatTake"){const C=H.target.userData.cust;H.label="음식 집기 (데우기)";if(PLAYER.dist(C.obj.position)>REACH+.4){H.ok=false;H.why="너무 멀어요! 테이블 가까이 가서 눌러요";H.short="더 가까이"}return true}
+  if(H.act==="heatServe"){H.label="갖다 주기";if(PLAYER.dist(MW.serveHit.position)>REACH+.3){H.ok=false;H.why="너무 멀어요! 손님 자리 가까이 가요";H.short="더 가까이"}return true}
+  if(H.act==="m:micro"){H.label=MW.state==="done"?"꺼내기":MW.carry&&!MW.carry.hot?"넣고 돌리기":MW.state==="running"?"데우는 중...":"전자레인지"}
+  return false;
+}
+function microAct(H){
+  if(H.act==="heatTake"){const C=H.target.userData.cust;queueAct(()=>takeFood(C));return true}
+  if(H.act==="heatServe"){queueAct(serveFood);return true}
+  return false;
+}
+// 표시: 데워 달라는 손님, 다 된 전자레인지, 갖다 줄 자리
+function drawHeatMarks(ctx,t){
+  const tag=(p,str,col)=>{if(p.behind)return;doodleMood(ctx,p.x,p.y,"!",t);outlinedText(ctx,str,p.x,p.y-34,15,col,INK,4)};
+  CUST.forEach(C=>{if(!C.heatReq||C.heatTaken)return;const p=toScreen(C.obj.position.clone().setY(1.55));const d=PLAYER.dist(C.obj.position);
+    tag(p,d<=REACH+.4?"음식 눌러서 집기":"데워 주세요!","#ff9f6a")});
+  if(MW.state==="done")tag(toScreen(machinePos("micro").setY(COUNTER_Y+.55)),"띵! 꺼내기","#ffcc2e");
+  if(MW.carry&&!MW.carry.hot)tag(toScreen(machinePos("micro").setY(COUNTER_Y+.55)),"여기에 넣기","#7cc8ff");
+  if(MW.carry&&MW.carry.hot&&MW.carry.C.seat){const s=MW.carry.C.seat;tag(toScreen(V3(s.x,1.55,s.z)),"여기 갖다 주기","#8ff7b5")}
+}
 
 
 /* ================= 오프닝 (18장면) =================
@@ -3610,11 +3817,10 @@ function buildHits(){
   ["micro","coffee","steamer","grill"].forEach(k=>hitBox(W3.mk[k],[.5,.55,.55],[0,.2,0],"m:"+k));
   W3.hits.phone=W3.phoneHit;
 }
-// 화면의 (px,py)를 눌렀을 때. center=true 면 E 키 (가운데 점)
+// 화면의 (px,py)에 있는 누를 거리. center=true 면 E 키 (가운데 점)
+// 돌려주는 것: {target, act, owner, label(손 옆 안내), ok(지금 할 수 있나), why(안 될 때 알림), short(안 될 때 짧은 이유)}
 const MACHINE_REACH=3.4;
-function interactAt(px,py,center){
-  if(Scr.name!=="game"||!$("modal").hidden||!$("drawer").hidden||PHONE.building)return;
-  Snd.wake();PLAYER.apply();scene.updateMatrixWorld();
+function pickAt(px,py,center){
   const r=$("gl").getBoundingClientRect();
   ndc.set(px/r.width*2-1,-(py/r.height)*2+1);ray.setFromCamera(ndc,camera);
   const C=GAME.cur,cands=[];
@@ -3625,21 +3831,42 @@ function interactAt(px,py,center){
   CHORES.gaps.forEach(s=>s.hit&&cands.push(s.hit));CHORES.spills.forEach(sp=>cands.push(sp.hit));
   SEATS.forEach(s=>{if(s.trash)cands.push(s.trash.userData.hit)});
   if(W3.hits.phone)cands.push(W3.hits.phone);
-  let hit=ray.intersectObjects(cands,false)[0];
+  extraHits(cands);
+  const hit=ray.intersectObjects(cands,false)[0];
   let target=hit&&hit.object;
   // 손가락이 살짝 빗나가도 가까운 물건을 잡는다 (계산대 안에서만)
   if(!target&&C&&PLAYER.inRegister()){let best=null,bd=center?40:56;C.itemObjs.forEach(o=>{if(o.userData.state!=="counter")return;const s=toScreen(o.position);const d=Math.hypot(s.x-px,s.y-py);if(d<bd){bd=d;best=o.userData.hit}});
     if(C.payObj){const s=toScreen(C.payObj.position),d=Math.hypot(s.x-px,s.y-py);if(d<bd)best=C.payObj.userData.hit}target=best}
-  if(!target)return;
+  if(!target)return null;
   const act=target.userData.act,owner=target.userData.owner;
-  const tooFar=msg=>{toast(msg);Snd.errBeep()};
-  if(act==="restock"){const s=target.userData.sec;if(PLAYER.dist(s.c)>REACH)return tooFar("너무 멀어요! 진열대 가까이 가서 눌러요");queueAct(()=>restock(s));return}
-  if(act==="spill"){const sp=target.userData.spill;if(PLAYER.dist(sp)>REACH)return tooFar("너무 멀어요! 쏟은 곳 가까이 가서 눌러요");queueAct(()=>mopSpill(sp));return}
-  if(act==="trash"){const s=target.userData.seat;if(!s.trash)return;if(PLAYER.dist(s.trash.position)>REACH)return tooFar("너무 멀어요! 테이블 가까이 가서 눌러요");queueAct(()=>cleanTrash(s));return}
-  if(act==="phone"){if(!PLAYER.inRegister())return tooFar("전화기는 계산대 안쪽에 있어요!");answerPhone();return}
-  if(act&&act.startsWith("m:")){const m=act.slice(2);if(PLAYER.dist(machinePos(m))>MACHINE_REACH)return tooFar(`너무 멀어요! ${MACHINES[m].name} 가까이 가요`);queueAct(()=>useMachine(m));return}
-  // 여기부터는 계산대 일: 계산대 안에서만
-  if(!PLAYER.inRegister())return tooFar("계산은 계산대 안에서 해요!");
+  const H={target,act,owner,label:"",ok:true,why:"",short:""};
+  const far=(d,max,msg)=>{if(d>max){H.ok=false;H.why=msg;H.short="더 가까이"}};
+  if(extraLabel(H)){}                  // 테이블 전자레인지, 졸팡 박스
+  else if(act==="restock"){H.label="진열하기";far(PLAYER.dist(target.userData.sec.c),REACH,"너무 멀어요! 진열대 가까이 가서 눌러요")}
+  else if(act==="spill"){H.label="닦기";far(PLAYER.dist(target.userData.spill),REACH,"너무 멀어요! 쏟은 곳 가까이 가서 눌러요")}
+  else if(act==="trash"){const s=target.userData.seat;if(!s.trash)return null;H.label="치우기";far(PLAYER.dist(s.trash.position),REACH,"너무 멀어요! 테이블 가까이 가서 눌러요")}
+  else if(act==="phone"){H.label=PHONE.ringing?"전화 받기":"전화기";if(!PLAYER.inRegister()){H.ok=false;H.why="전화기는 계산대 안쪽에 있어요!";H.short="계산대 안에서"}}
+  else if(act&&act.startsWith("m:")){const m=act.slice(2);H.label=H.label||MACHINES[m].name;far(PLAYER.dist(machinePos(m)),MACHINE_REACH,`너무 멀어요! ${MACHINES[m].name} 가까이 가요`)}
+  else{
+    if(act==="bag")H.label="봉투";
+    else if(act==="scanner")H.label=C&&nextTask(C)?.k==="scan"?"":"스캐너";
+    else if(owner)H.label=owner===GAME.expired?"폐기 김밥":C&&owner===C.payObj?(C.pay==="card"?"카드 받기":"돈 받기"):"스캔하기";
+    if(!PLAYER.inRegister()){H.ok=false;H.why="계산은 계산대 안에서 해요!";H.short="계산대 안에서"}
+  }
+  return H;
+}
+function interactAt(px,py,center){
+  if(Scr.name!=="game"||!$("modal").hidden||!$("drawer").hidden||PHONE.building)return;
+  Snd.wake();PLAYER.apply();scene.updateMatrixWorld();
+  const H=pickAt(px,py,center);if(!H)return;
+  if(!H.ok){toast(H.why);Snd.errBeep();return}
+  const {act,owner,target}=H,C=GAME.cur;
+  if(act==="restock"){const s=target.userData.sec;queueAct(()=>restock(s));return}
+  if(act==="spill"){const sp=target.userData.spill;queueAct(()=>mopSpill(sp));return}
+  if(act==="trash"){const s=target.userData.seat;queueAct(()=>cleanTrash(s));return}
+  if(act==="phone"){answerPhone();return}
+  if(extraAct(H))return;
+  if(act&&act.startsWith("m:")){const m=act.slice(2);queueAct(()=>useMachine(m));return}
   if(act==="bag")queueAct(giveBag);
   else if(act==="scanner"){if(!C||nextTask(C)?.k!=="scan")queueAct(scanOwnHand)}
   else if(owner){
@@ -3648,6 +3875,10 @@ function interactAt(px,py,center){
     else tapItem(owner);
   }
 }
+// 뒤에 붙는 기능(테이블 전자레인지, 졸팡 박스)이 누를 거리를 더한다
+function extraHits(cands){microHits(cands)}
+function extraLabel(H){return microLabel(H)}
+function extraAct(H){return microAct(H)}
 
 /* ================= 자동 화질: 느린 기기면 해상도·그림자를 낮춘다 ================= */
 const Q={s:[],step:0};
@@ -3687,12 +3918,13 @@ function frame(now){
     // 감정 낙서
     CUST.forEach(C=>{if(C.state!=="counter"&&C.state!=="queue")return;const hp=C.obj.position.clone();hp.y+=1.72;const s=toScreen(hp);
       const m=C.pat<C.patMax*.3?"angry":C.pat<C.patMax*.55?"sweat":C.def.name==="새벽 좀비 직장인"?"zzz":null;if(m)doodleMood(ctx,s.x+30,s.y-10,m,now)});
-    drawSteam(ctx,now);drawChoreMarks(ctx,now);drawPhoneMark(ctx,now);drawMop(ctx,now);
+    drawSteam(ctx,now);drawChoreMarks(ctx,now);drawHeatMarks(ctx,now);drawPhoneMark(ctx,now);drawMop(ctx,now);
     // 손님이 계산대에서 기다리는데 내가 딴 데 있으면 계산대를 가리킨다
     if(GAME.cur&&GAME.cur.state==="counter"&&!PLAYER.inRegister())edgeArrow(ctx,V3(0,1.1,.75),"계산대로!",now);
     else{const tt=tutTarget();if(tt){if(tt.p){const s=toScreen(tt.p);if(!s.behind)doodleArrow(ctx,s.x,s.y-10,now,tt.label)}else if(tt.el&&tt.el.offsetParent){const b=tt.el.getBoundingClientRect(),r=$("gl").getBoundingClientRect();doodleArrow(ctx,b.left-r.left+b.width/2,b.top-r.top-6,now,tt.label)}}}
     crosshair(ctx);
     HANDS.draw(ctx);
+    stepHover(now);drawHoverLabel(ctx);
     drawFloats(ctx,dt);
     renderBubbles();
     hintT+=dt;if(hintT>150){hintT=0;updateHintUI();updateHud();const ck=GAME.clockText();if(GAME.cur||ck!==frame.ck){frame.ck=ck;drawPos()}}
