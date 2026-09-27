@@ -2116,6 +2116,7 @@ function lookFor(type){
 const TWEENS=[];
 // obj.position 을 to 로. lift: 가는 길에 살짝 들어 올리는 높이
 function tween(obj,to,dur,{lift=0,scale,rot}={}){
+  if(!obj)return Promise.resolve();   // 손님이 가 버려서 물건이 없어졌으면 그냥 넘어간다
   return new Promise(res=>{TWEENS.push({obj,from:obj.position.clone(),to:to.clone(),dur:Math.max(1,dur),t:0,lift,res,
     s0:obj.scale.x,s1:scale,r0:obj.rotation.y,r1:rot})});
 }
@@ -2243,7 +2244,7 @@ function stepCustomer(C,dt,now){
   C.reach=lerp(C.reach,C.reachT||0,Math.min(1,dt*.008));
   poseCustomer(C,now);
   // 인내심: 계산대 앞에 왔고 내가 계산대 안에 있을 때만 줄어든다 (줄 서 있거나 내가 자리를 비우면 부르기만)
-  if(C.state==="counter"&&!C.paidDone&&GAME.running&&PLAYER.inRegister()){
+  if(C.state==="counter"&&!C.paidDone&&!C.paying&&GAME.running&&PLAYER.inRegister()){
     C.pat-=dt/1000*1.5*(GAME.tut?.35:1);   // 인내심 막대: 원래의 1.5배 속도 (2배에서 0.5배 완화)
     if(C.pat<=0)angryLeave(C);
     else if(C.pat<C.patMax*.3&&!C.warned){C.warned=1;sayC(C,pick(C.def.angry),"angry");Snd.angry()}
@@ -2563,9 +2564,11 @@ function cashFor(C,total){
 async function takeCard(){
   const C=GAME.cur;if(!C||!C.payObj||C.pay!=="card"||C.paying)return;C.paying=true;
   GAME.busy=true;HANDS.hold("R",C.payObj,[14,6],"grab");await sleep(120);
+  if(!C.payObj||GAME.cur!==C){C.paying=false;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;return}   // 그 사이에 손님이 화나서 갔다
   await tween(C.payObj,V3(SPOT.reader.x,COUNTER_Y+.06,SPOT.reader.z+.05),320,{lift:.06});
   C.posMsg="카드 승인 중...";C.posMsgColor="#1f5fd1";drawPos();Snd.tone(1200,.05,"square",.03);
-  await sleep(700);Snd.card();C.posMsg="승인되었습니다";C.posMsgColor="#2fbf71";drawPos();
+  await sleep(700);if(!C.payObj||GAME.cur!==C){C.paying=false;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;return}
+  Snd.card();C.posMsg="승인되었습니다";C.posMsgColor="#2fbf71";drawPos();
   const s=toScreen(C.payObj.position);floatText("띠링~ 승인!",s.x,s.y-40,"#8ff7b5",22);
   await tween(C.payObj,V3(C.obj.position.x+.08,1.05,C.obj.position.z+.3),320,{lift:.05});
   scene.remove(C.payObj);C.payObj=null;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;
@@ -2830,7 +2833,7 @@ function tutEvent(ev){
 /* ---------- 근무 끝: 영수증 ---------- */
 function runCost(){const owned=UPGRADES.filter(u=>hasUp(u.id)).length;return (3000+owned*800+(hasUp("parttimer")?8000:0))*tierNow().pm}
 // 평점이 높을수록 단골이 늘어서 밤마다 따로 들어오는 돈
-const regularBonus=()=>Math.round(state.rating*6000*EARN)*tierNow().pm;
+const regularBonus=()=>Math.round(state.rating*6000*EARN/100)*100*tierNow().pm;   // 100원 단위로
 function endNight(){
   if(!GAME.running)return;GAME.running=false;flushCouriers();
   const N=GAME.night,owner=state.role==="owner";
@@ -4180,7 +4183,8 @@ function resetMiniEvents(){EV.t=30+Math.random()*20;EV.n=0}
 function stepMiniEvents(dt){
   if(!GAME.running||GAME.tut||state.role!=="owner"||EV.n>=2)return;
   EV.t-=dt/1000;if(EV.t>0)return;
-  if(GAME.cur||GAME.busy||MW.carry||!canMove()||Talk.story||actRunning||ACTQ.length){EV.t=3;return}
+  // 정말 한가할 때만: 계산 중·줄 선 손님·데워 달라는 손님·전자레인지 돌아가는 중이면 미룬다
+  if(GAME.cur||GAME.busy||MW.carry||MW.state!=="idle"||CUST.some(c=>c.heatReq||c.state==="queue"||c.state==="toQueue")||!canMove()||Talk.story||actRunning||ACTQ.length){EV.t=3;return}
   EV.t=40+Math.random()*30;EV.n++;
   const fly=Math.random()<.5;
   Snd.chime();Talk.say(fly?"앗, 계산대에 파리가 앉았다! 잡자!!":"본사에서 이벤트 복권이 왔다! 긁어 보자!",fly?"shock":"wink");
