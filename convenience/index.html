@@ -540,6 +540,8 @@ const hasUp=id=>!!(state.up&&state.up[id]);
 /* ================= 상태 ================= */
 const SHIFT_START=22, SHIFT_HOURS=8, SHIFT_SEC=210;   // 22:00~06:00 을 실제 210초에
 const WAGE=10030;                                      // 시급
+const EARN=1.85;                                       // 사장님 벌이 배수 (판매·팁·보너스·셀프 계산대·미션 보상)
+const earnUp=n=>{const u=10*moneyScale();return Math.max(u,Math.round(n*EARN/u)*u)};
 const ALBA_NIGHTS=1;                                   // 첫날만 알바, 둘째 날부터 사장님
 function freshState(){
   return {night:1,money:0,role:"alba",rating:3.5,up:{},stats:{served:0,angry:0,tips:0,best:0,sales:0,nights:0},
@@ -2612,6 +2614,7 @@ function finishSale(C,diff,{tip=0,richTip=false}={}){
   else if(diff>0){N.over+=diff;sayC(C,"어... 더 주셨는데? (조용히 챙긴다)",null)}
   else{sayC(C,pick(C.def.bye),ratio>.6?"love":null)}
   if(!richTip&&diff>=0&&ratio>.5&&Math.random()<.6)tip=randInt(2,8)*100*moneyScale();
+  if(tip&&!richTip&&state.role==="owner")tip=earnUp(tip);   // 사장님은 1.85배
   if(tip&&hasUp("interior")&&!richTip)tip=Math.round(tip*1.5);
   if(tip){N.tips+=tip;MISSION.add("tips");const s=toScreen(V3(0,COUNTER_Y,-.2));floatText(`팁 +${won(tip)}`,s.x,s.y-60,"#ffcc2e",26);Snd.coin()}
   if(richTip)setTimeout(()=>Talk.say(`부자 형님이 ${won(tip)}을 팁으로 줬다!! 이 세계에서도 형님은 형님이다...`,"shock"),600);
@@ -2814,15 +2817,15 @@ function tutEvent(ev){
 /* ---------- 근무 끝: 영수증 ---------- */
 function runCost(){const owned=UPGRADES.filter(u=>hasUp(u.id)).length;return (3000+owned*800+(hasUp("parttimer")?8000:0))*tierNow().pm}
 // 평점이 높을수록 단골이 늘어서 밤마다 따로 들어오는 돈
-const regularBonus=()=>Math.round(state.rating*6000)*tierNow().pm;
+const regularBonus=()=>Math.round(state.rating*6000*EARN)*tierNow().pm;
 function endNight(){
   if(!GAME.running)return;GAME.running=false;flushCouriers();
   const N=GAME.night,owner=state.role==="owner";
   const L={n:N.n,owner,sales:N.sales,served:N.served,angry:N.angry,tips:N.tips,over:N.over,short:N.short,perfect:N.perfect,total:N.total};
   if(!owner){L.wage=WAGE*SHIFT_HOURS;L.income=L.wage+N.tips-N.over}
   else{
-    L.profit=Math.round(N.sales*(hasUp("parttimer")?1.1:1));   // 매출은 전부 내 돈 (상품값은 졸팡에서 주문할 때 이미 냈다)
-    L.self=hasUp("kiosk")?Math.round(randInt(8,14)*3500*tierNow().pm):0;
+    L.profit=Math.round(N.sales*(hasUp("parttimer")?1.1:1)*EARN);   // 1.85배   // 매출은 전부 내 돈 (상품값은 졸팡에서 주문할 때 이미 냈다)
+    L.self=hasUp("kiosk")?Math.round(randInt(8,14)*3500*EARN*tierNow().pm):0;
     L.bonus=regularBonus();L.rating=state.rating;
     L.coffeeOver=N.coffeeOver||0;L.coffeeLoss=Math.round(N.sales*.003*L.coffeeOver);   // 커피 넘칠 때마다 오늘 매출의 0.3%
     L.cost=runCost();L.orders=N.orders||0;L.income=L.profit+L.self+L.bonus+N.tips-N.over-L.cost-L.coffeeLoss;
@@ -2842,7 +2845,7 @@ function showReceipt(L,quiet){
   const ln=(a,b,cls="")=>`<div class="ln ${cls}"><span>${a}</span><span>${b}</span></div>`;
   const rows=[ln("손님",`${L.served}명${L.angry?` (화난 손님 ${L.angry})`:""}`),ln("매출",won(L.sales))];
   if(!L.owner)rows.push(ln(`시급 ${won(WAGE)} × 8시간`,"+"+won(L.wage)));
-  else{rows.push(ln(`판매 (매출 전부 내 돈${hasUp("parttimer")?" · 알바 +10%":""})`,"+"+won(L.profit)));if(L.self)rows.push(ln("셀프 계산대","+"+won(L.self)));
+  else{rows.push(ln(`판매 (매출 ×${EARN}${hasUp("parttimer")?" · 알바 +10%":""})`,"+"+won(L.profit)));if(L.self)rows.push(ln("셀프 계산대","+"+won(L.self)));
     if(L.bonus)rows.push(ln(`단골 손님 보너스 (평점 ★${(L.rating||state.rating).toFixed(1)})`,"+"+won(L.bonus)));
     if(L.orders)rows.push(ln("졸팡 주문 (주문할 때 냄)","-"+won(L.orders)));rows.push(ln("운영비 (전기·월세)","-"+won(L.cost)))}
   if(L.tips)rows.push(ln("팁","+"+won(L.tips)));
@@ -3006,7 +3009,7 @@ function refreshObstacles(){OBST=null}
 /* ---------- 입력 ---------- */
 // e.code 를 쓴다 (한글 자판이 켜져 있어도 WASD 가 먹게)
 const KEYMAP={KeyW:"w",KeyA:"a",KeyS:"s",KeyD:"d",ArrowUp:"arrowup",ArrowDown:"arrowdown",ArrowLeft:"arrowleft",ArrowRight:"arrowright",ShiftLeft:"shift",ShiftRight:"shift"};
-function canMove(){return Scr.name==="game"&&$("modal").hidden&&$("drawer").hidden&&!Talk.story&&!PHONE.building}
+function canMove(){return Scr.name==="game"&&$("modal").hidden&&$("drawer").hidden&&!PHONE.building}   // 속마음·문자 창이 떠 있어도 움직일 수 있다
 addEventListener("keydown",e=>{
   if(Scr.name!=="game")return;
   const onBtn=e.target&&e.target.closest&&e.target.closest("button")&&e.target.offsetParent;
@@ -3464,7 +3467,7 @@ async function serveFood(){
   C.food=f;C.hot=true;C.heatReq=false;C.heatTaken=false;C.heatPat=0;   // 기다리기 끝 → 이제 먹는다 (게이지도 사라진다)
   MW.carry=null;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;
   sayC(C,pick(["감사합니다! 따끈따끈~","와 뜨끈하다! 최고예요","역시 데워 먹어야 제맛이지~"]),"love");
-  const tip=randInt(3,8)*100*moneyScale();GAME.night.tips+=tip;GAME.night.heat=(GAME.night.heat||0)+1;MISSION.add("heat");state.rating=clamp(state.rating+.05,1,5);
+  let tip=randInt(3,8)*100*moneyScale();if(state.role==="owner")tip=earnUp(tip);GAME.night.tips+=tip;GAME.night.heat=(GAME.night.heat||0)+1;MISSION.add("heat");state.rating=clamp(state.rating+.05,1,5);
   const s=toScreen(f.position);floatText(`팁 +${won(tip)}`,s.x,s.y-50,"#ffcc2e",24);Snd.coin();Snd.happy();
   C.eatT=Math.max(C.eatT,9000);
 }
@@ -3764,7 +3767,7 @@ const MISSION={
   },
   fill(){const D=this.data();while(D.subs.length<3){const s=this.pickSub();if(!s)break;D.subs.push(s)}},
   prog(s){return clamp(this.get(s.k)-s.start,0,s.goal)},
-  reward(s){const p=SUB_POOL.find(x=>x.k===s.k);return Math.round(p.r*(1+.5*Math.min(3,this.data().lv[s.k]||0)))*tierNow().pm},
+  reward(s){const p=SUB_POOL.find(x=>x.k===s.k);return Math.round(p.r*EARN*(1+.5*Math.min(3,this.data().lv[s.k]||0)))*tierNow().pm},
   text(s){return SUB_POOL.find(x=>x.k===s.k).t(s.goal)},
   // 다 채운 미션은 보상을 주고 바꾼다
   check(){
