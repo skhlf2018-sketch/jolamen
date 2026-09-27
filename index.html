@@ -693,9 +693,8 @@ const TIERS=[
   {name:"꿈나라 호텔",shop:"졸라맨 꿈나라 호텔",cost:1e35,add:1e27,theme:"dream",menu:29,lodge:true},
   {name:"거인 나라 호텔",shop:"졸라맨 거인 나라 호텔",cost:1e36,add:1e28,theme:"giant",menu:30,lodge:true},
   {name:"황금 엘도라도 호텔",shop:"졸라맨 황금 엘도라도 호텔",cost:1e37,add:1e29,theme:"gold",menu:31,lodge:true},
-  {name:"졸라맨 행성",shop:"졸라맨 행성 호텔",hud:"졸라맨 행성",cost:1e38,add:1e30,theme:"zplanet",menu:32,lodge:true},
-  {name:"졸라맨 은하 제국",shop:"졸라맨 은하 제국 호텔",hud:"졸라맨 은하 제국",cost:1e39,add:1e31,theme:"empire",menu:33,lodge:true},
-  {name:"졸라맨 월드",shop:"졸라맨 월드",cost:1e40,add:1e32,theme:"zworld",menu:34,lodge:true}
+  {name:"졸라맨 은하 제국",shop:"졸라맨 은하 제국 호텔",hud:"졸라맨 은하 제국",cost:1e38,add:1e30,theme:"empire",menu:32,lodge:true},
+  {name:"졸라맨 월드",shop:"졸라맨 월드",cost:1e39,add:1e31,theme:"zworld",menu:33,lodge:true}
 ];
 const MAX_TIER=TIERS.length-1;
 
@@ -735,7 +734,6 @@ const TIER_MENUS=[
   [["구름 팬케이크",1,["cake","#fff4e0","#ffd84d"]],["달빛 우유 코스",.9,["glass","#fffaf0","#b28dff"]],["별똥별 파스타",1.1,["pasta","#ffd84d","#2a2150"]]],
   [["거인 스테이크",1.3,["meat","#8a3a2a","#4fb04a"]],["콩나무 샐러드",.8,["fruit","#43d17f"]],["황금알 오믈렛",1.1,["orb","#ffd84d"]]],
   [["황금 킹크랩",1.2,["crab","#f2c14e"]],["순금 초밥",1,["sushi","#ffd84d"]],["태양신 코스",1.1,["fine","#f0a400","#ffffff"]]],
-  [["졸라맨 행성 김밥",.9,["sushi","#ffffff"]],["막대 인간 스테이크",1.1,["meat","#1f1d2b","#ffffff"]],["동그라미 머리 푸딩",1,["cake","#ffffff","#1f1d2b"]]],
   [["황제의 만찬",1.2,["fine","#b28dff","#ffd84d"]],["은하 제국 치킨",1,7],["함대 도시락",.9,["tube","#56b8ff","#ff9340"]]],
   [["졸라맨 월드 한상",1.3,["fine","#ff5b5f","#ffd84d"]],["원조 김치찌개",1,0],["전설의 전설의 라면",.8,6],["엔딩 케이크",1.1,["cake","#ffd84d","#ff7eb6"]]]
 ];
@@ -1071,15 +1069,17 @@ const ACHS=[
 
 /* ================= 저장 ================= */
 function save(){
-  try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:5,state,price:+$("price").value,ad:+$("ad").value}))}catch(e){}
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:6,state,price:+$("price").value,ad:+$("ad").value}))}catch(e){}
 }
 function loadSave(){
   try{
     let raw=localStorage.getItem(SAVE_KEY);
     for(const k of OLD_SAVE_KEYS)if(!raw)raw=localStorage.getItem(k);
     const d=JSON.parse(raw||"null");
-    if(!d||!d.state||d.state.bankrupt||![3,4,5].includes(d.v))return null;
+    if(!d||!d.state||d.state.bankrupt||![3,4,5,6].includes(d.v))return null;
     if(d.v<5)migrateState(d.state);
+    // v6: '졸라맨 행성'(Lv.30) 단계를 뺐다 → 은하 제국·졸라맨 월드가 한 칸씩 당겨진다 (행성에 있던 가게는 은하 제국으로)
+    if(d.v<6&&(d.state.tier||0)>=31)d.state.tier-=1;
     return d;
   }catch(e){return null}
 }
@@ -2433,7 +2433,6 @@ const THEMES={
   dream:     TH("#efe6ff","#e4d8ff","#8a6ad8","#cbb8f5","#b39ce8","#e8dff8","#f6f1ff","#7fb0ff","#ffffff","#b28dff","#8a6ad8","chandelier","dream"),
   giant:     TH("#f4ead8","#eadcc2","#6b4a2b","#c9a57a","#a8845a","#9a7a50","#b8966a","#2f7d4a","#f2c14e","#6b4a2b","#2f7d4a","pendant","giant"),
   gold:      TH("#fff1c2","#ffe699","#b8860b","#f2cf6a","#d9b040","#f5dc8a","#fff3c4","#b8323f","#ffffff","#d4a017","#b8860b","chandelier","gold"),
-  zplanet:   TH("#ffffff","#f1f1f6","#1f1d2b","#e6e6ee","#cfcfdc","#dcdce6","#ffffff","#1f1d2b","#ffd84d","#e0e0ea","#1f1d2b","orb","zplanet",1),
   empire:    TH("#1a1440","#221a52","#ffd84d","#2a2060","#1a1440","#1c1648","#2e2670","#b28dff","#ffd84d","#4a2a90","#ffd84d","chandelier","empire",1),
   zworld:    TH("#fff8e8","#ffefd0","#ff5b5f","#ffd84d","#ffb02e","#fff3dc","#ffffff","#ff5b5f","#ffd84d","#56b8ff","#ff5b5f","chandelier","zworld")
 };
@@ -2626,13 +2625,6 @@ const OUTSIDE={
     [[X+50,70,"#e0a400"],[X+W-60,90,"#f2c14e"],[X+W/2,110,"#d49a10"]].forEach(([cx,w,c])=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(cx-w/2,Y+H);ctx.lineTo(cx,Y+H-w*.75);ctx.lineTo(cx+w/2,Y+H);ctx.fill();
       ctx.fillStyle="rgba(255,255,255,.3)";ctx.beginPath();ctx.moveTo(cx,Y+H-w*.75);ctx.lineTo(cx+w/2,Y+H);ctx.lineTo(cx+w/6,Y+H);ctx.fill()});
     for(let i=0;i<5;i++)sparkle(ctx,X+seeded(i+30)*W,Y+20+seeded(i+31)*(H-40),4+3*Math.abs(Math.sin(t*.004+i)),"#fff")
-  },
-  zplanet(ctx,X,Y,W,H,t){   // 졸라맨 얼굴 행성
-    fillGrad(ctx,X,Y,W,H,"#06081e","#1a1f4a");starsIn(ctx,X,Y,W,H,t,30,88);
-    const px=X+W/2,py=Y+H/2+6,r=38;circle(ctx,px,py,r,"#ffffff",INK,4);
-    circle(ctx,px-12,py-6,4,INK);circle(ctx,px+12,py-6,4,INK);ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.beginPath();ctx.arc(px,py+4,14,.15*Math.PI,.85*Math.PI);ctx.stroke();
-    ctx.strokeStyle="#ffd84d";ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(px,py,64,14,-.25,.1*Math.PI,.9*Math.PI,true);ctx.stroke();
-    const a=t*.001;circle(ctx,px+Math.cos(a)*70,py+Math.sin(a)*22,6,"#ff9340",INK,2);
   },
   empire(ctx,X,Y,W,H,t){   // 졸라맨 은하 제국: 은하와 함대
     OUTSIDE.galaxy(ctx,X,Y,W,H,t);
@@ -4414,7 +4406,7 @@ const MOVE_TALK={1:"첫 이사다!! 새 가게 냄새~ ...새 페인트 냄새�
   22:"졸라맨 유니버스... 여기가 끝인 줄 알았지? 아직 더 있어!",23:"용궁이다! 나 수영 못 하는데... 괜찮겠지?",24:"사탕 나라! 벽을 핥아 봤는데 딸기 맛이야. 비밀로 해 줘",
   25:"정글 신전! 원숭이가 계산대에 앉아 있어. 알바 지원했나 봐",26:"픽셀 게임 호텔! 여기선 나도 8비트야 삐빅",27:"꿈나라 호텔! 여기서 졸면 꿈속의 꿈이야. 알람 두 개 맞춰 둬",
   28:"거인 나라! 손님 한 명이 라면 천 그릇 먹어. 사장님은 행복해",29:"황금 엘도라도! 바닥이 전부 금이야... 줍고 싶은 거 참는 중",
-  30:"내 얼굴을 한 행성이라니... 좀 부끄럽네",31:"은하 제국 황제 졸라맨 납시오! ...왕관이 자꾸 흘러내려",32:"졸라맨 월드!!! 부자 형님, 저 해냈어요!!!"};
+  30:"은하 제국 황제 졸라맨 납시오! ...왕관이 자꾸 흘러내려",31:"졸라맨 월드!!! 부자 형님, 저 해냈어요!!!"};
 
 /* ================= 하루 흐름 ================= */
 function startBusiness(){
