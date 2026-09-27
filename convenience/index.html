@@ -79,6 +79,9 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .gap{flex:1}
 .icon{border:2px solid var(--line);background:var(--glass);color:#fff;border-radius:12px;font-size:17px;padding:6px 12px}
 .icon.hot{background:var(--brand);color:var(--ink);border-color:var(--ink)}
+.icon.quit{border-color:rgba(255,120,110,.7)}
+@media (max-width:1240px){#hQuit .lbl,#hMis .lbl{display:none}}
+@media (max-width:1000px){.icon .lbl{display:none}.icon{padding:5px 10px}#keysHelp{top:110px}}
 
 #bubbles{position:absolute;inset:0;pointer-events:none}
 .cb{position:absolute;transform:translate(-50%,-100%);max-width:min(300px,70vw);pointer-events:none}
@@ -325,6 +328,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
       <button id="hJol" class="icon jol" type="button" aria-label="내 폰: 졸팡 쇼핑 (J)">📱<span class="lbl"> 졸팡</span><i id="jolBadge" class="badge" hidden>0</i></button>
       <button id="hPhone" class="icon" type="button" aria-label="리모델링 회사에 전화" hidden>☎<span class="lbl"> 리모델링</span></button>
       <button id="hSet" class="icon" type="button" aria-label="설정">⚙<span class="lbl"> 설정</span></button>
+      <button id="hQuit" class="icon quit" type="button" aria-label="게임 끄기">⏻<span class="lbl"> 끄기</span></button>
     </div>
     <div id="bubbles"></div>
     <div id="hint" class="hint" aria-live="polite"></div>
@@ -2951,12 +2955,13 @@ function showSettings(){
   const sw=(id,on,label)=>`<div class="set-row"><span>${label}</span><button id="${id}" class="switch" type="button" role="switch" aria-checked="${on}" aria-label="${label}"></button></div>`;
   const inGame=Scr.name==="game";
   openModal(`<div class="panel"><h2>설정</h2>${sw("swMusic",Snd.music,"배경 음악")}${sw("swSfx",Snd.sfx,"효과음")}${sw("swTalk",!Talk.off,"졸라맨 속마음 (팁·개그)")}${touchUI?"":sw("swLock",ML.want,"마우스 화면 밖으로 안 나가게 (Esc로 풀기)")}
-    <div class="acts">${inGame?`<button id="sRestart" class="btn sm red" type="button">처음부터 다시</button>`:""}<button id="sClose" class="btn" type="button">닫기</button></div></div>`);
+    <div class="acts">${inGame?`<button id="sQuit" class="btn sm alt" type="button">⏻ 게임 끄기</button><button id="sRestart" class="btn sm red" type="button">처음부터 다시</button>`:""}<button id="sClose" class="btn" type="button">닫기</button></div></div>`);
   $("swMusic").onclick=e=>{Snd.music=!Snd.music;e.currentTarget.setAttribute("aria-checked",Snd.music);Snd.wake();if(!Snd.music)Snd.stopMusic();Snd.savePrefs()};
   $("swSfx").onclick=e=>{Snd.sfx=!Snd.sfx;e.currentTarget.setAttribute("aria-checked",Snd.sfx);Snd.wake();Snd.click();Snd.savePrefs()};
   $("swTalk").onclick=e=>{Talk.setOff(!Talk.off);e.currentTarget.setAttribute("aria-checked",!Talk.off);Snd.click()};
   if($("swLock"))$("swLock").onclick=e=>{setMouseLock(!ML.want);e.currentTarget.setAttribute("aria-checked",ML.want);Snd.click()};
   $("sClose").onclick=()=>{Snd.click();closeModal()};
+  if(inGame)$("sQuit").onclick=()=>{Snd.click();askQuit()};
   if(inGame)$("sRestart").onclick=()=>{$("sRestart").outerHTML=`<button id="sYes" class="btn sm red" type="button">정말 처음부터? (기록 삭제)</button>`;$("sYes").onclick=()=>{closeModal();resetGame()}};
 }
 
@@ -4715,10 +4720,29 @@ async function boot(){
   requestAnimationFrame(frame);
 }
 addEventListener("resize",resizeAll);
-$("tNew").onclick=()=>{Snd.wake();Snd.click();newGame()};
-$("tCont").onclick=()=>{Snd.wake();Snd.click();continueGame()};
+$("tNew").onclick=()=>{Snd.wake();Snd.click();if(Snd.music)Snd.startMusic();newGame()};
+$("tCont").onclick=()=>{Snd.wake();Snd.click();if(Snd.music)Snd.startMusic();continueGame()};
 $("tSet").onclick=()=>{Snd.wake();Snd.click();showSettings()};
 $("hSet").onclick=()=>{Snd.click();showSettings()};
+$("hQuit").onclick=()=>{Snd.click();askQuit()};
+/* ---------- 게임 끄기: 저장하고 타이틀로 ---------- */
+function askQuit(){
+  if(Scr.name!=="game")return;
+  openModal(`<div class="panel"><h2>게임을 끌까요?</h2>
+    <p>통장 돈, 가게, 리모델링, 미션은 저장돼 있어요. 타이틀에서 <b>이어하기</b>를 누르면 다시 할 수 있어요.</p>
+    <p class="note" style="color:#7a5a10">${GAME.running?"지금 하던 밤은 이어하기 때 처음부터 다시 해요.":""}</p>
+    <div class="acts"><button id="qNo" class="btn alt" type="button">계속할래</button><button id="qYes" class="btn red" type="button">⏻ 게임 끄기</button></div></div>`);
+  $("qNo").onclick=()=>{Snd.click();closeModal()};
+  $("qYes").onclick=()=>{Snd.click();quitGame()};
+}
+function quitGame(){
+  if(document.pointerLockElement)document.exitPointerLock();
+  closeModal();Talk.story=null;Talk.close();resetMicro();
+  if(state.night)save();
+  resetWorld();Snd.stopMusic();
+  Scr.show("title");CAM.set("outside");$("tCont").hidden=!loadSave();
+  toast("게임을 껐어요. 이제 창을 닫아도 돼요 (이어하기로 다시 할 수 있어요)");
+}
 $("opNext").onclick=()=>{Snd.click();Op.go(Math.min(Op.list.length,Op.i+1))};
 $("opSkip").onclick=()=>{Snd.click();Op.go(Op.list.length);Op.t=1400};
 $("opStart").onclick=()=>{Snd.click();leaveOpening()};
