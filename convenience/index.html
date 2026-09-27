@@ -3461,7 +3461,8 @@ async function serveFood(){
   if(!C.seat||C.state!=="eating"){camera.remove(f);MW.carry=null;HANDS.R.follow=null;HANDS.rest("R");toast("손님이 이미 가 버렸어요...");return}
   GAME.busy=true;uncarry(f);HANDS.hold("R",f,[12,6],"grab");
   await tween(f,seatFood(C.seat),420,{lift:.12});f.rotation.y=C.seat.ry+Math.PI;
-  C.food=f;C.hot=true;MW.carry=null;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;
+  C.food=f;C.hot=true;C.heatReq=false;C.heatTaken=false;C.heatPat=0;   // 기다리기 끝 → 이제 먹는다 (게이지도 사라진다)
+  MW.carry=null;HANDS.R.follow=null;HANDS.rest("R");GAME.busy=false;
   sayC(C,pick(["감사합니다! 따끈따끈~","와 뜨끈하다! 최고예요","역시 데워 먹어야 제맛이지~"]),"love");
   const tip=randInt(3,8)*100*moneyScale();GAME.night.tips+=tip;GAME.night.heat=(GAME.night.heat||0)+1;MISSION.add("heat");state.rating=clamp(state.rating+.05,1,5);
   const s=toScreen(f.position);floatText(`팁 +${won(tip)}`,s.x,s.y-50,"#ffcc2e",24);Snd.coin();Snd.happy();
