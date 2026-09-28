@@ -3317,6 +3317,7 @@ function makeSpill(){
   const sp={id:++CHORES.spillSeq,x,z,mesh,hit,mat};hit.userData.spill=sp;CHORES.spills.push(sp);
   // 쏟은 캔
   const can=makeProduct(pick(["cola","cider"]));can.rotation.z=Math.PI/2;can.position.set(x+.18,.034,z+.08);scene.add(can);sp.can=can;
+  if(typeof CLEAN!=="undefined"&&CLEAN.bots.length){Talk.say(pick(["누가 또 쏟았다! 청소 로봇 출동~","쏟았다! 청소 로봇이 달려간다"]),"happy");return}   // 청소 로봇이 알아서
   Talk.say(state.talked.spill1?pick(["바닥에 또 쏟았어! 손님 미끄러지기 전에 닦자","누가 또 쏟았다... 대걸레 출동!"]):"누가 음료를 쏟았다! 바닥에 번쩍이는 거 보이지? 가까이 가서 누르면 닦아. 안 닦으면 손님이 미끄러져","sweat",state.talked.spill1?null:"spill1");
 }
 async function mopSpill(sp){
