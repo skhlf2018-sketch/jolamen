@@ -159,6 +159,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .up div{flex:1;min-width:0}.up b{font-size:17px}.up small{display:block;color:#5d5a66;font-size:14px;line-height:1.35}
 .up.own{background:#eaf7ee;border-color:#9fd9b2}
 .up .btn{white-space:nowrap}
+.up-h{margin:12px 0 0;font-size:16px}.up small.uplv{display:inline;color:#7a5a10;font-size:13px}.up .ph-bar{height:8px;margin:5px 0 0;border-width:1.5px}
 .set-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #ccc;font-size:17px}
 .switch{width:54px;height:30px;border-radius:30px;border:3px solid var(--ink);background:#ccc;position:relative}
 .switch:after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--ink);transition:left .15s}
@@ -558,6 +559,33 @@ const UPGRADES=[
   {id:"parttimer",name:"알바 고용",cost:250000,desc:"봉투는 알바가 알아서 챙겨 줘요. 판매 +10%."},
   {id:"kiosk",name:"셀프 계산대",cost:400000,desc:"셀프 손님 매출이 밤마다 따로 들어와요."}
 ];
+// 사장님 메뉴 150개 더: 10가지 설비 × 15단계. 단계가 오를수록 비싸지고 (리모델링 단계 음식값에 맞춰), 효과는 차곡차곡 쌓인다
+const UP_CATS=[
+  {k:"light",icon:"💡",name:"간판·조명",eff:"cust",v:.02,base:12000,d:"손님 +2%",
+    names:["형광등 새로 갈기","LED 줄조명","네온 간판","무지개 네온","빙글빙글 회전 간판","대형 전광판","레이저 쇼","홀로그램 간판","하늘 서치라이트","오로라 조명","인공 태양","은하 네온","초신성 조명","차원 빛기둥","졸라맨 빛의 간판"]},
+  {k:"shelf",icon:"🗄",name:"진열대",eff:"sales",v:.02,base:15000,d:"판매 +2%",
+    names:["새 장바구니 걸이","스테인리스 선반","빙글빙글 회전 매대","냉장 쇼케이스","원목 선반","유리 진열장","자동 회전 매대","금박 선반","다이아몬드 선반","공중부양 선반","반중력 진열대","무중력 쇼케이스","차원 진열장","시간정지 매대","졸라 무한 선반"]},
+  {k:"music",icon:"🎵",name:"매장 음악",eff:"rating",v:.02,base:10000,d:"밤마다 평점 +0.02",
+    names:["낡은 라디오","블루투스 스피커","동네 가수 BGM","재즈 트리오","DJ 부스","아이돌 신곡 틀기","어린이 합창단","오케스트라 생연주","오페라 가수","로봇 밴드","우주 교향곡","고래 노래 녹음","별의 소리","신들의 하프","졸라맨 주제가"]},
+  {k:"ad",icon:"📣",name:"광고",eff:"cust",v:.03,base:20000,d:"손님 +3%",
+    names:["동네 전단지 인쇄","버스 옆구리 광고","지하철 광고","라디오 광고","TV 광고","유튜브 광고","옥외 대형 광고판","비행기 현수막","비행선 광고","인공위성 광고","달 표면 광고","은하 방송 광고","차원 광고","신탁 광고","졸라버스 광고"]},
+  {k:"pos",icon:"💳",name:"계산 장비",eff:"speed",v:.04,base:14000,d:"계산 속도·손님 인내심 +4%",
+    names:["새 바코드 스캐너","무선 스캐너","고속 영수증 프린터","터치 결제기","교통카드 결제","얼굴 인식 결제","손바닥 결제","목소리 결제","눈빛 결제","뇌파 결제","텔레파시 결제","순간이동 결제","시간역행 결제","차원 결제","졸라 결제"]},
+  {k:"service",icon:"🍬",name:"손님 서비스",eff:"tips",v:.1,base:9000,d:"팁 +10%",
+    names:["무료 사탕","우산 대여","휴대폰 충전기","무료 와이파이","정수기","안마의자","웰컴 드링크","레드카펫 인사","전용 집사","향수 분수","황금 우산","무중력 쉼터","시간 쉼터","신들의 축복","졸라맨 사인회"]},
+  {k:"welfare",icon:"☕",name:"직원 복지",eff:"cost",v:.03,base:11000,d:"운영비 -3%",
+    names:["휴게실 의자","커피 무제한","간식 냉장고","안마기","낮잠 캡슐","사내 헬스장","사내 식당","사내 수영장","사내 영화관","사내 놀이공원","전용 비행기","전용 우주선","전용 행성","전용 은하","졸라맨 복지 우주"]},
+  {k:"safe",icon:"🧽",name:"위생·보안",eff:"bonus",v:.05,base:13000,d:"단골 보너스 +5%",
+    names:["미끄럼 방지 매트","공기청정기","CCTV","손 소독기","자동 물걸레","살균 조명","방범 로봇 강아지","레이저 경비","먼지 제로 방","무균실 매장","투명 방어막","우주 방역","차원 방범","신들의 결계","졸라 철벽"]},
+  {k:"deco",icon:"🖼",name:"인테리어 소품",eff:"bonus",v:.05,base:16000,d:"단골 보너스 +5%",
+    names:["작은 화분","그림 액자","미니 분수대","수족관","대리석 바닥","금박 벽지","실내 정원","작은 폭포","열대 온실","공룡 화석 전시","유성 조각","달 암석 전시","은하 모형","신들의 조각상","졸라맨 동상"]},
+  {k:"game",icon:"🎮",name:"오락 코너",eff:"mini",v:.15,base:8000,d:"미니게임 보너스 +15%",
+    names:["파리채 업그레이드","뽑기 기계","인형뽑기","동전 오락기","노래방 부스","펀치 기계","VR 체험존","로봇 격투기","레이싱 게임","롤러코스터 체험","우주 시뮬레이터","무중력 볼링","차원 탈출 게임","신들의 주사위","졸라맨 오락실"]}
+];
+UP_CATS.forEach(c=>c.names.forEach((nm,g)=>{const raw=c.base*STORE_TIERS[Math.min(STORE_TIERS.length-1,g+1)].pm,p=Math.pow(10,Math.floor(Math.log10(raw))-1);
+  UPGRADES.push({id:c.k+(g+1),name:nm,cost:Math.round(raw/p)*p,desc:c.d,cat:c.k,g,eff:{[c.eff]:c.v}})}));
+// 산 설비 효과 합계 (cust 손님, sales 판매, rating 평점, speed 계산 속도, tips 팁, cost 운영비, bonus 단골, mini 미니게임)
+const upEff=k=>{let s=0;const U=state.up;if(!U)return 0;for(const u of UPGRADES)if(u.eff&&u.eff[k]&&U[u.id])s+=u.eff[k];return s};
 const hasUp=id=>!!(state.up&&state.up[id]);
 
 /* ================= 상태 ================= */
@@ -2087,7 +2115,7 @@ const DP_PX=DP.H/DP.M;                          // 1m = 약 205px
 const DP_S=1.58*DP_PX/122;                      // 키 1.58m (drawStick 졸라맨 키는 약 122)
 const DP_OFFS=[[-4,0],[4,0],[0,-4],[0,4],[-3,-3],[3,-3],[-3,3],[3,3]];
 const PEOPLE=[];
-let DP_TMP=null,DP_SH=null;
+let DP_TMP=null,DP_SH=null;const DP_WP=new T.Vector3();
 function makeDoodlePerson(look){
   if(!DP_TMP){DP_TMP=mkCanvas(DP.W,DP.H);DP_SH={geo:new T.CircleGeometry(.24,24),mat:new T.MeshBasicMaterial({color:0x0a0812,transparent:true,opacity:.2,depthWrite:false})}}
   const g=new T.Group();
@@ -2105,12 +2133,16 @@ function drawPeople(now){
   const cam=camera.position;
   for(let i=PEOPLE.length-1;i>=0;i--){
     const g=PEOPLE[i],d=g.userData.dp;
-    if(!g.parent){PEOPLE.splice(i,1);d.tex.dispose();d.bill.material.dispose();d.bill.geometry.dispose();continue}   // 나간 손님은 치운다
+    // 나간 손님은 치운다 (카트에 탄 아기처럼 누구 안에 들어 있으면 맨 위가 장면인지 본다)
+    let root=g;while(root.parent)root=root.parent;
+    if(root!==scene){PEOPLE.splice(i,1);d.tex.dispose();d.bill.material.dispose();d.bill.geometry.dispose();continue}
     if(!g.visible)continue;
-    const p=g.position,dx=cam.x-p.x,dz=cam.z-p.z,len=Math.hypot(dx,dz)||1;
-    d.bill.rotation.y=Math.atan2(dx,dz)-g.rotation.y;
+    let p=g.position,yaw=g.rotation.y;
+    if(g.parent!==scene){p=g.getWorldPosition(DP_WP);for(let o=g.parent;o&&o!==scene;o=o.parent)yaw+=o.rotation.y}
+    const dx=cam.x-p.x,dz=cam.z-p.z,len=Math.hypot(dx,dz)||1;
+    d.bill.rotation.y=Math.atan2(dx,dz)-yaw;
     // 몸이 화면 오른쪽을 보나 왼쪽을 보나 (정면·뒤는 그대로)
-    const side=(Math.sin(g.rotation.y)*dz-Math.cos(g.rotation.y)*dx)/len;
+    const side=(Math.sin(yaw)*dz-Math.cos(yaw)*dx)/len;
     if(side>.2)d.dir=1;else if(side<-.2)d.dir=-1;
     const key=d.pose+d.face+d.dir+d.extraKey;
     if(now<d.next&&key===d.key)continue;
@@ -2232,6 +2264,8 @@ function makeCustomer(type,opt={}){
   const doodle=!!def.doodle;             // 1편에서 온 VIP (부자 형님, 뚱라맨)
   const obj=makeDoodlePerson(lookFor(type));if(def.scale)obj.scale.setScalar(def.scale);   // 꼬마·아기는 작다
   obj.position.set((Math.random()-.5)*1.2,0,SPOT.outside.z-Math.random()*1.5);scene.add(obj);
+  // 슈퍼마켓: 어른 손님 일부는 카트를 끈다 (물건을 더 많이 사고, 가끔 아기를 태우고 온다)
+  const cart=isMarket()&&!def.vip&&!def.minor&&type!=="grandma"&&!opt.items&&Math.random()<cartChance(),baby=cart&&Math.random()<.4;
   // 살 물건 고르기
   let items=opt.items;const missed=[];
   if(!items){
@@ -2241,12 +2275,13 @@ function makeCustomer(type,opt={}){
     const pool=def.only||(def.minor?base.filter(k=>!PRODUCTS[k].adult):base);   // 술은 어른만
     const snacks=SNACKS.filter(k=>pool.includes(k));
     const pickWant=()=>def.snack&&snacks.length&&Math.random()<def.snack?pick(snacks):pick(pool);
-    let n=randInt(def.n[0],def.n[1]);items=[];
+    let n=randInt(def.n[0],def.n[1])+(cart?randInt(2,4):0);items=[];
     if(!def.only&&!def.snack&&Math.random()<(type==="tourist"?.6:.35)){const pk=pickPremium();if(pk){if(takeStock(pk)){items.push(pk);n--}else missed.push(pk)}}
     for(let i=0;i<n;i++){const want=pickWant();
       if(def.vip&&type!=="rival"){takeStock(want);items.push(want);continue}
       if(takeStock(want)){items.push(want);continue}
       missed.push(want);const alt=pool.filter(k=>stockOf(k)>0);if(alt.length&&Math.random()<.5){const a=pick(alt);takeStock(a);items.push(a)}}
+    if(baby){const k=pick(SNACKS);if(takeStock(k))items.push(k)}   // 아기 까까
   }else items.forEach(k=>takeStock(k));
   // 기계 주문 (사장님이 산 기계만)
   const orders=[];
@@ -2259,12 +2294,13 @@ function makeCustomer(type,opt={}){
     heat:null,heated:false,   // 데우기는 이제 테이블 옆 전자레인지에서 (먹고 가는 손님이 부탁한다)
     pay:opt.pay||(def.pays?"cash":Math.random()<def.card?"card":"cash"),
     state:"enter",path:[],speed:(1.1+Math.random()*.25)*(def.slow||1),phase:Math.random()*6,
-    patMax:def.pat*(hasUp("interior")?1.3:1),pat:0,line:"",lineT:0,mood:null,
+    patMax:def.pat*(hasUp("interior")?1.3:1)*(1+upEff("speed")),pat:0,line:"",lineT:0,mood:null,
     itemObjs:[],scanned:[],bagOn:false,paid:0,payObj:null,paidDone:false,reach:0,wave:0,walkK:0,
     prices:[],total(){return this.prices.reduce((s,p)=>s+p,0)}
   };
   C.pat=C.patMax;
-  if(isMarket()&&!def.vip){C.basket=true;obj.userData.dp.look={...obj.userData.dp.look,item:"basket"}}   // 슈퍼마켓: 장바구니
+  if(cart)addCart(C,baby);   // 카트 (아기 태우기도)
+  else if(isMarket()&&!def.vip){C.basket=true;obj.userData.dp.look={...obj.userData.dp.look,item:"basket"}}   // 슈퍼마켓: 장바구니
   const browse=new T.Vector3((Math.random()-.5)*.7,0,-3-Math.random()*3);
   C.path=[SPOT.door.clone().setX((Math.random()-.5)*.4),browse];
   if(isMarket()){const b=hallBrowse();C.path=[SPOT.door.clone()].concat(hallRoute(V3(0,0,ROW_F),b))}   // 넓은 슈퍼마켓 통로로
@@ -2288,7 +2324,8 @@ function stepCustomer(C,dt,now){
   else if(C.state==="counter"||C.state==="queue"){o.rotation.y=angLerp(o.rotation.y,0,dt*.008)}
   else if(C.state==="self"){stepSelf(C,dt,now)}
   else if(C.state==="svc"){stepSvc(C,dt)}
-  C.walkK=lerp(C.walkK,walking?1:0,Math.min(1,dt*.01));C.phase+=dt*.009*C.speed;
+  C.walkK=lerp(C.walkK,walking?1:0,Math.min(1,dt*.01));
+  if(C.cart)stepCart(C,dt,now,walking);C.phase+=dt*.009*C.speed;
   if(walking&&CHORES.spills.length)checkSlip(C);
   // 계산대에 왔는데 내가 없으면 부르기만 한다 (막대는 안 줄어든다)
   if(C.state==="counter"&&!C.paidDone&&!PLAYER.inRegister()){C.callT=(C.callT||0)-dt;if(C.callT<=0){C.callT=7000;sayC(C,pick(["계산이요~!","저기요~ 계산해 주세요!","아무도 안 계세요?!"]));Snd.chime()}}
@@ -2414,7 +2451,7 @@ function reqChips(C){
 const EAT_KINDS={cup:1,dosirak:1,kimbap:1,hotbar:1,hoppang:1,coffee:1,icecream:1};
 const HOT_KINDS={cup:1,dosirak:1,coffee:1,hoppang:1,hotbar:1};
 function tryEat(C){
-  if(GAME.tut||C.doodle||C.type==="office"||C.type==="police"||GAME.t>SHIFT_SEC*.9)return false;
+  if(GAME.tut||C.doodle||C.cart||C.type==="office"||C.type==="police"||GAME.t>SHIFT_SEC*.9)return false;   // 카트 손님은 먹고 가지 않는다
   const eats=C.scanned.filter(k=>k!=="bag"&&EAT_KINDS[PRODUCTS[k].kind]),key=eats.find(HEATABLE)||eats[0];if(!key)return false;
   const seat=SEATS.find(s=>!s.by);if(!seat||Math.random()>(HEATABLE(key)?.8:.6))return false;
   seat.by=C;C.seat=seat;C.eatKey=key;C.state="toSeat";C.reachT=0;
@@ -2755,7 +2792,7 @@ const IDLE_GAGS=[
 function nightCustomers(n){
   if(n===1)return 5;
   let c=(state.tier||0)?Math.min(22,8+n):Math.min(12,8+n);   // 리모델링 전: 10~12명 (하루 평균 15만 원쯤)
-  c*=(hasUp("led")?1.3:1)*(hasUp("freezer")?1.1:1)*(.8+state.rating*.06);
+  c*=(hasUp("led")?1.3:1)*(hasUp("freezer")?1.1:1)*(.8+state.rating*.06)*(1+upEff("cust"));   // 사장님 메뉴 간판·광고
   return Math.round(Math.min(28,Math.round(c)+Math.min(8,state.tier||0))*crowdMult());   // 슈퍼마켓이 넓어질수록 손님이 눈에 띄게 늘어난다
 }
 function pickType(){
@@ -2829,8 +2866,8 @@ function currentHint(){
   if(!C&&openBoxes().length)return "졸팡 박스 도착! 입구 쪽 박스를 눌러 뜯기";
   if(!C&&isMarket()&&MK.n<FLYER_MAX&&GAME.t<SHIFT_SEC*.8)return canGoOut()?`가게 밖에 나가서 전단지 붙이기 (${MK.n}/${FLYER_MAX}) → 손님 ×${(1+FLYER_MAX*.8).toFixed(1)}`:`유리창에 전단지 붙이기 (${MK.n}/${FLYER_MAX})`;
   if(!C&&soldOutCount())return `품절 상품 ${soldOutCount()}개! 📱 졸팡(J)에서 주문하기`;
-  if(!C&&CHORES.spills.length)return "바닥에 음료가 쏟아졌어요! 가까이 가서 눌러 닦기";
-  if(!C&&SEATS.some(s=>s.trash))return "테이블에 먹고 간 쓰레기! 가까이 가서 눌러 치우기";
+  if(!C&&CHORES.spills.length&&!CLEAN.bots.length)return "바닥에 음료가 쏟아졌어요! 가까이 가서 눌러 닦기";
+  if(!C&&SEATS.some(s=>s.trash)&&!robotAge())return "테이블에 먹고 간 쓰레기! 가까이 가서 눌러 치우기";
   if(!C&&CHORES.gaps.length)return `진열대 ${CHORES.gaps.length}칸이 비었어요! 가까이 가서 눌러 채우기`;
   if(!C&&isMarket())return CUST.length?"손님들이 장바구니 들고 쇼핑 중... 셀프 계산대에서 알아서 계산해요":"손님을 기다리는 중... (슈퍼마켓이 한가하다)";
   if(!C)return GAME.expired?"폐기 삼각김밥이 있다... (눌러서 먹기)":CUST.length?"손님이 물건을 고르는 중...":GAME.t>=SHIFT_SEC?"퇴근 준비!":"손님을 기다리는 중... (계산대가 한가하다)";
@@ -2893,7 +2930,7 @@ function tutEvent(ev){
 }
 
 /* ---------- 근무 끝: 영수증 ---------- */
-function runCost(){const owned=UPGRADES.filter(u=>u.cost>0&&hasUp(u.id)).length;return (3000+owned*800+(hasUp("parttimer")?8000:0))*tierNow().pm}
+function runCost(){const owned=UPGRADES.filter(u=>u.cost>0&&!u.cat&&hasUp(u.id)).length;return Math.round((3000+owned*800+(hasUp("parttimer")?8000:0))*(1-Math.min(.6,upEff("cost"))))*tierNow().pm}   // 직원 복지: 운영비 -
 // 평점이 높을수록 단골이 늘어서 밤마다 따로 들어오는 돈
 const regularBonus=()=>Math.round(state.rating*3300*EARN/100)*100*tierNow().pm;   // 100원 단위로
 function endNight(){
@@ -2907,11 +2944,14 @@ function endNight(){
     L.bonus=regularBonus();L.rating=state.rating;
     L.coffeeOver=N.coffeeOver||0;L.coffeeLoss=Math.round(N.sales*.003*L.coffeeOver);   // 커피 넘칠 때마다 오늘 매출의 0.3%
     L.cost=runCost();L.orders=N.orders||0;L.mini=N.mini||0;L.income=L.profit+L.self+L.bonus+L.mini+N.tips-N.over-L.cost-L.coffeeLoss;
+    // 사장님 메뉴 설비 효과: 판매·팁·단골·미니게임 보너스
+    const unit=10*moneyScale();L.upfx=Math.round((L.profit*upEff("sales")+N.tips*upEff("tips")+L.bonus*upEff("bonus")+L.mini*upEff("mini"))/unit)*unit;L.income+=L.upfx;
+    if(upEff("rating"))state.rating=clamp(state.rating+upEff("rating"),1,5);
     L.robot=robotAge()?Math.round((L.profit+L.self+L.bonus+L.mini+N.tips)*BOT.profit/(10*moneyScale()))*10*moneyScale():0;L.income+=L.robot;   // 로봇: 수익 +20%
     const hm=hmSettle(L.income);L.hmTotal=hm.total;L.hmTaken=HM.taken;L.income+=hm.rest;   // 노숙자 아저씨 바구니: 번 돈의 70%
   }
   L.selfN=N.self||0;L.flyers=N.flyers||0;L.net=L.income-(L.orders||0)+(L.hmTaken||0);L.soldout=N.soldout||0;
-  L.restock=N.restock||0;L.clean=N.clean||0;L.slips=N.slips||0;L.trash=N.trash||0;L.heat=N.heat||0;L.dirty=N.dirty||0;L.leftGaps=CHORES.gaps.length;L.leftSpills=CHORES.spills.length;
+  L.restock=N.restock||0;L.clean=N.clean||0;L.botClean=N.botClean||0;L.slips=N.slips||0;L.trash=N.trash||0;L.heat=N.heat||0;L.dirty=N.dirty||0;L.leftGaps=CHORES.gaps.length;L.leftSpills=CHORES.spills.length;
   L.leftTrash=SEATS.filter(s=>s.trash&&performance.now()-s.trash.userData.t0>20000).length;
   const left=L.leftGaps+L.leftSpills+L.leftTrash;if(left)state.rating=clamp(state.rating-.05*left,1,5);
   L.grade=N.angry===0&&!L.slips&&!L.dirty&&!left&&!L.soldout&&N.served&&N.perfect/N.served>=.7?"S":N.angry===0&&!left?"A":N.angry<=1?"B":N.angry<=3?"C":"D";
@@ -2928,6 +2968,7 @@ function showReceipt(L,quiet){
   else{rows.push(ln(`판매 (매출 ×${EARN}${hasUp("parttimer")?" · 알바 +10%":""})`,"+"+won(L.profit)));if(L.self)rows.push(ln("셀프 계산대","+"+won(L.self)));
     if(L.mini)rows.push(ln("미니게임 보너스 (파리·복권)","+"+won(L.mini)));
     if(L.hmTotal)rows.push(ln(`노숙자 아저씨 바구니 (번 돈의 70%${L.hmTaken?` · 밤중에 ${won(L.hmTaken)} 받음`:""})`,"+"+won(L.hmTotal)));
+    if(L.upfx)rows.push(ln(`🛒 사장님 메뉴 설비 효과 (${UPGRADES.filter(u=>u.cat&&hasUp(u.id)).length}개)`,"+"+won(L.upfx)));
     if(L.robot)rows.push(ln("🤖 로봇 자동화 (수익 +20%)","+"+won(L.robot)),ln("로봇 효과","효율 +50% · 매출 +15% · 만족도 +20%"));
     if(L.bonus)rows.push(ln(`단골 손님 보너스 (평점 ★${(L.rating||state.rating).toFixed(1)})`,"+"+won(L.bonus)));
     if(L.orders)rows.push(ln("졸팡 주문 (주문할 때 냄)","-"+won(L.orders)));rows.push(ln("운영비 (전기·월세)","-"+won(L.cost)))}
@@ -2935,7 +2976,7 @@ function showReceipt(L,quiet){
   if(L.selfN)rows.push(ln("셀프 계산대 손님 (매출에 포함)",`${L.selfN}명${L.flyers?` · 전단지 ${L.flyers}장`:""}`));
   if(L.over)rows.push(ln(L.owner?"거스름돈 더 줌":"시재 부족 (알바비에서 깜)","-"+won(L.over),"neg"));
   if(L.coffeeOver)rows.push(ln(`커피 넘침 ${L.coffeeOver}번 (오늘 매출 -0.3%씩)`,"-"+won(L.coffeeLoss),"neg"));
-  const jobs=[L.restock?`진열 ${L.restock}칸`:"",L.clean?`청소 ${L.clean}번`:"",L.trash?`테이블 ${L.trash}번`:"",L.heat?`데워 드림 ${L.heat}번`:""].filter(Boolean).join(" · ");
+  const jobs=[L.restock?`진열 ${L.restock}칸`:"",L.clean?`청소 ${L.clean}번${L.botClean?` (청소 로봇 ${L.botClean})`:""}`:"",L.trash?`테이블 ${L.trash}번`:"",L.heat?`데워 드림 ${L.heat}번`:""].filter(Boolean).join(" · ");
   if(jobs)rows.push(ln("매장 관리",jobs));
   if(L.slips)rows.push(ln("미끄러진 손님",`${L.slips}명`,"neg"));
   if(L.soldout)rows.push(ln("품절로 못 판 상품",`${L.soldout}개`,"neg"));
@@ -3009,14 +3050,20 @@ function shopQuota(){
 }
 function showShop(){
   const q=shopQuota(),left=q.filter(id=>!hasUp(id)),first=!state.talked.shop_tut;
-  const rows=UPGRADES.map(u=>{const own=hasUp(u.id),can=state.money>=u.cost,must=left.includes(u.id);
+  const rows=UPGRADES.filter(u=>!u.cat).map(u=>{const own=hasUp(u.id),can=state.money>=u.cost,must=left.includes(u.id);
     return `<div class="up ${own?"own":""} ${must?"must":""}"><div><b>${must?"📋 ":""}${esc(u.name)}</b><small>${esc(u.desc)}</small></div>${own?`<span style="color:#1d7a45;font-size:15px">${u.cost?"설치 완료":"고용 완료"}</span>`:`<button class="btn sm ${must?"pulse":""}" type="button" data-up="${u.id}" ${can?"":"disabled"}>${u.cost?won(u.cost):"₩0 고용"}</button>`}</div>`}).join("");
+  // 150개 설비: 10가지 줄마다 다음 단계 하나씩 (15단계)
+  const catRows=UP_CATS.map(c=>{const list=UPGRADES.filter(u=>u.cat===c.k),n=list.filter(u=>hasUp(u.id)).length,nx=list.find(u=>!hasUp(u.id));
+    const tot=c.eff==="rating"?`평점 +${(n*c.v).toFixed(2)}/밤`:`${c.d.replace(/[+-]\d.*$/,"")}${c.eff==="cost"?"-":"+"}${Math.round(n*c.v*100)}%`;
+    if(!nx)return `<div class="up own"><div><b>${c.icon} ${esc(c.name)} <small class="uplv">15/15</small></b><small>전부 설치! 지금 효과: ${tot}</small></div><span style="color:#1d7a45;font-size:15px">완료 ✓</span></div>`;
+    const must=left.includes(nx.id),can=state.money>=nx.cost;
+    return `<div class="up ${must?"must":""}"><div><b>${must?"📋 ":""}${c.icon} ${esc(c.name)} <small class="uplv">${n}/15</small></b><small>다음: <b>${esc(nx.name)}</b> · ${esc(c.d)}${n?` (지금 ${tot})`:""}</small><div class="ph-bar"><i style="width:${Math.round(n/15*100)}%"></i></div></div><button class="btn sm ${must?"pulse":""}" type="button" data-up="${nx.id}" ${can?"":"disabled"}>${won(nx.cost)}</button></div>`}).join("");
   const tut=first?`<div class="shop-tut"><b>👋 사장님 메뉴 사용법</b><ul>
       <li>밤이 끝날 때마다 여기가 떠요. 설비를 사면 가게에 진짜로 생겨요</li>
       <li><b>3일마다 본사 지시</b>가 와요: "여기까지 사라" (보통 1~2개). 다 사야 다음 밤으로 갈 수 있어요. 돈이 모자라면 지시가 안 나오거나 살 수 있는 만큼만 나와요</li>
       <li>맨 위 <b>노숙자 아저씨</b>는 0원! 고용하면 가게 밖으로 나갈 수 있고, 가게 앞 아저씨 바구니에 오늘 번 돈의 70%가 모여요</li></ul></div>`:"";
   const quota=q.length?`<div class="quota ${left.length?"":"done"}">📋 본사 지시 (3일마다): <b>${q.map(id=>esc(UPGRADES.find(u=>u.id===id).name)).join(", ")}</b>${left.length?"까지 사야 다음 밤으로 갈 수 있어요!":" 다 샀어요! ✓"}</div>`:"";
-  openModal(`<div class="panel"><h2>사장님 메뉴</h2>${tut}${quota}<p>통장 <b>${won(state.money)}</b> · 운영비 하루 ${won(runCost())}</p><div class="ups">${rows}</div>
+  openModal(`<div class="panel"><h2>사장님 메뉴</h2>${tut}${quota}<p>통장 <b>${won(state.money)}</b> · 운영비 하루 ${won(runCost())}</p><div class="ups">${rows}<h4 class="up-h">🛒 설비 150개 (10가지 × 15단계, 효과가 쌓여요)</h4>${catRows}</div>
     ${remodelRow()}
     <div class="acts"><button id="shJol" class="btn alt" type="button">📱 졸팡</button><button id="shPhone" class="btn ${canRemodel()?"pulse":"alt"}" type="button">☎ 리모델링</button><button id="shNext" class="btn" type="button" ${left.length?"disabled":""}>${left.length?`본사 지시부터! (${left.length}개 남음)`:"다음 밤 ▶"}</button></div></div>`);
   if(first){state.talked.shop_tut=1;save()}
@@ -3025,7 +3072,7 @@ function showShop(){
     state.money-=u.cost;state.up[u.id]=true;MISSION.add("ups");
     if(u.id==="dosirak")addStock("dosirak",Math.max(0,8-stockOf("dosirak")));if(u.id==="freezer")addStock("icecream",Math.max(0,8-stockOf("icecream")));   // 첫 입고는 서비스
     save();refreshUpgrades();renderActions();updateHud();Snd.fanfare();
-    toast(u.id==="homeless"?"노숙자 아저씨 고용! 이제 가게 밖으로 나갈 수 있어요 🚪":`${u.name} 설치 완료!`);Talk.say(UP_TALK[u.id],"wink");showShop()});
+    toast(u.id==="homeless"?"노숙자 아저씨 고용! 이제 가게 밖으로 나갈 수 있어요 🚪":`${u.name} 설치 완료!`);Talk.say(UP_TALK[u.id]||`${u.name} 설치! ${u.desc}. 차곡차곡 쌓인다~`,"wink");showShop()});
   $("shNext").onclick=()=>{if(shopQuota().some(id=>!hasUp(id))){Snd.errBeep();return}Snd.click();closeModal();startNight()};
 }
 
@@ -3261,7 +3308,7 @@ async function restock(s){
 /* ---------- 쏟아진 음료 ---------- */
 function puddleGeo(){const s=new T.Shape(),n=14;for(let i=0;i<=n;i++){const a=i/n*TAU,r=.28*(1+.28*Math.sin(i*2.3)+.12*Math.cos(i*5.1));i?s.lineTo(Math.cos(a)*r,Math.sin(a)*r*.8):s.moveTo(Math.cos(a)*r,Math.sin(a)*r*.8)}return new T.ShapeGeometry(s)}
 function makeSpill(){
-  const spots=isMarket()?[[0,-3.2],[.2,-4.8],[3.15,-3.6],[-3.15,-4.4],[5.9,-3.4],[-5.9,-4.8],[3.9,.2],[-4.1,-.6]]:[[0,-3.2],[.1,-4.6],[-.2,-5.6],[2.35,-3.6],[2.35,-5.2],[-2.2,-3.4],[-2.2,-5]];
+  const spots=isMarket()?COLS.map((c,i)=>[c+(i?0:.2),i%2?-3.6:-4.6]).concat([[0,-3.2],[3.9,.2],[-4.1,-.6]]):[[0,-3.2],[.1,-4.6],[-.2,-5.6],[2.35,-3.6],[2.35,-5.2],[-2.2,-3.4],[-2.2,-5]];
   const [x,z]=pick(spots.filter(([x,z])=>!CHORES.spills.some(s=>Math.hypot(s.x-x,s.z-z)<1)));
   const col=pick([0x230c03,0xff7a0a,0xff9fbd]);
   const mat=new T.MeshPhysicalMaterial({color:col,roughness:.02,metalness:0,clearcoat:1,clearcoatRoughness:.02,transparent:true,opacity:.86,envMapIntensity:2.2,depthWrite:false});
@@ -3276,6 +3323,7 @@ async function mopSpill(sp){
   if(!CHORES.spills.includes(sp))return;
   GAME.busy=true;CHORES.mop={sp,t:0};Snd.noiseHit(700,1.2,.08,"lowpass");
   for(let i=0;i<14;i++){sp.mat.opacity=.82*(1-i/14);await sleep(90)}
+  if(!CHORES.spills.includes(sp)){CHORES.mop=null;HANDS.rest("R");HANDS.rest("L");GAME.busy=false;return}   // 청소 로봇이 먼저 닦았다
   scene.remove(sp.mesh);scene.remove(sp.hit);scene.remove(sp.can);CHORES.spills.splice(CHORES.spills.indexOf(sp),1);
   CHORES.mop=null;const s=toScreen(V3(sp.x,0,sp.z));floatText("반짝반짝!",s.x,s.y-30,"#8ff7b5",24);Snd.happy();
   state.rating=clamp(state.rating+.02*satMult(),1,5);GAME.night.clean=(GAME.night.clean||0)+1;MISSION.add("clean");
@@ -4447,6 +4495,7 @@ function buildHall(){
   if(t>=3){MK.bots={svc:makeBot("서비스 로봇","#2c6fd6"),mw:makeBot("전자레인지 로봇","#e2483d")};
     MK.bots.svc.position.set(3.05,0,-1.1);MK.bots.svc.rotation.y=-Math.PI/2;g.add(MK.bots.svc);MK.obs.push([2.8,-1.35,3.3,-.85]);
     MK.bots.mw.position.set(-3.06,0,1.05);MK.bots.mw.rotation.y=Math.PI;g.add(MK.bots.mw);MK.obs.push([-3.31,.8,-2.81,1.3])}
+  buildCleaners(g,t);   // 청소 로봇 5대 (세 번째 리모델링부터)
   buildDeco(g,t,lv);
   // 넓어진 만큼 안개도 멀리
   MK.fog=[Math.max(14,hx*1.4),Math.max(40,hx*3.4)];
@@ -4548,7 +4597,7 @@ function rebuildHall(){
 // 밤이 시작되면 전단지는 새로 (밤새 비에 젖어 다 떨어졌다)
 function resetMarketNight(){
   refreshMarket();MK.n=0;MK.flyers.forEach(s=>s.m.visible=false);
-  SELFQ.length=0;SVCQ.length=0;LANES.forEach(L=>L.by=null);AUTO.acc=0;ROBO.svc=null;ROBO.mw=null;
+  SELFQ.length=0;SVCQ.length=0;LANES.forEach(L=>L.by=null);AUTO.acc=0;ROBO.svc=null;ROBO.mw=null;ROBO.trash=null;if(MK.bots){MK.bots.mw.position.copy(MW_HOME);MK.bots.mw.rotation.y=Math.PI}
   if(isMarket()&&GAME.running&&!GAME.tut)setTimeout(()=>{if(GAME.running&&MK.n===0&&!Talk.story)Talk.say(canGoOut()?"슈퍼마켓 사장님은 홍보가 생명! 문 밖에 나가서 전단지를 붙이자. 6장 다 붙이면 손님이 5배 넘게 온대":"전단지를 유리창에 붙이자! 6장 다 붙이면 손님이 5배 넘게 온대","wink")},4200);
 }
 const flyerMult=()=>1+MK.n*.8;   // 6장 = 5.8배
@@ -4629,7 +4678,7 @@ function placeSelf(){
 function stepSelf(C,dt,now){
   const L=C.lane;C.obj.rotation.y=angLerp(C.obj.rotation.y,Math.PI,Math.min(1,dt*.008));
   if(!L)return;
-  C.selfT+=dt*effMult();const k=Math.floor(C.selfT/650);   // 로봇 시대: 효율 +50% (삑삑이 1.5배 빠르다)
+  C.selfT+=dt*effMult()*(1+upEff("speed"));const k=Math.floor(C.selfT/650);   // 로봇 시대: 효율 +50% (삑삑이 1.5배 빠르다)
   if(k!==C.selfK&&k<5){C.selfK=k;Snd.tone(1800,.05,"square",.03);L.light.emissiveIntensity=1.4;setTimeout(()=>L.light.emissiveIntensity=.2,120)}
   if(C.selfT<3300)return;
   const unit=10*moneyScale(),total=Math.round(C.items.reduce((s,k)=>s+priceOf(k),0)*salesMult()/unit)*unit,N=GAME.night;   // 로봇 시대: 매출 +15%
@@ -4686,7 +4735,7 @@ function stepAuto(dt,now){
 function flyItem(from,to){const it=makeProduct(pick(["kimbap","cola","chips","ramen"]));it.position.copy(from);it.scale.setScalar(.8);scene.add(it);tween(it,to.clone(),500,{lift:.6}).then(()=>scene.remove(it))}
 
 /* ---------- 로봇 (세 번째 리모델링부터): 서비스 코너·전자레인지를 로봇이 다 해 준다 ---------- */
-const ROBO={svc:null,mw:null};
+const ROBO={svc:null,mw:null,trash:null};
 const ROBOT_MS=2100;   // 사람이 미니게임 하는 것보다 1.5배 빠르게
 function stepRobots(dt,now){
   const B=MK.bots;
@@ -4703,8 +4752,34 @@ function stepRobots(dt,now){
         const s=toScreen(mp);if(!s.behind&&PLAYER.dist(mp)<11)floatText(`🤖 ${nameOf(o.key)} 완성!`,s.x,s.y-40,"#8fd3ff",20);
         handToSvc(C,it)}}}
   else{const C=SVCQ.find(c=>c.state==="svc"&&c.orders.some(o=>!o.done));if(C)ROBO.svc={C,t:0}}
-  // 전자레인지: 데워 달라는 손님 음식을 가져가서 데워 갖다 준다
-  if(!ROBO.mw){const C=CUST.find(c=>c.heatReq&&!c.heatTaken&&c.food&&c.seat&&c.state==="eating");if(C)robotHeat(C)}
+  // 전자레인지: 데워 달라는 손님 음식을 가져가서 데워 갖다 준다 (쓰레기 치우는 중이 아니면)
+  if(!ROBO.mw&&!ROBO.trash){const C=CUST.find(c=>c.heatReq&&!c.heatTaken&&c.food&&c.seat&&c.state==="eating");if(C)robotHeat(C)}
+  stepBotTrash(dt);
+}
+// 전자레인지 로봇은 한가하면 테이블 쓰레기도 치운다: 테이블 끝으로 굴러가서 → 쓰레기를 쏙 → 제자리로
+const MW_HOME=V3(-3.06,0,1.05),MW_WAY=V3(-2.55,0,.85),MW_TABLE=V3(-2.45,0,-.3);
+function stepBotTrash(dt){
+  const b=MK.bots&&MK.bots.mw;if(!b)return;
+  let R=ROBO.trash;
+  if(!R){if(ROBO.mw)return;
+    const s=SEATS.find(s=>s.trash&&!s.trash.userData.bot&&performance.now()-(s.trash.userData.t0||0)>1500);if(!s)return;
+    s.trash.userData.bot=1;R=ROBO.trash={s,path:[MW_WAY.clone(),MW_TABLE.clone()],ph:"go",t:0}}
+  const p=b.position,step=1.1*effMult()*dt/1000;
+  if(R.path.length){const tg=R.path[0],dx=tg.x-p.x,dz=tg.z-p.z,d=Math.hypot(dx,dz);
+    if(d<.03){p.x=tg.x;p.z=tg.z;R.path.shift()}else{const k=Math.min(1,step/d);p.x+=dx*k;p.z+=dz*k;b.rotation.y=angLerp(b.rotation.y,Math.atan2(dx,dz),Math.min(1,dt*.01))}
+    return}
+  if(R.ph==="go"){R.ph="clean";R.t=0}
+  if(R.ph==="clean"){R.t+=dt;b.rotation.y=angLerp(b.rotation.y,Math.PI,Math.min(1,dt*.01));
+    if(R.t<350||R.flying)return;R.flying=true;const s=R.s,tr=s.trash;
+    const back=()=>{R.ph="back";R.path=[MW_WAY.clone(),MW_HOME.clone()]};
+    if(!tr){back();return}
+    tween(tr,p.clone().setY(.8),480/effMult(),{lift:.2,scale:.3}).then(()=>{
+      if(s.trash===tr){removeTrash(s);state.rating=clamp(state.rating+.02*satMult(),1,5);GAME.night.trash=(GAME.night.trash||0)+1;MISSION.add("trash");
+        const at=seatFood(s),q=toScreen(at);if(!q.behind&&PLAYER.dist(at)<11){floatText("🤖 깨끗!",q.x,q.y-30,"#8ff7b5",22);Snd.happy()}
+        if(!state.talked.robotTrash)Talk.say("전자레인지 로봇이 테이블 쓰레기도 치워 준다! 똑똑하다","happy","robotTrash")}
+      back()});
+    return}
+  if(R.ph==="back"){b.rotation.y=Math.PI;ROBO.trash=null}
 }
 async function robotHeat(C){
   ROBO.mw=C;const f=C.food,eff=effMult();C.heatTaken=true;C.food=null;
@@ -4806,6 +4881,114 @@ function hmSettle(income){
   if(!hasUp("homeless")||state.role!=="owner")return {total:0,rest:0};
   const total=Math.max(0,Math.round(.7*income/(10*moneyScale()))*10*moneyScale()),rest=Math.max(0,total-HM.taken);
   HM.val=0;return {total:Math.max(total,HM.taken),rest};
+}
+
+
+/* ================= 카트 손님 (슈퍼마켓부터) =================
+   어른 손님 일부는 장바구니 대신 카트를 끈다. 가게가 넓을수록 카트 손님이 많아진다.
+   카트 손님은 물건을 더 많이 사고, 열에 넷은 아기를 카트 앞자리에 태우고 온다 (아기는 까까를 꼭 산다) */
+const cartChance=()=>isMarket()?Math.min(.6,.2+.08*hallLevel()):0;
+let CART_KIT=null;
+function cartKit(){
+  if(CART_KIT)return CART_KIT;
+  const W=.46,L=.66,H=.4;
+  CART_KIT={W,L,H,y0:.42,
+    wire:mStd(0xc8ccd4,.3,.85),red:mStd(0xe2483d,.5,.1),dark:mStd(0x222428,.6),
+    net:new T.MeshStandardMaterial({color:0xc8ccd4,roughness:.4,metalness:.6,transparent:true,opacity:.26,depthWrite:false,side:T.DoubleSide}),
+    goods:[0xffcc2e,0x2f9d4a,0x2c6fd6,0xe2483d,0xff8a3d,0xffffff].map(c=>mStd(c,.6)),
+    sideW:new T.PlaneGeometry(W,H),sideL:new T.PlaneGeometry(L,H),floor:box(W,.012,L),
+    rimW:box(W+.02,.02,.02),rimL:box(.02,.02,L),leg:box(.02,.4,.02),wheel:new T.CylinderGeometry(.045,.045,.03,12),
+    handle:new T.CylinderGeometry(.018,.018,W+.06,10),seat:box(W-.06,.02,.16),gbox:box(.13,.12,.1),gcan:new T.CylinderGeometry(.04,.04,.13,10)};
+  return CART_KIT;
+}
+function makeCart(){
+  const K=cartKit(),g=new T.Group(),{W,L,H,y0}=K,top=y0+H;
+  // 철망 바구니 (반투명) + 테두리
+  mesh(K.sideW,K.net,{y:y0+H/2,z:L/2,parent:g});mesh(K.sideW,K.net,{y:y0+H/2,z:-L/2,parent:g});
+  mesh(K.sideL,K.net,{x:W/2,y:y0+H/2,ry:Math.PI/2,parent:g});mesh(K.sideL,K.net,{x:-W/2,y:y0+H/2,ry:Math.PI/2,parent:g});
+  mesh(K.floor,K.wire,{y:y0,parent:g});
+  [top,y0].forEach(y=>{mesh(K.rimW,K.wire,{y,z:L/2,parent:g});mesh(K.rimW,K.wire,{y,z:-L/2,parent:g});mesh(K.rimL,K.wire,{x:W/2,y,parent:g});mesh(K.rimL,K.wire,{x:-W/2,y,parent:g})});
+  // 다리 + 바퀴 + 아래 선반
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{mesh(K.leg,K.wire,{x:sx*(W/2-.03),y:.25,z:sz*(L/2-.05),parent:g});
+    mesh(K.wheel,K.dark,{x:sx*(W/2-.03),y:.045,z:sz*(L/2-.05),rz:Math.PI/2,parent:g})});
+  mesh(K.floor,K.wire,{y:.12,parent:g});
+  // 빨간 손잡이 (손님 쪽)
+  mesh(K.handle,K.red,{y:top+.1,z:-L/2-.07,rz:Math.PI/2,parent:g});
+  [-1,1].forEach(s=>mesh(box(.02,.12,.09),K.wire,{x:s*W/2,y:top+.05,z:-L/2-.035,parent:g}));
+  // 산 물건 몇 개
+  for(let i=0;i<5;i++){const can=i%3===2;mesh(can?K.gcan:K.gbox,K.goods[randInt(0,K.goods.length-1)],{x:(Math.random()-.5)*(W-.16),y:y0+.07+(i>2?.1:0),z:.02+(Math.random()-.3)*(L-.24),ry:Math.random()*3,parent:g})}
+  return g;
+}
+function addCart(C,baby){
+  const c=makeCart();c.position.set(0,0,.6);C.obj.add(c);C.cart=c;
+  if(baby){   // 아기는 손잡이 앞 아기 자리에 앉는다 (낙서 아기, 늘 나를 본다)
+    const K=cartKit();mesh(K.seat,K.red,{y:K.y0+K.H-.06,z:-K.L/2+.1,parent:c});
+    const b=makeDoodlePerson(lookFor("baby"));b.scale.setScalar(.5);b.position.set(0,K.y0+K.H-.28,-K.L/2+.12);c.add(b);C.baby=b;C.babyT=3000+Math.random()*5000;
+  }
+}
+// 걸을 때는 카트를 앞에서 밀고, 서 있을 때는 옆에 세워 둔다
+function stepCart(C,dt,now,walking){
+  const c=C.cart,k=Math.min(1,dt*.005),tx=walking?0:.62,tz=walking?.6:.08;
+  c.position.x+=(tx-c.position.x)*k;c.position.z+=(tz-c.position.z)*k;
+  c.rotation.z=walking?Math.sin(now*.03+C.id)*.012:0;
+  if(!C.baby)return;
+  const t=now/1000;setPose(C.baby,Math.sin(t*1.3+C.id)>.75?"wave":"sit",t,Math.sin(t*.7+C.id)>.9?"shock":"happy",{sitY:-.46*DP_PX},"cb");
+  C.babyT-=dt;
+  if(C.babyT<=0){C.babyT=7000+Math.random()*7000;const p=C.baby.getWorldPosition(V3(0,0,0)).setY(1.35);
+    if(PLAYER.dist(p)<7){const s=toScreen(p);if(!s.behind)floatText(pick(["까까!","빠빠~","부릉부릉!","헤헤","저거! 저거!"]),s.x,s.y,"#ffd1e3",18)}}
+}
+
+/* ================= 청소 로봇 5대 (로봇 시대부터) =================
+   평소엔 통로를 돌아다니다가, 바닥에 음료가 쏟아지면 제일 가까운 로봇이 달려가서 빙글빙글 닦는다 */
+const CLEAN={bots:[]};
+function buildCleaners(g,t){
+  CLEAN.bots=[];CHORES.spills.forEach(s=>s.bot=null);
+  if(t<3)return;
+  const docks=[0,BACK_COLS[0],BACK_COLS[1],BACK_COLS[2],BACK_COLS[3]];
+  docks.forEach((x,i)=>{const o=makeCleaner();o.position.set(x,0,2.75);o.rotation.y=Math.PI;g.add(o);
+    CLEAN.bots.push({o,home:V3(x,0,2.75),path:[],job:null,t:0,idleT:1500+i*1300})});
+}
+function makeCleaner(){
+  const g=new T.Group();
+  mesh(new T.CylinderGeometry(.19,.2,.08,24),mStd(0xf2f4f7,.35,.2),{y:.065,cast:true,parent:g});
+  mesh(new T.CylinderGeometry(.205,.205,.03,24),mStd(0x2c6fd6,.4,.3),{y:.03,parent:g});
+  mesh(new T.CylinderGeometry(.08,.08,.03,16),mStd(0x303238,.4,.3),{y:.115,parent:g});
+  const led=new T.MeshStandardMaterial({color:0x113311,emissive:0x2fff7a,emissiveIntensity:.8});mesh(new T.SphereGeometry(.022,8,6),led,{y:.12,z:.13,parent:g});
+  const br=new T.Group();br.position.set(.13,.012,.12);g.add(br);[0,1,2].forEach(k=>mesh(box(.13,.006,.016),mStd(0x303238,.6),{ry:k*Math.PI/3,parent:br}));
+  const lt=tex("cleanbot",256,64,(x,w,h)=>{x.fillStyle="#2c6fd6";x.fillRect(0,0,w,h);tx(x,"🧹 청소 로봇",w/2,34,30,"#fff",{font:FJ})});
+  const sp=new T.Sprite(new T.SpriteMaterial({map:lt,depthWrite:false}));sp.scale.set(.5,.125,1);sp.position.y=.42;g.add(sp);
+  g.userData.led=led;g.userData.brush=br;
+  return g;
+}
+function stepCleaners(dt,now){
+  if(!CLEAN.bots.length||!MK.g||!MK.g.visible)return;
+  const run=GAME.running&&robotAge(),step=1.3*effMult()*dt/1000,cleanMs=1600/effMult();
+  for(const b of CLEAN.bots){
+    const o=b.o;o.userData.brush.rotation.y+=dt*.025;o.userData.led.emissiveIntensity=b.job?.8+Math.sin(now*.025)*.7:.8;
+    if(!run)continue;
+    // 사장님이 먼저 닦았으면 그만
+    if(b.job&&!CHORES.spills.includes(b.job)){b.job=null;b.path=[];b.t=0;b.idleT=600}
+    if(!b.job){const s=CHORES.spills.find(s=>!CLEAN.bots.some(x=>x.job===s)&&!(CHORES.mop&&CHORES.mop.sp===s));
+      if(s){const at=V3(s.x,0,s.z),free=CLEAN.bots.filter(x=>!x.job).sort((a,c)=>a.o.position.distanceTo(at)-c.o.position.distanceTo(at));
+        if(free[0]===b){b.job=s;b.t=0;b.path=hallRoute(o.position,at);
+          if(!state.talked.cleanbot1)Talk.say("청소 로봇이 쏟은 데로 달려간다! 바닥은 이제 로봇들이 알아서 닦아 줘","happy","cleanbot1")}}}
+    if(b.path.length){const tg=b.path[0],dx=tg.x-o.position.x,dz=tg.z-o.position.z,d=Math.hypot(dx,dz);
+      if(d<.04){o.position.x=tg.x;o.position.z=tg.z;b.path.shift()}
+      else{const k=Math.min(1,step/d);o.position.x+=dx*k;o.position.z+=dz*k;o.rotation.y=angLerp(o.rotation.y,Math.atan2(dx,dz),Math.min(1,dt*.012))}
+      continue}
+    if(b.job){   // 빙글빙글 닦기
+      b.t+=dt;o.rotation.y+=dt*.008;b.job.mat.opacity=Math.max(0,.82*(1-b.t/cleanMs));
+      if(b.t>=cleanMs)cleanerDone(b);
+      continue}
+    // 할 일이 없으면 순찰 (가끔 제자리로 돌아가 쉰다)
+    b.idleT-=dt;if(b.idleT<=0){b.idleT=5000+Math.random()*7000;b.path=hallRoute(o.position,Math.random()<.3?b.home.clone():hallBrowse())}
+  }
+}
+function cleanerDone(b){
+  const s=b.job;b.job=null;b.t=0;b.idleT=900;if(!CHORES.spills.includes(s))return;
+  scene.remove(s.mesh);scene.remove(s.hit);if(s.can)scene.remove(s.can);CHORES.spills.splice(CHORES.spills.indexOf(s),1);
+  const at=V3(s.x,.3,s.z),p=toScreen(at);if(!p.behind&&PLAYER.dist(at)<12){floatText("🧹 반짝반짝!",p.x,p.y-30,"#8ff7b5",22);Snd.happy()}
+  state.rating=clamp(state.rating+.02*satMult(),1,5);GAME.night.clean=(GAME.night.clean||0)+1;GAME.night.botClean=(GAME.night.botClean||0)+1;MISSION.add("clean");
 }
 
 
@@ -5288,7 +5471,7 @@ function frameBody(now){
     const is3D=drawOpening(ctx,dt,now);
     if(is3D){stepOpening3D(s,Op.t,dt);stepTweens(dt);HANDS.step(dt);drawPeople(now);renderer.render(scene,camera);drawOpening3DOverlay(ctx,s,Op.t);HANDS.draw(ctx)}
   }else if(Scr.name==="game"){
-    if(!paused){stepTweens(dt);stepWaits(dt);stepNight(dt);stepChores();stepMiniEvents(dt);stepAuto(dt,now);stepRobots(dt,now);stepHomeless(dt,now);CUST.slice().forEach(c=>stepCustomer(c,dt,now));stepCouriers(dt);stepDoors(dt)}
+    if(!paused){stepTweens(dt);stepWaits(dt);stepNight(dt);stepChores();stepMiniEvents(dt);stepAuto(dt,now);stepRobots(dt,now);stepCleaners(dt,now);stepHomeless(dt,now);CUST.slice().forEach(c=>stepCustomer(c,dt,now));stepCouriers(dt);stepDoors(dt)}
     stepPhone(dt,now);
     if(canMove())PLAYER.step(dt);else PLAYER.apply();
     stepGate(dt);
