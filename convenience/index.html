@@ -279,6 +279,10 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .coffee{text-align:center}
 .cg-how{margin:0 0 6px;font-size:16px;line-height:1.45}.cg-how .g{color:#1d9a4a}.cg-how small{color:#a0402a}
 #cgCv{width:260px;max-width:100%;height:auto;background:#fffaf0;border:2px dashed #d8cfb8;border-radius:14px;touch-action:none;user-select:none}
+/* ---------- 사장님 메뉴: 본사 지시 + 튜토리얼 ---------- */
+.quota{background:#fff3c4;border:2px solid #e0a400;border-radius:12px;padding:8px 10px;font-size:15px;margin:0 0 8px}.quota.done{background:#e9f8ee;border-color:#8fd3a8}
+.up.must{outline:3px solid #e0a400;outline-offset:-2px;background:#fffaf0}
+.shop-tut{background:#eef3ff;border:2px dashed #5b8bd6;border-radius:12px;padding:8px 12px;margin:0 0 8px;font-size:14px}.shop-tut ul{margin:4px 0 0;padding-left:18px;line-height:1.5}
 /* ---------- 미니게임 공통 ---------- */
 .mg{text-align:center}.mg-how{margin:0 0 6px;font-size:16px;line-height:1.45}
 #mgCv{width:100%;max-width:380px;height:auto;background:#fffaf0;border:2px dashed #d8cfb8;border-radius:14px;touch-action:none;user-select:none}
@@ -543,6 +547,7 @@ const CUSTOMERS={
 
 /* ================= 사장님 메뉴 (업그레이드) ================= */
 const UPGRADES=[
+  {id:"homeless",name:"노숙자 아저씨 고용",cost:0,desc:"월급 0원 (대신 삼각김밥 무제한). 가게 밖으로 나갈 수 있게 되고, 가게 앞 아저씨 바구니에 오늘 번 돈의 70%가 모여요."},
   {id:"dosirak",name:"도시락 코너",cost:20000,desc:"도시락이 팔려요. 가끔 '데워 주세요' 주문이 와요 (전자레인지)."},
   {id:"grill",name:"핫바 그릴",cost:35000,desc:"손님이 핫바를 시켜요. 그릴을 눌러 꺼내 주세요."},
   {id:"coffee",name:"커피 머신",cost:50000,desc:"아메리카노 주문이 들어와요. 커피 머신을 눌러 내려 주세요."},
@@ -1280,7 +1285,7 @@ function initThree(){
   scene.fog=new T.Fog(0x0b0f24,14,40);
   camera=new T.PerspectiveCamera(50,1,.03,90);camera.rotation.order="YXZ";scene.add(camera);   // 들고 다니는 음식이 카메라에 붙는다
   W3.skies={};
-  buildEnv();buildLights();buildStore();buildCounter();buildShelves();buildFridges();buildMachines();buildStreet();buildEatArea();buildPhone();buildMarket();
+  buildEnv();buildLights();buildStore();buildCounter();buildShelves();buildFridges();buildMachines();buildStreet();buildEatArea();buildPhone();buildMarket();buildHomeless();
   CAM.set("pov");
 }
 
@@ -1612,7 +1617,7 @@ function stepGate(dt){
 // 산 설비만 보이게
 function refreshUpgrades(){
   const mk=W3.mk;if(!mk)return;
-  ["coffee","steamer","grill","freezer","parttimer","kiosk"].forEach(k=>mk[k].visible=hasUp(k));
+  ["coffee","steamer","grill","freezer","parttimer","kiosk"].forEach(k=>mk[k].visible=hasUp(k));if(typeof refreshHomeless==="function")refreshHomeless();
   const pd=mk.parttimer.userData.dp;if(pd){if(!pd.look0)pd.look0=pd.look;pd.look=state.rescue===2?{...BOSS_LOOK,badge:true}:pd.look0;pd.key=""}   // 구해 준 전 점장님이 알바로
   W3.candy.visible=!hasUp("grill");
   W3.ledLight.intensity=1.4;W3.ledLight.visible=hasUp("led")&&W3.outside;
@@ -1926,7 +1931,7 @@ function applyTheme(){
   W3.backdrop.visible=!city;
   if(!city){W3.backdrop.material.map=W3.skies[th.sky]||(W3.skies[th.sky]=toTex(skyCanvas(th.sky)));W3.backdrop.material.needsUpdate=true}
   if(M.chair)M.chair.color.setHex((state.tier||0)>=5?0xc9a24a:(state.tier||0)>=2?0x8a5a3a:0xff8a2a);
-  setOwnedLook(state.role==="owner");refreshMarket();
+  setOwnedLook(state.role==="owner");refreshMarket();refreshHomeless();
 }
 
 
@@ -2257,7 +2262,7 @@ function makeCustomer(type,opt={}){
   C.path=[SPOT.door.clone().setX((Math.random()-.5)*.4),browse];
   if(isMarket()){const b=hallBrowse();C.path=[SPOT.door.clone()].concat(hallRoute(V3(0,0,ROW_F),b))}   // 넓은 슈퍼마켓 통로로
   C.browseT=GAME.tut?500:1200+Math.random()*1800;
-  CUST.push(C);
+  CUST.push(C);hmCustomerDonate(C);
   return C;
 }
 function sayC(C,text,mood){C.line=text;C.lineT=performance.now();if(mood!==undefined)C.mood=mood}
@@ -2769,7 +2774,7 @@ function startNight(){
     if(n>=4&&Math.random()<.18)plan[randInt(1,plan.length-1)].type="rival";
   }
   GAME.plan=plan.sort((a,b)=>a.t-b.t);
-  GAME.running=true;resetMarketNight();
+  GAME.running=true;resetMarketNight();resetHomelessNight();
   banner(`NIGHT ${n}`,state.role==="owner"?"졸라맨 편의점 영업 시작":"22:00 야간 알바 시작");Snd.chime();
   updateHud();drawPos();renderActions();
   const intro=(state.role==="owner"?{2:"사장 첫날! 어제는 알바, 오늘은 사장님. 출세 속도가 졸라 빠르다",
@@ -2881,7 +2886,7 @@ function tutEvent(ev){
 }
 
 /* ---------- 근무 끝: 영수증 ---------- */
-function runCost(){const owned=UPGRADES.filter(u=>hasUp(u.id)).length;return (3000+owned*800+(hasUp("parttimer")?8000:0))*tierNow().pm}
+function runCost(){const owned=UPGRADES.filter(u=>u.cost>0&&hasUp(u.id)).length;return (3000+owned*800+(hasUp("parttimer")?8000:0))*tierNow().pm}
 // 평점이 높을수록 단골이 늘어서 밤마다 따로 들어오는 돈
 const regularBonus=()=>Math.round(state.rating*3300*EARN/100)*100*tierNow().pm;   // 100원 단위로
 function endNight(){
@@ -2895,8 +2900,9 @@ function endNight(){
     L.bonus=regularBonus();L.rating=state.rating;
     L.coffeeOver=N.coffeeOver||0;L.coffeeLoss=Math.round(N.sales*.003*L.coffeeOver);   // 커피 넘칠 때마다 오늘 매출의 0.3%
     L.cost=runCost();L.orders=N.orders||0;L.mini=N.mini||0;L.income=L.profit+L.self+L.bonus+L.mini+N.tips-N.over-L.cost-L.coffeeLoss;
+    const hm=hmSettle(L.income);L.hmTotal=hm.total;L.hmTaken=HM.taken;L.income+=hm.rest;   // 노숙자 아저씨 바구니: 번 돈의 70%
   }
-  L.selfN=N.self||0;L.flyers=N.flyers||0;L.net=L.income-(L.orders||0);L.soldout=N.soldout||0;
+  L.selfN=N.self||0;L.flyers=N.flyers||0;L.net=L.income-(L.orders||0)+(L.hmTaken||0);L.soldout=N.soldout||0;
   L.restock=N.restock||0;L.clean=N.clean||0;L.slips=N.slips||0;L.trash=N.trash||0;L.heat=N.heat||0;L.dirty=N.dirty||0;L.leftGaps=CHORES.gaps.length;L.leftSpills=CHORES.spills.length;
   L.leftTrash=SEATS.filter(s=>s.trash&&performance.now()-s.trash.userData.t0>20000).length;
   const left=L.leftGaps+L.leftSpills+L.leftTrash;if(left)state.rating=clamp(state.rating-.05*left,1,5);
@@ -2913,6 +2919,7 @@ function showReceipt(L,quiet){
   if(!L.owner)rows.push(ln(`시급 ${won(WAGE)} × 8시간`,"+"+won(L.wage)));
   else{rows.push(ln(`판매 (매출 ×${EARN}${hasUp("parttimer")?" · 알바 +10%":""})`,"+"+won(L.profit)));if(L.self)rows.push(ln("셀프 계산대","+"+won(L.self)));
     if(L.mini)rows.push(ln("미니게임 보너스 (파리·복권)","+"+won(L.mini)));
+    if(L.hmTotal)rows.push(ln(`노숙자 아저씨 바구니 (번 돈의 70%${L.hmTaken?` · 밤중에 ${won(L.hmTaken)} 받음`:""})`,"+"+won(L.hmTotal)));
     if(L.bonus)rows.push(ln(`단골 손님 보너스 (평점 ★${(L.rating||state.rating).toFixed(1)})`,"+"+won(L.bonus)));
     if(L.orders)rows.push(ln("졸팡 주문 (주문할 때 냄)","-"+won(L.orders)));rows.push(ln("운영비 (전기·월세)","-"+won(L.cost)))}
   if(L.tips)rows.push(ln("팁","+"+won(L.tips)));
@@ -2935,13 +2942,13 @@ function showReceipt(L,quiet){
     ${ln("통장",won(state.money))}${ln("가게 평점","★ "+state.rating.toFixed(1))}
     ${remodelRow()}
     <p class="note">${note}</p>
-    <div class="acts">${state.rescue?`<button id="rMis" class="btn alt" type="button">🎯 미션</button>`:""}${canRemodel()?`<button id="rPhone" class="btn pulse" type="button">☎ 리모델링 회사</button>`:""}${state.role==="owner"?`<button id="rShop" class="btn alt" type="button">사장님 메뉴</button>`:""}<button id="rNext" class="btn" type="button">${storyNext?"...점장님이 부른다":"다음 밤 ▶"}</button></div>
+    <div class="acts">${state.rescue?`<button id="rMis" class="btn alt" type="button">🎯 미션</button>`:""}${canRemodel()?`<button id="rPhone" class="btn pulse" type="button">☎ 리모델링 회사</button>`:""}${state.role==="owner"?`<button id="rShop" class="btn alt" type="button">사장님 메뉴</button>`:""}<button id="rNext" class="btn" type="button">${storyNext?"...점장님이 부른다":state.role==="owner"?"사장님 메뉴 ▶":"다음 밤 ▶"}</button></div>
   </div>`);
   if(!quiet)Snd.fanfare();
   if($("rPhone"))$("rPhone").onclick=()=>openPhone(()=>showReceipt(L,true));
   if($("rShop"))$("rShop").onclick=()=>{Snd.click();showShop()};
   if($("rMis"))$("rMis").onclick=()=>{Snd.click();showMissions(()=>showReceipt(L,true))};
-  $("rNext").onclick=()=>{Snd.click();closeModal();nextNight()};
+  $("rNext").onclick=()=>{Snd.click();closeModal();if(state.role==="owner")showShop();else nextNight()};   // 사장님은 밤이 끝나면 매일 사장님 메뉴
 }
 function nextNight(){
   if(state.role==="alba"&&state.night>ALBA_NIGHTS){takeoverStory();return}
@@ -2980,21 +2987,37 @@ function takeover(){
 }
 
 /* ---------- 사장님 메뉴 ---------- */
-const UP_TALK={dosirak:"도시락 코너 오픈! '데워 주세요' 하면 전자레인지로!",grill:"핫바 그릴 설치! 계산대 왼쪽에서 핫바가 빙글빙글~",coffee:"커피 머신 들어왔다! 향이 현실적이야... 당연하지 현실이니까",
+const UP_TALK={homeless:"노숙자 아저씨 고용! 이제 가게 밖으로 나갈 수 있어. 문 밖 아저씨 바구니에 돈이 모이면 가서 받자",dosirak:"도시락 코너 오픈! '데워 주세요' 하면 전자레인지로!",grill:"핫바 그릴 설치! 계산대 왼쪽에서 핫바가 빙글빙글~",coffee:"커피 머신 들어왔다! 향이 현실적이야... 당연하지 현실이니까",
   steamer:"호빵 찜기! 김이 모락모락. 겨울엔 이게 효자래",freezer:"아이스크림 냉동고 설치! 계산대 오른쪽 뒤 구석에 있어. '아이스크림 주세요' 하면 꺼내 주자",led:"LED 간판 번쩍번쩍! 밖에서 보면 우주선 같아",
   interior:"리모델링 끝! 조명이 따뜻해졌어. 손님들 표정도 부드러워질 거야",parttimer:"알바생 고용! 나도 이제 알바를 부리는 사장님... 얼마 전까진 나도 알바였는데",kiosk:"셀프 계산대 설치! 기계가 나 대신 일한다. 편하다..."};
+// 3일마다 본사 지시: 아직 안 산 것 중 싼 것부터 1~2개 (돈이 되는 만큼만, 모자라면 지시 없음)
+function shopQuota(){
+  if(state.quota&&state.quota.n===state.night)return state.quota.ids;
+  const ids=[];
+  if((state.night-2)%3===0){let m=state.money;
+    UPGRADES.filter(u=>!hasUp(u.id)).sort((a,b)=>a.cost-b.cost).slice(0,state.night%2?2:1).forEach(u=>{if(u.cost<=m){ids.push(u.id);m-=u.cost}})}
+  state.quota={n:state.night,ids};save();return ids;
+}
 function showShop(){
-  const rows=UPGRADES.map(u=>{const own=hasUp(u.id),can=state.money>=u.cost;
-    return `<div class="up ${own?"own":""}"><div><b>${esc(u.name)}</b><small>${esc(u.desc)}</small></div>${own?`<span style="color:#1d7a45;font-size:15px">설치 완료</span>`:`<button class="btn sm" type="button" data-up="${u.id}" ${can?"":"disabled"}>${won(u.cost)}</button>`}</div>`}).join("");
-  openModal(`<div class="panel"><h2>사장님 메뉴</h2><p>통장 <b>${won(state.money)}</b> · 운영비 하루 ${won(runCost())}</p><div class="ups">${rows}</div>
+  const q=shopQuota(),left=q.filter(id=>!hasUp(id)),first=!state.talked.shop_tut;
+  const rows=UPGRADES.map(u=>{const own=hasUp(u.id),can=state.money>=u.cost,must=left.includes(u.id);
+    return `<div class="up ${own?"own":""} ${must?"must":""}"><div><b>${must?"📋 ":""}${esc(u.name)}</b><small>${esc(u.desc)}</small></div>${own?`<span style="color:#1d7a45;font-size:15px">${u.cost?"설치 완료":"고용 완료"}</span>`:`<button class="btn sm ${must?"pulse":""}" type="button" data-up="${u.id}" ${can?"":"disabled"}>${u.cost?won(u.cost):"₩0 고용"}</button>`}</div>`}).join("");
+  const tut=first?`<div class="shop-tut"><b>👋 사장님 메뉴 사용법</b><ul>
+      <li>밤이 끝날 때마다 여기가 떠요. 설비를 사면 가게에 진짜로 생겨요</li>
+      <li><b>3일마다 본사 지시</b>가 와요: "여기까지 사라" (보통 1~2개). 다 사야 다음 밤으로 갈 수 있어요. 돈이 모자라면 지시가 안 나오거나 살 수 있는 만큼만 나와요</li>
+      <li>맨 위 <b>노숙자 아저씨</b>는 0원! 고용하면 가게 밖으로 나갈 수 있고, 가게 앞 아저씨 바구니에 오늘 번 돈의 70%가 모여요</li></ul></div>`:"";
+  const quota=q.length?`<div class="quota ${left.length?"":"done"}">📋 본사 지시 (3일마다): <b>${q.map(id=>esc(UPGRADES.find(u=>u.id===id).name)).join(", ")}</b>${left.length?"까지 사야 다음 밤으로 갈 수 있어요!":" 다 샀어요! ✓"}</div>`:"";
+  openModal(`<div class="panel"><h2>사장님 메뉴</h2>${tut}${quota}<p>통장 <b>${won(state.money)}</b> · 운영비 하루 ${won(runCost())}</p><div class="ups">${rows}</div>
     ${remodelRow()}
-    <div class="acts"><button id="shJol" class="btn alt" type="button">📱 졸팡</button><button id="shPhone" class="btn ${canRemodel()?"pulse":"alt"}" type="button">☎ 리모델링</button><button id="shNext" class="btn" type="button">다음 밤 ▶</button></div></div>`);
+    <div class="acts"><button id="shJol" class="btn alt" type="button">📱 졸팡</button><button id="shPhone" class="btn ${canRemodel()?"pulse":"alt"}" type="button">☎ 리모델링</button><button id="shNext" class="btn" type="button" ${left.length?"disabled":""}>${left.length?`본사 지시부터! (${left.length}개 남음)`:"다음 밤 ▶"}</button></div></div>`);
+  if(first){state.talked.shop_tut=1;save()}
   $("shPhone").onclick=()=>openPhone(showShop);$("shJol").onclick=()=>openJolpang(showShop);
   $("dialog").querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>{const u=UPGRADES.find(x=>x.id===b.dataset.up);if(state.money<u.cost)return;
     state.money-=u.cost;state.up[u.id]=true;MISSION.add("ups");
     if(u.id==="dosirak")addStock("dosirak",Math.max(0,8-stockOf("dosirak")));if(u.id==="freezer")addStock("icecream",Math.max(0,8-stockOf("icecream")));   // 첫 입고는 서비스
-    save();refreshUpgrades();renderActions();updateHud();Snd.fanfare();toast(`${u.name} 설치 완료!`);Talk.say(UP_TALK[u.id],"wink");showShop()});
-  $("shNext").onclick=()=>{Snd.click();closeModal();startNight()};
+    save();refreshUpgrades();renderActions();updateHud();Snd.fanfare();
+    toast(u.id==="homeless"?"노숙자 아저씨 고용! 이제 가게 밖으로 나갈 수 있어요 🚪":`${u.name} 설치 완료!`);Talk.say(UP_TALK[u.id],"wink");showShop()});
+  $("shNext").onclick=()=>{if(shopQuota().some(id=>!hasUp(id))){Snd.errBeep();return}Snd.click();closeModal();startNight()};
 }
 
 /* ---------- 설정 ---------- */
@@ -3848,6 +3871,7 @@ const SUB_POOL=[
   {k:"icepick", t:n=>`아이스크림 맛 ${n}번 맞히기`,        g:[2,3,5,8],  r:9000, need:"freezer"},
   {k:"fly",     t:n=>`파리 ${n}마리 잡기`,                 g:[1,2,3],    r:10000},
   {k:"flyer",   t:n=>`전단지 ${n}장 붙이기`,                g:[3,6,10],   r:8000, ok:()=>isMarket()},
+  {k:"hm",      t:n=>`노숙자 아저씨 바구니 ${n}번 받기`,     g:[1,2,3],    r:8000, need:"homeless"},
   {k:"remodel", t:()=>"☎ 리모델링 한 번 하기",             g:[1],        r:25000, ok:()=>(state.tier||0)<MAX_TIER}
 ];
 const MISSION={
@@ -4300,7 +4324,7 @@ const SELFQ=[],SVCQ=[];
 const MK={g:null,hall:null,flyers:[],n:0,old:[]};
 const FLYER_MAX=6;
 const WH_SPOTS=[[-1.4,3.05,0],[-.9,3.05,0],[-1.4,3.05,1],[-.9,3.05,1],[-.4,3.05,0],[-.4,3.05,1]];
-const canGoOut=()=>isMarket()&&W3.street&&W3.street.visible;
+const canGoOut=()=>(isMarket()||hasUp("homeless"))&&state.role==="owner"&&W3.street&&W3.street.visible;   // 슈퍼마켓이거나 노숙자 아저씨를 고용하면 밖에 나간다
 
 /* ---------- 넓은 슈퍼마켓 짓기 ---------- */
 function buildMarket(){
@@ -4521,6 +4545,85 @@ function stepAuto(dt,now){
     if(!keys.length){state.boxes=state.boxes.filter(x=>x!==b);syncBoxes();save();updateHud();MISSION.add("boxes")}}
 }
 function flyItem(from,to){const it=makeProduct(pick(["kimbap","cola","chips","ramen"]));it.position.copy(from);it.scale.setScalar(.8);scene.add(it);tween(it,to.clone(),500,{lift:.6}).then(()=>scene.remove(it))}
+
+
+/* ================= 노숙자 아저씨 (사장님 메뉴 0원) =================
+   고용하면 가게 밖으로 나갈 수 있다. 아저씨는 가게 앞에 앉아 있고, 지나가는 사람들이 바구니에 돈을 넣는다.
+   바구니에는 그날 사장님이 번 돈의 70%만큼 모인다. 밤 중간에 나가서 받을 수 있고, 남은 건 영수증에 들어온다.
+   (아저씨는 월급 대신 삼각김밥 무제한) */
+const HM={g:null,man:null,basket:null,coins:null,peds:[],spawnT:0,val:0,target:0,taken:0,said:0};
+const HM_SPOT=()=>W3.street&&W3.street.visible?{x:-1.9,z:-8.45,bx:-1.4,bz:-8.7,out:true}:{x:1.35,z:-6.75,bx:1.35,bz:-6.35,out:false};
+function buildHomeless(){
+  const g=new T.Group();scene.add(g);HM.g=g;
+  HM.man=makeDoodlePerson({shirt:"#7a6a58",hat:"beret",hatColor:"#5a4a3a"});scene.add(HM.man);HM.man.visible=false;
+  // 박스 깔개 + 빨간 바구니 (동전이 쌓인다)
+  mesh(box(.7,.02,.5),mStd(0xb8864f,.9),{y:.01,parent:g,name:"mat"});
+  const bk=new T.Group();g.add(bk);HM.basket=bk;
+  mesh(new T.CylinderGeometry(.16,.12,.14,16,1,true),mStd(0xe2483d,.5,.1,{side:T.DoubleSide}),{y:.07,parent:bk});
+  mesh(new T.CircleGeometry(.12,16),mStd(0x8a2a22,.6),{y:.005,rx:-Math.PI/2,parent:bk});
+  HM.coins=mesh(new T.CylinderGeometry(.13,.13,.02,16),mStd(0xd9b44a,.3,.8),{y:.02,parent:bk});
+  const hit=new T.Mesh(box(.5,.5,.5),HIT_MAT);hit.position.y=.2;hit.userData.act="hmBasket";bk.add(hit);HM.hit=hit;
+  const sign=tex("hmsign",256,96,(x,w,h)=>{x.fillStyle="#f6f1e6";x.fillRect(0,0,w,h);x.strokeStyle="#16141d";x.lineWidth=5;x.strokeRect(4,4,w-8,h-8);
+    tx(x,"졸라 슈퍼 홍보 중",128,34,24,"#16141d",{font:FJ});tx(x,"감사합니다 ^^",128,70,22,"#e2483d",{font:FJ})});
+  HM.sign=mesh(new T.PlaneGeometry(.5,.19),new T.MeshStandardMaterial({map:sign,roughness:.7,side:T.DoubleSide}),{y:.35,z:.2,rx:-.4,parent:g});
+  refreshHomeless();
+}
+function refreshHomeless(){
+  if(!HM.g)return;const on=hasUp("homeless")&&state.role==="owner",S=HM_SPOT();
+  HM.g.visible=on;HM.man.visible=on;HM.g.position.set(S.x,0,S.z);HM.basket.position.set(S.bx-S.x,0,S.bz-S.z);
+  HM.man.position.set(S.x,0,S.z);HM.man.rotation.y=S.out?Math.PI:Math.PI;
+  HM.coins.scale.y=1;HM.coins.visible=HM.val>0;
+  if(!on)HM.peds.forEach(p=>scene.remove(p.obj)),HM.peds.length=0;
+}
+function resetHomelessNight(){HM.val=0;HM.target=0;HM.taken=0;HM.spawnT=3000;refreshHomeless()}
+// 오늘 밤 지금까지 번 돈의 70% (바구니가 여기까지 찬다)
+function hmTarget(){const N=GAME.night;if(!N)return 0;return Math.max(0,.7*(N.sales*EARN*(hasUp("parttimer")?1.1:1)+(N.tips||0)+(N.mini||0)))}
+function stepHomeless(dt,now){
+  if(!HM.g||!HM.g.visible||!GAME.running)return;
+  const S=HM_SPOT();HM.target=hmTarget();
+  setPose(HM.man,"sit",now/1000,HM.val>0?"happy":"sad",{sitY:-.15*DP_PX},"hm");
+  HM.coins.visible=HM.val>0;
+  // 행인: 도시는 가게 앞 인도를 지나가다 들르고, 밖이 없는 단계는 들어오는 손님이 넣고 간다
+  if(S.out){
+    HM.spawnT-=dt;
+    if(HM.spawnT<=0&&HM.peds.length<2){HM.spawnT=5000+Math.random()*5000;
+      const dir=Math.random()<.5?1:-1,o=makeDoodlePerson(lookFor(pick(["normal","office","student","grandma","tourist"])));
+      o.position.set(-13*dir,0,-9.9+Math.random()*.3);scene.add(o);HM.peds.push({obj:o,dir,stop:Math.random()<.7?0:-1,t:0,ph:Math.random()*6})}
+    HM.peds.slice().forEach(p=>{const o=p.obj;p.ph+=dt*.01;
+      if(p.stop>0){p.stop-=dt;setPose(o,"give",p.ph,"happy");if(p.stop<=0){p.stop=-1;donate(o.position)}return}
+      o.position.x+=p.dir*1.1*dt/1000;o.rotation.y=p.dir>0?Math.PI/2:-Math.PI/2;setPose(o,"walk",p.ph,"happy");
+      if(p.stop===0&&Math.abs(o.position.x-S.bx)<.35){p.stop=1300;o.rotation.y=Math.PI}
+      if(Math.abs(o.position.x)>14){scene.remove(o);HM.peds.splice(HM.peds.indexOf(p),1)}});
+  }
+}
+// 동전이 바구니로 쏙 (남은 몫의 절반쯤씩)
+function donate(from){
+  const gap=HM.target-HM.val-HM.taken;if(gap<=0)return;
+  const add=Math.max(10*moneyScale(),Math.round(gap*.55/(10*moneyScale()))*10*moneyScale());HM.val+=Math.min(add,gap);
+  const c=mesh(new T.CylinderGeometry(.03,.03,.008,12),mStd(0xd9b44a,.3,.8),{parent:scene});c.position.set(from.x,1.0,from.z+.2);
+  const bp=HM.basket.getWorldPosition(V3(0,0,0)).setY(.12);tween(c,bp,420,{lift:.25}).then(()=>scene.remove(c));
+  setTimeout(()=>{Snd.coin();const s=toScreen(bp);if(!s.behind&&PLAYER.dist(bp)<9)floatText("짤랑!",s.x,s.y-30,"#ffcc2e",20)},420);
+}
+// 밖이 없는 단계: 손님이 문으로 들어올 때 넣고 간다
+function hmCustomerDonate(C){if(HM.g&&HM.g.visible&&!HM_SPOT().out&&Math.random()<.6)donate(C.obj.position)}
+async function takeBasket(){
+  if(HM.val<=0){toast("아직 바구니가 비었어요. 손님이 많이 오면 금방 차요!");return}
+  const v=HM.val;HM.val=0;HM.taken+=v;state.money+=v;updateHud();save();
+  const s=toScreen(HM.basket.getWorldPosition(V3(0,0,0)).setY(.4));floatText(`바구니 +${won(v)}`,s.x,s.y,"#8ff7b5",26);Snd.coin();Snd.happy();
+  sayHM(pick(["사장님 여기요! 오늘 장사 잘 되네요~","헤헤, 사람들이 인심이 좋아요","삼각김밥 값은 빼고 드렸어요~ 농담!"]));
+  MISSION.add("hm");
+}
+function sayHM(t){const s=toScreen(HM.man.position.clone().setY(1.4));if(!s.behind)floatText(t,s.x,s.y,"#fff",18)}
+function hmHits(c){if(HM.g&&HM.g.visible)c.push(HM.hit)}
+function hmLabel(H){if(H.act!=="hmBasket")return false;H.label=`바구니 받기 (${won(HM.val)})`;
+  const bp=HM.basket.getWorldPosition(V3(0,0,0));if(PLAYER.dist(bp)>1.9){H.ok=false;H.why=HM_SPOT().out?"너무 멀어요! 가게 밖으로 나가서 바구니 가까이 가요":"너무 멀어요! 입구 쪽 바구니 가까이 가요";H.short="더 가까이"}return true}
+function hmAct(H){if(H.act!=="hmBasket")return false;queueAct(takeBasket);return true}
+// 밤이 끝나면: 오늘 번 돈의 70% 중 아직 안 받은 몫
+function hmSettle(income){
+  if(!hasUp("homeless")||state.role!=="owner")return {total:0,rest:0};
+  const total=Math.max(0,Math.round(.7*income/(10*moneyScale()))*10*moneyScale()),rest=Math.max(0,total-HM.taken);
+  HM.val=0;return {total:Math.max(total,HM.taken),rest};
+}
 
 
 /* ================= 오프닝 (12장면) =================
@@ -4961,9 +5064,9 @@ function interactAt(px,py,center){
   }
 }
 // 뒤에 붙는 기능(테이블 전자레인지, 졸팡 박스)이 누를 거리를 더한다
-function extraHits(cands){microHits(cands);boxHits(cands);marketHits(cands)}
-function extraLabel(H){return microLabel(H)||boxLabel(H)||marketLabel(H)}
-function extraAct(H){return microAct(H)||boxAct(H)||marketAct(H)}
+function extraHits(cands){microHits(cands);boxHits(cands);marketHits(cands);hmHits(cands)}
+function extraLabel(H){return microLabel(H)||boxLabel(H)||marketLabel(H)||hmLabel(H)}
+function extraAct(H){return microAct(H)||boxAct(H)||marketAct(H)||hmAct(H)}
 
 /* ================= 자동 화질: 느린 기기면 해상도·그림자를 낮춘다 ================= */
 const Q={s:[],step:0};
@@ -4997,7 +5100,7 @@ function frameBody(now){
     const is3D=drawOpening(ctx,dt,now);
     if(is3D){stepOpening3D(s,Op.t,dt);stepTweens(dt);HANDS.step(dt);drawPeople(now);renderer.render(scene,camera);drawOpening3DOverlay(ctx,s,Op.t);HANDS.draw(ctx)}
   }else if(Scr.name==="game"){
-    if(!paused){stepTweens(dt);stepWaits(dt);stepNight(dt);stepChores();stepMiniEvents(dt);stepAuto(dt,now);CUST.slice().forEach(c=>stepCustomer(c,dt,now));stepCouriers(dt);stepDoors(dt)}
+    if(!paused){stepTweens(dt);stepWaits(dt);stepNight(dt);stepChores();stepMiniEvents(dt);stepAuto(dt,now);stepHomeless(dt,now);CUST.slice().forEach(c=>stepCustomer(c,dt,now));stepCouriers(dt);stepDoors(dt)}
     stepPhone(dt,now);
     if(canMove())PLAYER.step(dt);else PLAYER.apply();
     stepGate(dt);
