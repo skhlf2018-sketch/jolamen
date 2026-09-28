@@ -502,6 +502,7 @@ input[type=range]:disabled{opacity:.5}
   <div class="cine-actions">
     <button id="openNext" class="b3 dark" type="button">다음 장면</button>
     <button id="openStart" class="b3 xl pulse" type="button" hidden>가게로 들어가기 ▶</button>
+    <button id="openS2" class="b3 xl gold pulse" type="button" hidden>2편 '졸라맨 편의점' 시작 ▶</button>
   </div>
 </section>
 
@@ -1746,6 +1747,23 @@ function drawCaseGlow(ctx,x,y,t){
   for(let i=0;i<10;i++){const a=i/10*TAU+t*.0015;ctx.beginPath();ctx.moveTo(0,-36);ctx.lineTo(Math.cos(a-.08)*180,-36+Math.sin(a-.08)*180);ctx.lineTo(Math.cos(a+.08)*180,-36+Math.sin(a+.08)*180);ctx.closePath();ctx.fill()}
   ctx.restore();
 }
+// 거지 졸라맨의 동전 컵
+function drawBegCup(ctx,x,G){
+  ctx.save();ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.fillStyle="#c9955a";
+  ctx.beginPath();ctx.moveTo(x-14,G-26);ctx.lineTo(x+14,G-26);ctx.lineTo(x+10,G);ctx.lineTo(x-10,G);ctx.closePath();ctx.fill();ctx.stroke();
+  circle(ctx,x-3,G-28,4,MUSTARD,INK,2);ctx.restore();
+}
+// 2편 예고: 작은 편의점 (x = 가운데, G = 땅)
+function drawMiniStore(ctx,x,G,t){
+  ctx.save();ctx.translate(x,G);ctx.strokeStyle=INK;ctx.lineWidth=4;
+  goldGlow(ctx,0,-80,170,.35);
+  ctx.fillStyle="#f4f1e8";ctx.fillRect(-120,-170,240,170);ctx.strokeRect(-120,-170,240,170);
+  ctx.fillStyle="#2c6fd6";ctx.fillRect(-120,-170,240,40);ctx.strokeRect(-120,-170,240,40);text(ctx,"편의점 24",0,-150,24,"#ffffff");
+  ctx.fillStyle="rgba(170,210,255,.75)";ctx.fillRect(-104,-118,90,104);ctx.strokeRect(-104,-118,90,104);ctx.fillRect(14,-118,90,104);ctx.strokeRect(14,-118,90,104);
+  ctx.fillStyle="#fff7b0";rr(ctx,26,-104,60,40,4);ctx.fill();ctx.lineWidth=2;ctx.stroke();text(ctx,"가게 팝니다",56,-90,11,INK);text(ctx,"권리금 천만 원",56,-74,10,"#c73a40");
+  for(let i=0;i<3;i++){const a=Math.abs(Math.sin(t*.004+i));ctx.globalAlpha=.4+.6*a;circle(ctx,-80+i*28,-60,5,"#ffe27a");ctx.globalAlpha=1}
+  ctx.restore();
+}
 function drawCase(ctx,x,y,open){
   ctx.save();ctx.translate(x,y);ctx.strokeStyle=INK;ctx.lineWidth=3;
   if(open){
@@ -1983,13 +2001,15 @@ const ENDING=[
   {id:"e_carpet",text:"개업 파티 날, 어디서 많이 본 레드카펫이 굴러온다...",ms:5000},
   {id:"e_repay",text:"\"형님! 그때 받은 천만 원, 이자 쳐서 갚을게요!\"",ms:5400},
   {id:"e_faint",text:"...이자가 좀 많았다. 부자 형님 기절. 쿵!",ms:4600},
-  {id:"e_rain",text:"파티가 끝난 밤, 빗속에서 울고 있는 누군가를 봤다.",ms:5000},
-  {id:"e_give",text:"\"옛다, 천만 원! 이번엔 망하지 말게나.\"",ms:5600},
-  {id:"e_end",text:"그리고 졸라맨 식당은 오늘도 영업 중! THE END",ms:6000}
+  {id:"e_rain",text:"파티가 끝난 밤, 빗속에 쪼그려 앉은 거지 졸라맨을 봤다.",ms:5000},
+  {id:"e_give",text:"\"옛다, 천만 원! 이번엔 네 차례다. 망하지 말게나.\"",ms:5600},
+  {id:"e_s2",text:"거지 졸라맨: \"감사합니다 형님!! 이 돈으로... 편의점을 할래요!\"",ms:5600},
+  {id:"e_end",text:"그리고 졸라맨 식당은 오늘도 영업 중! THE END · 이야기는 2편 '졸라맨 편의점'으로...",ms:6000}
 ];
 // 엔딩의 졸라맨: 부자가 됐지만 요리사 모자는 그대로
 const BOSS_LOOK={...RICH_LOOK,hat:"chef"};
 const NEWBIE={hat:"cap",hatColor:"#56b8ff"};
+const BEGGAR={shirt:"#8a7a66"};   // 2편 주인공: 빗속의 거지 졸라맨 (천만 원 받고 편의점을 한다)
 
 // 해 질 녘 거리 (불꽃놀이용)
 function duskStreet(ctx,a=.55){drawStreet(ctx,0);ctx.fillStyle=`rgba(20,16,60,${a})`;ctx.fillRect(0,0,720,440)}
@@ -2109,8 +2129,9 @@ function drawEnding(ctx,id,t,dt){
     drawStreet(ctx,0);drawFacade(ctx,t,"broke",1);
     ctx.fillStyle="rgba(18,16,40,.62)";ctx.fillRect(0,0,720,440);
     drawRain(ctx,t,1);
-    drawStick(ctx,{...NEWBIE,x:250,y:G,s:S,dir:1,pose:"kneel",t:t*.001,face:"cry",tears:.8+.1*Math.sin(t*.01)});
-    if(t>900&&t<3000)bubble(ctx,"흐어엉... 내 가게...",250,G-230,256,G-196,18);
+    drawStick(ctx,{...BEGGAR,x:250,y:G,s:S,dir:1,pose:"kneel",t:t*.001,face:"cry",tears:.8+.1*Math.sin(t*.01)});
+    drawBegCup(ctx,300,G);
+    if(t>900&&t<3000)bubble(ctx,"배고파요... 한 푼만 줍쇼...",250,G-230,256,G-196,18);
     const bx=t<600?800:t<2600?lerp(800,520,ease((t-600)/2000)):520;
     drawStick(ctx,{...BOSS_LOOK,x:bx,y:G,s:S,dir:-1,pose:t<2600?"walk":"look",t:t<2600?t*.009:t*.001,face:t>2600?"wow":"happy"});
     openOnce("th",300,()=>Snd.thunder());
@@ -2126,12 +2147,13 @@ function drawEnding(ctx,id,t,dt){
     drawStick(ctx,{...BOSS_LOOK,x:480,y:G,s:S,dir:-1,pose:"give",t:t*.001,face:"happy"});
     drawCase(ctx,418,G-34,open);
     if(open){openOnce("open",700,()=>Snd.register());outlinedText(ctx,"₩10,000,000",380,G-150,26,MUSTARD,INK,6)}
-    if(t<2700)bubble(ctx,"옛다, 천만 원! 이번엔 망하지 말게나.",430,G-280,480,G-246,19);
-    if(!up)drawStick(ctx,{...NEWBIE,x:250,y:G,s:S,dir:1,pose:"sob",t:t*.001,face:"cry",tears:.3});
+    if(t<2700)bubble(ctx,"옛다, 천만 원! 이번엔 네 차례다.",430,G-280,480,G-246,19);
+    drawBegCup(ctx,300,G);
+    if(!up)drawStick(ctx,{...BEGGAR,x:250,y:G,s:S,dir:1,pose:"sob",t:t*.001,face:"cry",tears:.3});
     else{
       openOnce("boing",1300,()=>Snd.boing());
       const j=t<1600?Math.sin((t-1300)/300*Math.PI)*60:0;
-      drawStick(ctx,{...NEWBIE,x:250,y:G,s:S,dir:1,pose:t>2700?"cheer":"stand",lift:j,t:t*.001,face:"money"});
+      drawStick(ctx,{...BEGGAR,x:250,y:G,s:S,dir:1,pose:t>2700?"cheer":"stand",lift:j,t:t*.001,face:"money"});
       if(t<2700)outlinedText(ctx,"벌떡!",250,G-230,26,PAPER,INK,6);
       else{bubble(ctx,"감사합니다 형님!!!",250,G-256,258,G-220,21);
         for(let i=0;i<5;i++){const ph=((t*.0008)+i/5)%1;ctx.globalAlpha=1-ph;text(ctx,"♥",222+i*14+Math.sin(ph*9+i)*10,G-196-ph*80,22,"#ff5b8a");ctx.globalAlpha=1}}
@@ -2139,6 +2161,18 @@ function drawEnding(ctx,id,t,dt){
     // 원조 부자 형님이 몰래 보고 있다
     if(t>3300){const k=ease(Math.min(1,(t-3300)/600));drawStick(ctx,{...RICH_LOOK,x:lerp(790,670,k),y:G,s:S*1.05,dir:-1,pose:"stand",t:t*.001,face:"happy"});
       if(t>3900)bubble(ctx,"허허, 제법이구먼.",600,G-296,650,G-262,17)}
+  }
+  else if(id==="e_s2"){ // 거지 졸라맨은 천만 원 가방을 들고 편의점으로 (2편 예고)
+    drawStreet(ctx,0);ctx.fillStyle="rgba(20,16,60,.35)";ctx.fillRect(0,0,720,440);
+    drawMiniStore(ctx,560,G,t);
+    const k=ease(Math.min(1,Math.max(0,(t-1400)/3200))),bx=lerp(210,470,k);
+    drawStick(ctx,{...BOSS_LOOK,x:120,y:G,s:S,dir:1,pose:"wave",t:t*.001,face:"happy"});
+    drawStick(ctx,{...BEGGAR,x:bx,y:G,s:S,dir:1,pose:t<1400?"cheer":"run",t:t<1400?t*.001:t*.012,face:"money",lift:t<1400?Math.abs(Math.sin(t*.008))*20:0});
+    drawCase(ctx,bx+34,G-44,false);
+    if(t<1600)bubble(ctx,"이 돈으로 편의점 할래요!!",250,G-262,bx,G-226,19);
+    else if(t<3600)bubble(ctx,"허허, 잘해 보게나~",150,G-262,130,G-226,18);
+    if(t>3600){const a=Math.min(1,(t-3600)/500);ctx.globalAlpha=a;outlinedText(ctx,"2편 · 졸라맨 편의점",360,92,38,MUSTARD,INK,8);text(ctx,"거지 졸라맨의 편의점 인생이 시작된다!",360,138,18,"#ffffff");ctx.globalAlpha=1}
+    openOnce("run",1400,()=>Snd.whoosh());openOnce("s2",3600,()=>Snd.sparkle());
   }
   else{ // THE END
     const g=ctx.createLinearGradient(0,0,0,440);g.addColorStop(0,"#0d0f2a");g.addColorStop(1,"#3a2a6a");ctx.fillStyle=g;ctx.fillRect(0,0,720,440);
@@ -2163,7 +2197,9 @@ function drawEnding(ctx,id,t,dt){
     // 다 같이 인사
     drawStick(ctx,{...RICH_LOOK,x:80,y:G,s:1.15,dir:1,pose:"wave",t:t*.001,face:"happy"});
     drawStick(ctx,{...BOSS_LOOK,x:190,y:G,s:1.25,dir:1,pose:"cheer",t:t*.001,lift:Math.abs(Math.sin(t*.006))*14,face:"happy"});
-    drawStick(ctx,{...NEWBIE,x:560,y:G,s:1.15,dir:-1,pose:"wave",t:t*.001+1,face:"happy"});
+    drawStick(ctx,{...BEGGAR,x:560,y:G,s:1.15,dir:-1,pose:"wave",t:t*.001+1,face:"happy"});
+    drawCase(ctx,596,G,false);
+    if(t>1600){ctx.globalAlpha=Math.min(1,(t-1600)/500);outlinedText(ctx,"다음 이야기 → 2편 '졸라맨 편의점'",360,290,22,"#8fd3ff",INK,6);ctx.globalAlpha=1}
     drawCrow(ctx,650,G-12,Math.floor(t/900)%3===0);
     openOnce("end",200,()=>{Snd.fanfare();Snd.bells()});
   }
@@ -4559,16 +4595,28 @@ const Opening={list:SCENES,scene:1,t:0,off:0,shake:0,fired:{},leaving:false,
     $("sceneNo").textContent=`${n} / ${L.length}`;
     const s=$("sceneText");s.textContent=L[n-1].text;s.style.animation="none";void s.offsetWidth;s.style.animation="";
     $("openNext").hidden=last;$("openSkip").hidden=last;$("openStart").hidden=!last;
+    $("openS2").hidden=!(last&&L===ENDING);if(last&&L===ENDING){$("openStart").classList.remove("pulse");$("openS2").textContent="2편 '졸라맨 편의점' 시작 ▶"}else $("openStart").classList.add("pulse");
   }
 };
+// 엔딩을 처음 깨면 THE END 뒤에 저절로 2편 '졸라맨 편의점'으로 넘어간다 (1편을 계속하려면 '계속 영업하기')
+const S2_AUTO_MS=9000,S2_LOCAL="convenience/index.html?from=s1",S2_ART="https://claude.ai/artifact/14ZT8Uj49ujXsB1jjj5BBc";
+function goSeries2(){
+  save();Opening.auto=false;
+  const art=/claude\.ai|claudeusercontent|anthropic/.test(location.hostname)||(window.top!==window&&location.protocol!=="file:");
+  if(!art){location.href=S2_LOCAL;return}
+  // 아티팩트 안에서는 2편 페이지를 새 창으로 연다 (막히면 링크를 보여 준다)
+  let w=null;try{w=window.open(S2_ART,"_blank");if(w)w.opener=null}catch(e){}
+  if(!w&&!$("s2Link")){const a=document.createElement("a");a.id="s2Link";a.href=S2_ART;a.target="_blank";a.rel="noopener";a.className="b3 xl gold";a.textContent="여기를 눌러 2편 열기 ▶";$("openS2").after(a)}
+}
 // 마지막 장면: 돈이 화면을 뒤덮었다가 사라지면 가게 안, 그리고 졸라맨 튜토리얼
 function leaveOpening(){
   if(Opening.leaving)return;Opening.leaving=true;
-  if(Opening.list===ENDING){moneyCurtain(()=>{showScreen("game");Snd.door()},()=>Talk.say("엔딩 봤지? 근데 장사는 계속된다! 이제 내가 부자 형님이니까 멋지게 살자고","wink","afterEnd"));return}
+  if(Opening.list===ENDING){Opening.auto=false;$("openS2").hidden=true;moneyCurtain(()=>{showScreen("game");Snd.door()},()=>Talk.say("엔딩 봤지? 근데 장사는 계속된다! 이제 내가 부자 형님이니까 멋지게 살자고","wink","afterEnd"));return}
   moneyCurtain(()=>enterGame(),()=>setTimeout(()=>Tut.start(),1500));
 }
 // 졸라맨 월드까지 확장하면 엔딩. 설정에서 다시 볼 수 있다
 function playEnding(){
+  Opening.auto=!state.endingSeen;   // 처음 깬 엔딩이면 2편으로 저절로
   if(!state.endingSeen){state.endingSeen=state.day;checkAch();save()}
   closeModal();Tut.end();Talk.close();
   Opening.list=ENDING;Opening.off=0;Opening.leaving=false;Opening.go(1);
@@ -4614,6 +4662,7 @@ $("tSettings").onclick=()=>{Snd.wake();Snd.click();showSettings()};
 $("openNext").onclick=()=>{Snd.click();Opening.go(Math.min(Opening.list.length,Opening.scene+1))};
 $("openSkip").onclick=()=>{Snd.click();Opening.go(Opening.list.length);Opening.t=1200};
 $("openStart").onclick=()=>{Snd.click();leaveOpening()};
+$("openS2").onclick=()=>{Snd.click();goSeries2()};
 $("openCanvas").addEventListener("click",()=>{if(Opening.scene<Opening.list.length){Snd.click();Opening.go(Opening.scene+1)}});
 $("price").addEventListener("input",render);
 $("ad").addEventListener("input",render);
@@ -4643,6 +4692,9 @@ function frame(now){
     const L=Opening.list;
     if(Opening.scene<L.length&&Opening.t>=L[Opening.scene-1].ms)Opening.go(Opening.scene+1);
     else if(Opening.scene===L.length&&L===SCENES&&Opening.t>=2700)leaveOpening();   // 엔딩 마지막 장면은 버튼을 누를 때까지
+    else if(Opening.scene===L.length&&L===ENDING&&Opening.auto){   // 처음 깬 엔딩: 몇 초 뒤 2편으로
+      const left=Math.ceil((S2_AUTO_MS-Opening.t)/1000);$("openS2").textContent=`2편 '졸라맨 편의점' 시작 ▶ (${Math.max(0,left)})`;
+      if(Opening.t>=S2_AUTO_MS)goSeries2()}
     oc.fit();const c=oc.ctx;drawOpening(c,dt);
     c.fillStyle="#000";c.fillRect(0,0,720,26);c.fillRect(0,414,720,26);
     const f=Math.max(0,1-Opening.t/380);if(f>0){c.globalAlpha=f;c.fillRect(0,0,720,440);c.globalAlpha=1}
