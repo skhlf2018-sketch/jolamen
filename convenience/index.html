@@ -3413,7 +3413,7 @@ function stepPhone(dt,now){
     PHONE.ringT-=dt;
     if(PHONE.ringT<=0){PHONE.ringT=2600;PHONE.rings++;Snd.ring();
       const p=toScreen(phonePos().setY(COUNTER_Y+.3));if(!p.behind&&PLAYER.pos.y<1.5)floatText("따르릉!",p.x,p.y,"#ffcc2e",26);
-      if(PHONE.rings===1)Talk.say(state.talked.phone1?pick([isMarket()?"또 전화 왔다! 리모델링 회사다. 사장님 전화 책상으로 가자":"또 전화 왔다! 리모델링 회사다. 계산대 전화기를 받자","따르릉! 돈 냄새 맡고 리모델링 회사가 또 전화했어"]):"따르릉! 계산대 위 전화기가 울린다. 리모델링 회사래! 전화기를 눌러서 받아 보자","shock",state.talked.phone1?null:"phone1");
+      if(PHONE.rings===1)Talk.say(state.talked.phone1?pick([isMarket()?"또 전화 왔다! 리모델링 회사다. 사장님 전화 책상으로 가자":"또 전화 왔다! 리모델링 회사다. 계산대 전화기를 받자","따르릉! 돈 냄새 맡고 리모델링 회사가 또 전화했어"]):isMarket()?"따르릉! 기계 테이블 옆 사장님 전화 책상에서 전화가 울린다. 리모델링 회사래! 가서 받아 보자":"따르릉! 계산대 위 전화기가 울린다. 리모델링 회사래! 전화기를 눌러서 받아 보자","shock",state.talked.phone1?null:"phone1");
       if(PHONE.rings>=6)PHONE.ringing=false;
     }
     // 수화기가 들썩들썩
@@ -5905,7 +5905,7 @@ function startReplay(kind){
     const hide=o=>{if(o&&o.visible){o.visible=false;R.hid.push(o)}};
     CUST.forEach(C=>hide(C.obj));HM.peds.forEach(p=>hide(p.obj));JP.couriers.forEach(c=>hide(c.obj));
     scene.children.forEach(o=>{if(o.userData.tmp)hide(o)});camera.children.forEach(o=>{if(o.userData.tmp)hide(o)});
-    CHORES.spills.forEach(sp=>hide(sp.mesh));SEATS.forEach(s=>hide(s.trash));MK.flyers.forEach(f=>hide(f.m));
+    CHORES.spills.forEach(sp=>{hide(sp.mesh);hide(sp.can)});SEATS.forEach(s=>hide(s.trash));MK.flyers.forEach(f=>hide(f.m));Object.values(JP.meshes).forEach(hide);hide(W3.bag);
     $("bubbles").hidden=true;GAME.running=false;   // 밤 멈춤 (손님·시계·타이머 모두)
     state=freshState();applyTheme();refreshUpgrades();
   }else{state=freshState();resetWorld()}
@@ -5918,7 +5918,7 @@ function endReplay(){
   state=R.keep;
   if(R.from==="title"){if(R.kind==="op")resetWorld();Scr.show("title");CAM.set("outside");$("tCont").hidden=!loadSave();return}
   if(R.kind==="op"){applyTheme();refreshUpgrades();refreshObstacles();R.hid.forEach(o=>o.visible=true);$("bubbles").hidden=false;GAME.running=R.run}
-  Scr.show("game");resizeAll();HANDS.reset();HANDS.hidden=false;PLAYER.apply();updateHud();drawPos();
+  Scr.show("game");resizeAll();HANDS.reset();HANDS.hidden=false;HANDS.rest("R");HANDS.rest("L");PLAYER.apply();updateHud();drawPos();
   toast("애니메이션 끝! 하던 그대로 이어서 해요");
 }
 function quitGame(){
