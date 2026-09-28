@@ -476,6 +476,13 @@ input[type=range]:disabled{opacity:.5}
 </style>
 </head>
 <body>
+<!-- 회사 로고: 게임을 켜면 5초 동안 보이다가 스르륵 사라진다 -->
+<div id="jcSplash" aria-label="Jola Cool Company (졸라 멋진 회사)" style="position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4vh;background:radial-gradient(ellipse at 50% 45%,#23264a 0%,#0b0d1a 70%);color:#fff;text-align:center;padding:16px;box-sizing:border-box;transition:opacity 1.4s ease,visibility 1.4s;font-family:'Black Han Sans','Jua',system-ui,sans-serif">
+  <b style="font-size:clamp(44px,10vw,132px);line-height:1.02;letter-spacing:.02em;font-weight:900;background:linear-gradient(180deg,#fff6c4 0%,#ffcc2e 55%,#ff9a1f 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 0 rgba(0,0,0,.45));animation:jcIn 1.1s cubic-bezier(.2,1.4,.4,1) both">Jola Cool Company</b>
+  <span style="font-size:clamp(18px,3.4vw,40px);opacity:.92;animation:jcIn 1.1s .35s cubic-bezier(.2,1.4,.4,1) both">(졸라 멋진 회사)</span>
+</div>
+<style>@keyframes jcIn{from{opacity:0;transform:scale(.7) translateY(20px)}to{opacity:1;transform:none}}</style>
+<script>(function(){function go(){setTimeout(function(){var s=document.getElementById("jcSplash");if(!s)return;s.style.opacity="0";s.style.visibility="hidden";s.style.pointerEvents="none";setTimeout(function(){s.remove()},1600)},5000)}if(document.readyState==="complete")go();else addEventListener("load",go)})();</script>
 <div class="app">
 
 <!-- ========== 타이틀 ========== -->

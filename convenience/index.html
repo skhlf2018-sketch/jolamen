@@ -298,6 +298,13 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 </style>
 </head>
 <body>
+<!-- 회사 로고: 게임을 켜면 5초 동안 보이다가 스르륵 사라진다 -->
+<div id="jcSplash" aria-label="Jola Cool Company (졸라 멋진 회사)" style="position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4vh;background:radial-gradient(ellipse at 50% 45%,#23264a 0%,#0b0d1a 70%);color:#fff;text-align:center;padding:16px;box-sizing:border-box;transition:opacity 1.4s ease,visibility 1.4s;font-family:'Black Han Sans','Jua',system-ui,sans-serif">
+  <b style="font-size:clamp(44px,10vw,132px);line-height:1.02;letter-spacing:.02em;font-weight:900;background:linear-gradient(180deg,#fff6c4 0%,#ffcc2e 55%,#ff9a1f 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 0 rgba(0,0,0,.45));animation:jcIn 1.1s cubic-bezier(.2,1.4,.4,1) both">Jola Cool Company</b>
+  <span style="font-size:clamp(18px,3.4vw,40px);opacity:.92;animation:jcIn 1.1s .35s cubic-bezier(.2,1.4,.4,1) both">(졸라 멋진 회사)</span>
+</div>
+<style>@keyframes jcIn{from{opacity:0;transform:scale(.7) translateY(20px)}to{opacity:1;transform:none}}</style>
+<script>(function(){function go(){setTimeout(function(){var s=document.getElementById("jcSplash");if(!s)return;s.style.opacity="0";s.style.visibility="hidden";s.style.pointerEvents="none";setTimeout(function(){s.remove()},1600)},5000)}if(document.readyState==="complete")go();else addEventListener("load",go)})();</script>
 <div class="app" id="app">
   <canvas id="gl" aria-label="1인칭으로 보는 새벽 편의점 계산대"></canvas>
   <canvas id="ov" aria-hidden="true"></canvas>
@@ -5863,8 +5870,8 @@ function askQuit(){
   $("qYes").onclick=()=>{Snd.click();quitGame()};
 }
 /* ---------- 애니메이션 다시 보기 (타이틀 · 게임 안) ----------
-   오프닝: 잠깐 첫날 편의점 모습으로 바꿔서 보여 주고, 끝나면 내 가게로 돌아온다 (하던 밤은 이어하기처럼 처음부터)
-   엔딩: 공책 낙서라 가게는 그대로. 게임 중이면 보고 나서 하던 밤을 이어서 한다 */
+   오프닝·엔딩 애니메이션을 처음 장면부터 그대로 다시 틀어 준다. 게임 중이면 밤은 멈춰 두고, 다 보면 하던 그대로 이어서.
+   오프닝 속 3D 장면은 원래 '첫날 작은 편의점'이라, 보는 동안만 첫날 가게 모습으로 바꾸고 손님·물건은 잠깐 숨긴다 */
 function showReplays(){
   const inGame=Scr.name==="game";
   if(inGame&&!$("drawer").hidden){toast("거스름돈부터 건네요!");Snd.errBeep();return}
@@ -5874,7 +5881,7 @@ function showReplays(){
       <button id="rpOp" class="btn" type="button">🌧 오프닝<small>거지 졸라맨, 천만 원 들고 진짜 세상으로 · 13장면</small></button>
       <button id="rpEnd" class="btn alt" type="button" ${endOK?"":"disabled"}>🏝 엔딩<small>${endOK?"₩10자 배 타고 전 점장님 구하기 · 6장면":"🔒 메인 미션 (전 점장님 구출)을 깨면 열려요"}</small></button>
     </div>
-    ${inGame&&GAME.running?`<p class="note" style="color:#7a5a10">오프닝을 보면 지금 하던 밤은 처음부터 다시 해요 (통장·가게는 그대로). 엔딩은 보고 나서 하던 밤을 이어서 해요.</p>`:""}
+    ${inGame?`<p class="note" style="color:#555">보는 동안 게임은 멈춰 있고, 다 보면 하던 그대로 이어서 해요. (장면은 '다음 장면 ▶'이나 화면 클릭으로 넘길 수 있어요)</p>`:""}
     <div class="acts"><button id="rpClose" class="btn sm alt" type="button">닫기</button></div></div>`);
   $("rpOp").onclick=()=>{Snd.click();closeModal();startReplay("op")};
   if(endOK)$("rpEnd").onclick=()=>{Snd.click();closeModal();startReplay("end")};
@@ -5883,31 +5890,36 @@ function showReplays(){
 function startReplay(kind){
   if(Op.replay)return;
   const from=Scr.name==="game"?"game":"title";
+  if(from==="game"&&(GAME.busy||GAME.ending||Talk.story||ELEV.ride)){toast("하던 일을 끝내고 다시 눌러 주세요!");Snd.errBeep();return}
   if(document.pointerLockElement)document.exitPointerLock();
-  Talk.story=null;Talk.close();
+  Talk.close();
+  const R={from,kind,keep:state,hid:[],run:GAME.running};
+  Op.replay=R;replaying=true;
   if(kind==="end"){
-    // 타이틀에서 보면 마지막 장면의 기록(밤·손님 수)은 저장된 게임 것으로
-    let keep=null;if(from==="title"){const d=loadSave();if(d){keep=state;state=Object.assign(freshState(),d.state)}}
-    Op.replay={from,kind,keep};replaying=true;
+    // 엔딩은 공책 낙서라 가게는 그대로. 타이틀에서 보면 마지막 장면 기록(밤·손님 수)은 저장된 게임 것으로
+    if(from==="title"){const d=loadSave();if(d)state=Object.assign(freshState(),d.state)}
     Scr.show("opening");Op.startList(ENDING);Snd.fanfare();return;
   }
-  if(from==="game"){resetMicro();if(state.night)save()}
-  Op.replay={from,kind,keep:state};replaying=true;
-  state=freshState();resetWorld();
-  Scr.show("opening");Op.start();
+  Scr.show("opening");
+  if(from==="game"){
+    const hide=o=>{if(o&&o.visible){o.visible=false;R.hid.push(o)}};
+    CUST.forEach(C=>hide(C.obj));HM.peds.forEach(p=>hide(p.obj));JP.couriers.forEach(c=>hide(c.obj));
+    scene.children.forEach(o=>{if(o.userData.tmp)hide(o)});camera.children.forEach(o=>{if(o.userData.tmp)hide(o)});
+    CHORES.spills.forEach(sp=>hide(sp.mesh));SEATS.forEach(s=>hide(s.trash));MK.flyers.forEach(f=>hide(f.m));
+    $("bubbles").hidden=true;GAME.running=false;   // 밤 멈춤 (손님·시계·타이머 모두)
+    state=freshState();applyTheme();refreshUpgrades();
+  }else{state=freshState();resetWorld()}
+  Op.start();
 }
 function endReplay(){
   const R=Op.replay;if(!R)return;
   Op.replay=null;Op.leaving=true;replaying=false;
   if(Op.boss)Op.boss.visible=false;W3.car.visible=false;
-  if(R.kind==="end"){
-    if(R.keep)state=R.keep;
-    if(R.from==="game"){Scr.show("game");resizeAll();updateHud()}else{Scr.show("title");CAM.set("outside")}
-    return;
-  }
-  state=R.keep;resetWorld();
-  if(R.from==="game")enterGame(false);
-  else{Scr.show("title");CAM.set("outside");$("tCont").hidden=!loadSave()}
+  state=R.keep;
+  if(R.from==="title"){if(R.kind==="op")resetWorld();Scr.show("title");CAM.set("outside");$("tCont").hidden=!loadSave();return}
+  if(R.kind==="op"){applyTheme();refreshUpgrades();refreshObstacles();R.hid.forEach(o=>o.visible=true);$("bubbles").hidden=false;GAME.running=R.run}
+  Scr.show("game");resizeAll();HANDS.reset();HANDS.hidden=false;PLAYER.apply();updateHud();drawPos();
+  toast("애니메이션 끝! 하던 그대로 이어서 해요");
 }
 function quitGame(){
   if(document.pointerLockElement)document.exitPointerLock();
