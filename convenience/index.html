@@ -4923,7 +4923,7 @@ function addCart(C,baby){
   const c=makeCart();c.position.set(0,0,.6);C.obj.add(c);C.cart=c;
   if(baby){   // 아기는 손잡이 앞 아기 자리에 앉는다 (낙서 아기, 늘 나를 본다)
     const K=cartKit();mesh(K.seat,K.red,{y:K.y0+K.H-.06,z:-K.L/2+.1,parent:c});
-    const b=makeDoodlePerson(lookFor("baby"));b.scale.setScalar(.5);b.position.set(0,K.y0+K.H-.28,-K.L/2+.12);c.add(b);C.baby=b;C.babyT=3000+Math.random()*5000;
+    const b=makeDoodlePerson(lookFor("baby"));b.scale.setScalar(.42);b.position.set(0,K.y0+K.H-.25,-K.L/2+.12);c.add(b);C.baby=b;C.babyT=3000+Math.random()*5000;
   }
 }
 // 걸을 때는 카트를 앞에서 밀고, 서 있을 때는 옆에 세워 둔다
