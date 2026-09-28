@@ -80,7 +80,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .icon{border:2px solid var(--line);background:var(--glass);color:#fff;border-radius:12px;font-size:17px;padding:6px 12px}
 .icon.hot{background:var(--brand);color:var(--ink);border-color:var(--ink)}
 .icon.quit{border-color:rgba(255,120,110,.7)}
-@media (max-width:1240px){#hQuit .lbl,#hMis .lbl{display:none}}
+@media (max-width:1240px){#hQuit .lbl,#hMis .lbl,#hRep .lbl{display:none}}
 @media (max-width:1000px){.icon .lbl{display:none}.icon{padding:5px 10px}#keysHelp{top:110px}}
 
 #bubbles{position:absolute;inset:0;pointer-events:none}
@@ -165,6 +165,10 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .switch:after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--ink);transition:left .15s}
 .switch[aria-checked="true"]{background:var(--green)}.switch[aria-checked="true"]:after{left:24px}
 .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.replays{display:grid;gap:12px;margin:14px 0 4px}
+.replays .btn{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%}
+.replays .btn small{font-size:14px;font-weight:500;opacity:.85}
+.replays .btn:disabled{opacity:.55;cursor:not-allowed}
 
 .keys{position:absolute;left:12px;top:60px;font-size:14px;color:#fff;background:rgba(8,10,24,.75);border:2px solid rgba(255,204,46,.5);border-radius:10px;padding:4px 10px;pointer-events:none;max-width:calc(100% - 24px);transition:opacity .6s}
 .keys.gone{opacity:0}
@@ -308,6 +312,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
     <div class="menu">
       <button id="tNew" class="btn big pulse" type="button">새 게임</button>
       <button id="tCont" class="btn big alt" type="button" hidden>이어하기</button>
+      <button id="tRep" class="btn ghost" type="button">🎬 애니메이션 다시 보기</button>
       <button id="tSet" class="btn ghost" type="button">설정</button>
     </div>
     <p class="foot">1편 '졸라맨 식당'에 이어지는 이야기</p>
@@ -332,6 +337,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
       <button id="hMis" class="icon" type="button" aria-label="미션 보기 (M)">🎯<span class="lbl"> 미션</span></button>
       <button id="hJol" class="icon jol" type="button" aria-label="내 폰: 졸팡 쇼핑 (J)">📱<span class="lbl"> 졸팡</span><i id="jolBadge" class="badge" hidden>0</i></button>
       <button id="hPhone" class="icon" type="button" aria-label="리모델링 회사에 전화" hidden>☎<span class="lbl"> 리모델링</span></button>
+      <button id="hRep" class="icon" type="button" aria-label="애니메이션 다시 보기">🎬<span class="lbl"> 다시보기</span></button>
       <button id="hSet" class="icon" type="button" aria-label="설정">⚙<span class="lbl"> 설정</span></button>
       <button id="hQuit" class="icon quit" type="button" aria-label="게임 끄기">⏻<span class="lbl"> 끄기</span></button>
     </div>
@@ -601,7 +607,8 @@ function freshState(){
     stock:Object.fromEntries(SHELF_ITEMS.map(k=>[k,PRODUCTS[k].unlock?0:8])),boxes:[]};
 }
 let state=freshState();
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,state}))}catch(e){}}
+let replaying=false;   // 애니메이션 다시 보기 중에는 저장하지 않는다 (잠깐 첫날 가게를 보여 주는 중)
+function save(){if(replaying)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,state}))}catch(e){}}
 function loadSave(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");return d&&d.state?d:null}catch(e){return null}}
 function clearSave(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
 
@@ -2865,7 +2872,7 @@ function currentHint(){
   if(MW.state==="done")return "띵! 테이블 옆 전자레인지를 눌러 꺼내기";
   if(isMarket()&&!robotAge()&&SVCQ.some(c=>c.state==="svc")){const o=SVCQ.find(c=>c.state==="svc").orders.find(o=>!o.done);if(o)return `서비스 코너 손님: "${nameOf(o.key)} 주세요!" → ${MACHINES[o.machine].name} 누르기`}
   if(isMarket()&&!autoShelf()&&openBoxes().length&&!C)return "창고에 졸팡 박스 도착! 가게 뒤쪽 창고에서 박스 눌러 뜯기";
-  if(!C&&PHONE.ringing)return "☎ 따르릉! 계산대 위 전화기를 눌러 받기 (위 ☎ 버튼도 돼요)";
+  if(!C&&PHONE.ringing)return isMarket()?"☎ 따르릉! 기계 테이블 옆 사장님 전화 책상에서 받기 (위 ☎ 버튼도 돼요)":"☎ 따르릉! 계산대 위 전화기를 눌러 받기 (위 ☎ 버튼도 돼요)";
   if(CUST.some(c=>c.heatReq&&!c.heatTaken))return "손님이 전자레인지 돌려 달래요! 테이블 가서 음식 누르기";
   if(!C&&openBoxes().length)return "졸팡 박스 도착! 입구 쪽 박스를 눌러 뜯기";
   if(!C&&isMarket()&&MK.n<FLYER_MAX&&GAME.t<SHIFT_SEC*.8)return canGoOut()?`가게 밖에 나가서 전단지 붙이기 (${MK.n}/${FLYER_MAX}) → 손님 ×${(1+FLYER_MAX*.8).toFixed(1)}`:`유리창에 전단지 붙이기 (${MK.n}/${FLYER_MAX})`;
@@ -3165,7 +3172,9 @@ function marketObstacles(){
   HALL_GONDOLAS.forEach(([x,z0,L])=>O.push([x-.43,z0-L,x+.43,z0+.25]));
   O.push([-HALL.x,-7.25,-(HALL.x-.66),-2.0],[HALL.x-.66,-7.25,HALL.x,-2.0]);
   LANES.forEach(L=>O.push([L.x-.31,-7.3,L.x+.31,-6.82]));O.push([-1.15,-7.2,-.75,-6.85]);
-  O.push(LAY2.on?[-MK.rackSpan,3.5,MK.rackSpan,HALL.zb]:[-(HALL.x-.1),3.5,HALL.x-.1,HALL.zb]);   // 창고 선반 (2층이면 왼쪽 끝은 엘리베이터 길)if(autoShelf())O.push([-5.35,2.65,-3.05,3.35]);
+  O.push(LAY2.on?[-MK.rackSpan,3.5,MK.rackSpan,HALL.zb]:[-(HALL.x-.1),3.5,HALL.x-.1,HALL.zb]);   // 창고 선반 (2층이면 왼쪽 끝은 엘리베이터 길)
+  if(autoShelf())O.push([-5.35,2.65,-3.05,3.35]);
+  O.push([PHONE_DESK.x-.23,PHONE_DESK.z-.21,PHONE_DESK.x+.23,PHONE_DESK.z+.21]);   // 사장님 전화 책상
   MK.obs.forEach(o=>O.push(o));   // 화분·로봇
   if(hasUp("freezer"))O.push([FREEZER.x-.31,FREEZER.z-.55,FREEZER.x+.31,FREEZER.z+.55]);
   O.push([-2.78,-1.97,-2.12,-.53]);O.push([-3.35,-.02,-2.78,.62]);
@@ -3396,8 +3405,8 @@ function stepPhone(dt,now){
   if(PHONE.ringing&&$("modal").hidden){
     PHONE.ringT-=dt;
     if(PHONE.ringT<=0){PHONE.ringT=2600;PHONE.rings++;Snd.ring();
-      const p=toScreen(phonePos().setY(COUNTER_Y+.3));if(!p.behind)floatText("따르릉!",p.x,p.y,"#ffcc2e",26);
-      if(PHONE.rings===1)Talk.say(state.talked.phone1?pick(["또 전화 왔다! 리모델링 회사다. 계산대 전화기를 받자","따르릉! 돈 냄새 맡고 리모델링 회사가 또 전화했어"]):"따르릉! 계산대 위 전화기가 울린다. 리모델링 회사래! 전화기를 눌러서 받아 보자","shock",state.talked.phone1?null:"phone1");
+      const p=toScreen(phonePos().setY(COUNTER_Y+.3));if(!p.behind&&PLAYER.pos.y<1.5)floatText("따르릉!",p.x,p.y,"#ffcc2e",26);
+      if(PHONE.rings===1)Talk.say(state.talked.phone1?pick([isMarket()?"또 전화 왔다! 리모델링 회사다. 사장님 전화 책상으로 가자":"또 전화 왔다! 리모델링 회사다. 계산대 전화기를 받자","따르릉! 돈 냄새 맡고 리모델링 회사가 또 전화했어"]):"따르릉! 계산대 위 전화기가 울린다. 리모델링 회사래! 전화기를 눌러서 받아 보자","shock",state.talked.phone1?null:"phone1");
       if(PHONE.rings>=6)PHONE.ringing=false;
     }
     // 수화기가 들썩들썩
@@ -3405,7 +3414,7 @@ function stepPhone(dt,now){
   }else if(hs.rotation.z){hs.rotation.z=0;hs.position.y=.075}
 }
 function drawPhoneMark(ctx,now){
-  if(!PHONE.ringing)return;
+  if(!PHONE.ringing||PLAYER.pos.y>1.5)return;   // 2층에서는 1층 전화기 표시가 바닥을 뚫고 보이지 않게
   const p=toScreen(phonePos().setY(COUNTER_Y+.16));if(p.behind)return;
   doodleMood(ctx,p.x,p.y-10,"!",now);
 }
@@ -4456,7 +4465,19 @@ function buildMarket(){
   spot(-2.72,1.45,-7.69,Math.PI,true);spot(2.72,1.45,-7.69,Math.PI,true);spot(-5.45,1.45,-7.69,Math.PI,true);spot(5.45,1.45,-7.69,Math.PI,true);
   spot(3.8,1.6,-10.33,0,true);spot(-3.6,1.45,-10.32,0,true);
   [-2.72,-1.44,1.44,2.72].forEach(x=>spot(x,1.45,-7.51,0,false));spot(-5.45,1.45,-7.51,0,false);spot(5.45,1.45,-7.51,0,false);
+  buildPhoneDesk(g);
   refreshMarket();
+}
+// 사장님 전화 책상: 계산대가 없어져도 리모델링 전화는 여기서 받는다 (기계 테이블 끝, 직원 쪽)
+const PHONE_DESK={x:WING_X,z:-.15};
+function buildPhoneDesk(g){
+  const d=new T.Group();d.position.set(PHONE_DESK.x,0,PHONE_DESK.z);g.add(d);MK.desk=d;
+  mesh(box(.46,.04,.42),mStd(0xffffff,.28,0,{map:stoneTex()}),{y:.93,cast:true,receive:true,parent:d});
+  mesh(box(.42,.9,.38),mStd(0xffffff,.55,0,{map:woodTex()}),{y:.45,cast:true,receive:true,parent:d});
+  const sg=tex("phonedesk",256,96,(x,w,h)=>{x.fillStyle="#16141d";x.fillRect(0,0,w,h);tx(x,"☎ 사장님 전화",128,38,30,"#ffcc2e",{font:FJ});tx(x,"리모델링 회사 직통",128,74,18,"#fff",{font:FJ})});
+  const sm=new T.MeshStandardMaterial({map:sg,roughness:.6,side:T.DoubleSide});
+  mesh(new T.CylinderGeometry(.012,.012,.5,8),mStd(0x3a3d44,.5,.6),{x:-.16,y:1.2,z:-.14,parent:d});
+  mesh(new T.PlaneGeometry(.44,.165),sm,{y:1.4,z:-.14,parent:d});
 }
 
 /* ---------- 넓은 슈퍼마켓 짓기: 리모델링할 때마다 새로 (넓이·꾸밈이 단계마다 다르다) ---------- */
@@ -4610,6 +4631,10 @@ function refreshMarket(){
   // 핫바 그릴: 계산대가 없어지면 기계 테이블로
   if(mk&&mk.grill){if(on&&mk.grill.parent!==W3.machines){W3.machines.add(mk.grill);mk.grill.position.set(WING_X,.95,-1.5);mk.grill.rotation.y=.7}
     else if(!on&&mk.grill.parent!==W3.counter){W3.counter.add(mk.grill);mk.grill.position.set(-.98,COUNTER_Y,-.22);mk.grill.rotation.y=0}}
+  // 전화기: 계산대가 없어지면 사장님 전화 책상으로
+  if(W3.phone&&MK.desk){const ph=W3.phone;
+    if(on&&ph.parent!==MK.desk){MK.desk.add(ph);ph.position.set(0,COUNTER_Y,.02);ph.rotation.y=-.55}
+    else if(!on&&ph.parent!==W3.counter){W3.counter.add(ph);ph.position.set(.42,COUNTER_Y,.27);ph.rotation.y=-.35}}
   if(MK.floor&&W3.mat.floor){MK.floor.color.copy(W3.mat.floor.color);MK.wall.color.copy(W3.mat.wall.color)}
   MK.flyers.forEach(s=>{s.use=on&&s.out===out;s.hit.visible=s.use;if(!s.use)s.m.visible=false});
   // 진열 칸: 편의점 선반 ↔ 슈퍼마켓 선반
@@ -5238,7 +5263,7 @@ const OPENING=[
 // 1편 주인공 (졸라맨 월드 주인, 요리사 모자는 그대로) · 2편 주인공 (거지 졸라맨)
 const HERO_LOOK={suit:"#3b2a5a",bowtie:true,monocle:true,hat:"chef"};
 const BEGGAR_LOOK={shirt:"#8a7a66"};
-const Op={i:1,t:0,fired:{},leaving:false,shake:0,boss:null,list:null,
+const Op={i:1,t:0,fired:{},leaving:false,shake:0,boss:null,list:null,replay:null,
   // 엔딩도 같은 화면으로 보여 준다
   startList(list){this.list=list;this.leaving=false;if(this.boss)this.boss.visible=false;W3.car.visible=false;this.go(1)},
   start(){this.list=OPENING;this.leaving=false;
@@ -5246,7 +5271,7 @@ const Op={i:1,t:0,fired:{},leaving:false,shake:0,boss:null,list:null,
     if(!this.boss){this.boss=makeDoodlePerson({shirt:"#2f9d4a",apron:"#2c6fd6",hair3:true,specs:true});this.boss.scale.setScalar(1.14);scene.add(this.boss)}
     this.boss.visible=false;W3.car.visible=false;this.go(1)},
   go(n){const L=this.list,op=L===OPENING;this.i=n;this.t=0;this.fired={};const s=L[n-1],last=n===L.length;
-    $("opNo").textContent=`${n} / ${L.length}`;$("opStart").textContent=op?"출근하기 ▶":"가게로 돌아가기 ▶";const el=$("opSub");el.textContent=s.text;el.style.animation="none";void el.offsetWidth;el.style.animation="";
+    $("opNo").textContent=`${n} / ${L.length}`;$("opStart").textContent=this.replay?(this.replay.from==="game"?"가게로 돌아가기 ▶":"타이틀로 돌아가기 ▶"):op?"출근하기 ▶":"가게로 돌아가기 ▶";const el=$("opSub");el.textContent=s.text;el.style.animation="none";void el.offsetWidth;el.style.animation="";
     $("opNext").hidden=last;$("opSkip").hidden=last;$("opStart").hidden=!last;
     if(this.boss)this.boss.visible=s.id==="o_interview"||s.id==="o_hired";if(this.boss&&this.boss.visible){this.boss.position.set(-.3,0,.45);this.boss.rotation.y=Math.PI-.5;setPose(this.boss,"stand",0,"happy")}
     W3.car.visible=s.id==="o_car";HANDS.hidden=!(last&&op);if(last&&op){HANDS.reset();CAM.set("inside")}
@@ -5258,7 +5283,7 @@ const Op={i:1,t:0,fired:{},leaving:false,shake:0,boss:null,list:null,
     return s;
   }
 };
-function leaveOpening(){if(Op.list===ENDING)return leaveEnding();if(Op.leaving)return;Op.leaving=true;Op.boss.visible=false;W3.car.visible=false;enterGame(true)}
+function leaveOpening(){if(Op.replay)return endReplay();if(Op.list===ENDING)return leaveEnding();if(Op.leaving)return;Op.leaving=true;Op.boss.visible=false;W3.car.visible=false;enterGame(true)}
 
 /* ---------- 2D: 공책 종이 ---------- */
 function notebook(ctx,W,H){
@@ -5693,7 +5718,7 @@ function pickAt(px,py,center){
   ["micro","coffee","steamer","grill"].forEach(k=>{if(k==="micro"||hasUp(k))W3.mk[k].children.forEach(ch=>{if(ch.userData.act)cands.push(ch)})});
   CHORES.gaps.forEach(s=>s.hit&&cands.push(s.hit));CHORES.spills.forEach(sp=>cands.push(sp.hit));
   SEATS.forEach(s=>{if(s.trash)cands.push(s.trash.userData.hit)});
-  if(W3.hits.phone&&!isMarket())cands.push(W3.hits.phone);
+  if(W3.hits.phone)cands.push(W3.hits.phone);
   extraHits(cands);
   const hit=ray.intersectObjects(cands,false)[0];
   let target=hit&&hit.object;
@@ -5708,7 +5733,9 @@ function pickAt(px,py,center){
   else if(act==="restock"){H.label="진열하기";far(PLAYER.dist(target.userData.sec.c),REACH,"너무 멀어요! 진열대 가까이 가서 눌러요")}
   else if(act==="spill"){H.label="닦기";far(PLAYER.dist(target.userData.spill),REACH,"너무 멀어요! 쏟은 곳 가까이 가서 눌러요")}
   else if(act==="trash"){const s=target.userData.seat;if(!s.trash)return null;H.label="치우기";far(PLAYER.dist(s.trash.position),REACH,"너무 멀어요! 테이블 가까이 가서 눌러요")}
-  else if(act==="phone"){H.label=PHONE.ringing?"전화 받기":"전화기";if(!PLAYER.inRegister()){H.ok=false;H.why="전화기는 계산대 안쪽에 있어요!";H.short="계산대 안에서"}}
+  else if(act==="phone"){H.label=PHONE.ringing?"전화 받기":"전화기";
+    if(isMarket())far(PLAYER.dist(phonePos()),REACH+.4,"너무 멀어요! 사장님 전화 책상 가까이 가서 눌러요");
+    else if(!PLAYER.inRegister()){H.ok=false;H.why="전화기는 계산대 안쪽에 있어요!";H.short="계산대 안에서"}}
   else if(act&&act.startsWith("m:")){const m=act.slice(2);H.label=H.label||MACHINES[m].name;far(PLAYER.dist(machinePos(m)),MACHINE_REACH,`너무 멀어요! ${MACHINES[m].name} 가까이 가요`)}
   else{
     if(act==="bag")H.label="봉투";
@@ -5822,6 +5849,8 @@ $("tNew").onclick=()=>{Snd.wake();Snd.click();if(Snd.music)Snd.startMusic();newG
 $("tCont").onclick=()=>{Snd.wake();Snd.click();if(Snd.music)Snd.startMusic();continueGame()};
 $("tSet").onclick=()=>{Snd.wake();Snd.click();showSettings()};
 $("hSet").onclick=()=>{Snd.click();showSettings()};
+$("tRep").onclick=()=>{Snd.wake();Snd.click();showReplays()};
+$("hRep").onclick=()=>{if(Scr.name!=="game"||!$("modal").hidden||PHONE.building)return;Snd.click();showReplays()};
 $("hQuit").onclick=()=>{Snd.click();askQuit()};
 /* ---------- 게임 끄기: 저장하고 타이틀로 ---------- */
 function askQuit(){
@@ -5832,6 +5861,53 @@ function askQuit(){
     <div class="acts"><button id="qNo" class="btn alt" type="button">계속할래</button><button id="qYes" class="btn red" type="button">⏻ 게임 끄기</button></div></div>`);
   $("qNo").onclick=()=>{Snd.click();closeModal()};
   $("qYes").onclick=()=>{Snd.click();quitGame()};
+}
+/* ---------- 애니메이션 다시 보기 (타이틀 · 게임 안) ----------
+   오프닝: 잠깐 첫날 편의점 모습으로 바꿔서 보여 주고, 끝나면 내 가게로 돌아온다 (하던 밤은 이어하기처럼 처음부터)
+   엔딩: 공책 낙서라 가게는 그대로. 게임 중이면 보고 나서 하던 밤을 이어서 한다 */
+function showReplays(){
+  const inGame=Scr.name==="game";
+  if(inGame&&!$("drawer").hidden){toast("거스름돈부터 건네요!");Snd.errBeep();return}
+  const d=inGame?null:loadSave(),endOK=(inGame?state.rescue:d&&d.state&&d.state.rescue)===2;
+  openModal(`<div class="panel"><h2>🎬 애니메이션 다시 보기</h2>
+    <div class="replays">
+      <button id="rpOp" class="btn" type="button">🌧 오프닝<small>거지 졸라맨, 천만 원 들고 진짜 세상으로 · 13장면</small></button>
+      <button id="rpEnd" class="btn alt" type="button" ${endOK?"":"disabled"}>🏝 엔딩<small>${endOK?"₩10자 배 타고 전 점장님 구하기 · 6장면":"🔒 메인 미션 (전 점장님 구출)을 깨면 열려요"}</small></button>
+    </div>
+    ${inGame&&GAME.running?`<p class="note" style="color:#7a5a10">오프닝을 보면 지금 하던 밤은 처음부터 다시 해요 (통장·가게는 그대로). 엔딩은 보고 나서 하던 밤을 이어서 해요.</p>`:""}
+    <div class="acts"><button id="rpClose" class="btn sm alt" type="button">닫기</button></div></div>`);
+  $("rpOp").onclick=()=>{Snd.click();closeModal();startReplay("op")};
+  if(endOK)$("rpEnd").onclick=()=>{Snd.click();closeModal();startReplay("end")};
+  $("rpClose").onclick=()=>{Snd.click();closeModal()};
+}
+function startReplay(kind){
+  if(Op.replay)return;
+  const from=Scr.name==="game"?"game":"title";
+  if(document.pointerLockElement)document.exitPointerLock();
+  Talk.story=null;Talk.close();
+  if(kind==="end"){
+    // 타이틀에서 보면 마지막 장면의 기록(밤·손님 수)은 저장된 게임 것으로
+    let keep=null;if(from==="title"){const d=loadSave();if(d){keep=state;state=Object.assign(freshState(),d.state)}}
+    Op.replay={from,kind,keep};replaying=true;
+    Scr.show("opening");Op.startList(ENDING);Snd.fanfare();return;
+  }
+  if(from==="game"){resetMicro();if(state.night)save()}
+  Op.replay={from,kind,keep:state};replaying=true;
+  state=freshState();resetWorld();
+  Scr.show("opening");Op.start();
+}
+function endReplay(){
+  const R=Op.replay;if(!R)return;
+  Op.replay=null;Op.leaving=true;replaying=false;
+  if(Op.boss)Op.boss.visible=false;W3.car.visible=false;
+  if(R.kind==="end"){
+    if(R.keep)state=R.keep;
+    if(R.from==="game"){Scr.show("game");resizeAll();updateHud()}else{Scr.show("title");CAM.set("outside")}
+    return;
+  }
+  state=R.keep;resetWorld();
+  if(R.from==="game")enterGame(false);
+  else{Scr.show("title");CAM.set("outside");$("tCont").hidden=!loadSave()}
 }
 function quitGame(){
   if(document.pointerLockElement)document.exitPointerLock();
