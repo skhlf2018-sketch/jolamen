@@ -1497,7 +1497,7 @@ function shelfSets(){
 }
 function shelfKit(g,cap){
   const sets=shelfSets();
-  const inst=sets.map(s=>{const m=new T.InstancedMesh(s.geo,s.mat,cap);m.count=0;m.castShadow=false;g.add(m);return m});
+  const inst=sets.map(s=>{const m=new T.InstancedMesh(s.geo,s.mat,cap);m.count=0;m.castShadow=false;m.frustumCulled=false;g.add(m);return m});   // 원점만 보고 잘리지 않게
   const M=new T.Matrix4(),q=new T.Quaternion(),S=new T.Vector3(1,1,1),P=new T.Vector3(),C=new T.Color();
   const SEC={};
   const add=(kind,x,y,z,ry,sec,nx)=>{const m=inst[kind];if(m.count>=cap)return;q.setFromEuler(new T.Euler(0,ry,0));P.set(x,y,z);M.compose(P,q,S);m.setMatrixAt(m.count,M);const v=.9+Math.random()*.1;C.setRGB(v,v,v);m.setColorAt(m.count,C);
@@ -1543,7 +1543,7 @@ function buildFridges(){
   const body=mStd(0x2a2d33,.35,.6),inside=new T.MeshStandardMaterial({color:0xf4f7fb,emissive:0xeaf2ff,emissiveIntensity:.55,roughness:.6});
   const glass=new T.MeshStandardMaterial({color:0xcfe3ff,roughness:.03,metalness:.1,transparent:true,opacity:.12,depthWrite:false,envMapIntensity:1.6});
   const bottle=new T.CylinderGeometry(.03,.034,.22,10),can=new T.CylinderGeometry(.033,.033,.12,10);
-  const ib=new T.InstancedMesh(bottle,mStd(0xffffff,.2,.1,{transparent:true,opacity:.9}),500),ic=new T.InstancedMesh(can,mStd(0xffffff,.3,.7),500);ib.count=ic.count=0;
+  const ib=new T.InstancedMesh(bottle,mStd(0xffffff,.2,.1,{transparent:true,opacity:.9}),500),ic=new T.InstancedMesh(can,mStd(0xffffff,.3,.7),500);ib.frustumCulled=ic.frustumCulled=false;ib.count=ic.count=0;
   const cols=[0xe8412c,0x2c6fd6,0x2fbf71,0xffcc2e,0xff8fb3,0xf07b12,0x8fd3ff,0xffffff];
   const M=new T.Matrix4(),C=new T.Color();
   for(let u=0;u<4;u++){const z=-2.6-u*1.2;
@@ -1691,7 +1691,7 @@ function buildStreet(){
   [[-12,9,6],[-4,12,7],[5,8,6.5],[13,14,7]].forEach(([x,h,w])=>mesh(box(w,h,4),bm,{x,y:h/2,z:-21,parent:g}));
   // 옆 건물 (가게 양옆)
   mesh(box(6,6,10),mStd(0x1c1e28,.9),{x:-6.5,y:3,z:-2.8,parent:g});mesh(box(6,6,10),mStd(0x22212c,.9),{x:6.5,y:3,z:-2.8,parent:g});
-  mesh(box(6.9,3.2,10),mStd(0x191a22,.9),{y:4.4,z:-2.7,parent:g});
+  mesh(box(6.9,3.2,10),mStd(0x191a22,.9),{y:4.46,z:-2.7,parent:g});   // 밑면이 천장(2.8m)과 겹치면 깜빡이니까 살짝 위로
   // 가게 불빛이 인도에 번진다
   const spill=new T.PointLight(0xeaf2ff,.9,6,1.8);spill.position.set(0,1.6,-8.4);scene.add(spill);W3.outLights.push(spill);
   // 가로등
@@ -4452,6 +4452,13 @@ function holeAt(x,z,f,m=0){
   if(x>ELEV.x0-m&&x<ELEV.x1+m&&z>ELEV.z0-m&&z<ELEV.z1+m)return true;
   if(f<2)return false;const R=laneRect(flightLane(f-1));return x>R.x0-m&&x<R.x1+m&&z>STAIR.z0-m&&z<STAIR.z1+m;
 }
+// 천장 전등 줄: 한 층에 백 개 넘는 걸 인스턴스 하나로 (그리기 한 번)
+let LAMP_GEO=null;
+function lampGrid(parent,y,skip){
+  const hx=HALL.x,lx=Math.floor((hx-1.5)/2)*2,P=[];for(let z=-6.6;z<=3.6;z+=1.7)for(let x=-lx;x<=lx;x+=2)if(!skip||!skip(x,z))P.push([x,z]);
+  const im=new T.InstancedMesh(LAMP_GEO||(LAMP_GEO=box(1.2,.03,.28)),W3.mat.lamp,P.length),M=new T.Matrix4();
+  P.forEach(([x,z],i)=>{M.makeTranslation(x,y,z);im.setMatrixAt(i,M)});im.instanceMatrix.needsUpdate=true;im.frustumCulled=false;parent.add(im);return im;
+}
 function layout2F(F){
   LAY2.n=F;LAY2.on=F>1;LAY2.gond.length=0;LAY2.cols.length=0;LAY2.back.length=0;if(F<2)return;
   const hx=HALL.x,n=5,xs=[],bx=[],mir=(a,v)=>a.push(v,-v);
@@ -4518,13 +4525,13 @@ function buildHall(){
   const t=state.tier||0,lv=hallLevel(t),F=floorsAt(t),jm=isJMart(t),two=F>1;
   if(MK.hall)MK.g.remove(MK.hall);
   layoutHall(lv,F);MK.obs=[];
-  const g=new T.Group();MK.g.add(g);MK.hall=g;MK.key=t;
+  const g=new T.Group();MK.g.add(g);MK.hall=g;MK.key=t;MK.floors=[];
   const rep=(tx0,x,y)=>{const c=tx0.clone();c.needsUpdate=true;c.wrapS=c.wrapT=T.RepeatWrapping;c.repeat.set(x,y);return c};
   const hx=HALL.x,W=hx*2,D=HALL.zb-HALL.zf,zc=(HALL.zb+HALL.zf)/2;
   MK.floor=mStd(0xffffff,.32,0,{map:rep(floorTex(),W/6.8,D/9.8)});
   mesh(new T.PlaneGeometry(W,D),MK.floor,{y:0,z:zc,rx:-Math.PI/2,receive:true,parent:g});
   if(!two)mesh(new T.PlaneGeometry(W,D),mStd(0xffffff,.9,0,{map:rep(ceilTex(),W/6.8,D/9.8)}),{y:2.8,z:zc,rx:Math.PI/2,parent:g});   // 2층이 있으면 2층 바닥판이 천장
-  const lampGeo=box(1.2,.03,.28),lx=Math.floor((hx-1.5)/2)*2;for(let z=-6.6;z<=3.6;z+=1.7)for(let x=-lx;x<=lx;x+=2)if(!two||!holeAt(x,z,2,.8))mesh(lampGeo,W3.mat.lamp,{x,y:2.785,z,parent:g});
+  lampGrid(g,2.785,two?(x,z)=>holeAt(x,z,2,.8):null);
   MK.wall=mStd(0xffffff,.85,0,{map:rep(wallTex(),D/9.8,1)});
   mesh(box(.12,2.8,D),MK.wall,{x:-hx,y:1.4,z:zc,parent:g});mesh(box(.12,2.8,D),MK.wall,{x:hx,y:1.4,z:zc,parent:g});
   mesh(box(W,2.8,.12),mStd(0xffffff,.85,0,{map:rep(wallTex(),W/6.8,1)}),{y:1.4,z:HALL.zb,parent:g});
@@ -4538,9 +4545,9 @@ function buildHall(){
     for(let j=0;j<ns;j++){const A=(s<0)===(j%2===0),sg=tex("mktsign"+(A?"A":"B")+(jm?"j":""),512,96,(x,w,h)=>{x.fillStyle=sgC;x.fillRect(0,0,w,h);tx(x,A?sgA:sgB,256,50,A&&jm?60:40,"#fff",{font:FJ})});
       mesh(new T.PlaneGeometry(3.4,.5),new T.MeshStandardMaterial({map:sg,emissive:0xffffff,emissiveMap:sg,emissiveIntensity:.7}),{x:s*(3.4+span*(j+.5)/ns),y:2.55,z:fz-.1,ry:Math.PI,parent:g})}});
   // 바깥 지붕 (옆 건물 대신 넓은 건물)
-  mesh(box(W+.3,1.4,D+.4),mStd(jm?0x2a1d14:0x22242c,.9),{y:F*FLOOR_H+.5,z:zc,parent:g});   // 맨 위층 위 지붕
+  mesh(box(W+.3,1.4,D+.4),mStd(jm?0x2a1d14:0x22242c,.9),{y:F*FLOOR_H+.58,z:zc,parent:g}).userData.shell=true;   // 맨 위층 위 지붕 (밑면이 천장판과 겹치면 깜빡이니까 살짝 위로)
   // 불빛 (넓을수록 멀리 비춘다)
-  MK.lights=[[-1,-4.5],[1,-4.5],[-1,1.2],[1,1.2]].map(([s,z])=>{const l=new T.PointLight(0xf2f6ff,.55+.05*(lv-1),10+(hx-7.5)*1.4,1.4);l.position.set(s*hx*.64,2.6,z);g.add(l);return l});
+  MK.lights=[[-1,-4.5],[1,-4.5],[-1,1.2],[1,1.2]].map(([s,z])=>{const l=new T.PointLight(0xf2f6ff,.55+.05*(lv-1),10+(hx-7.5)*1.4,1.4);l.position.set(s*hx*.64,2.6,z);g.add(l);l.userData.shell=true;return l});
   // 넓은 통로 곤돌라 (새 진열 칸)
   const K=shelfKit(g,1700);
   HALL_GONDOLAS.forEach(([x,z0,L],i)=>gondola(K,g,x,z0,L,i,"h",i<2?(i?"2+1":"1+1"):null));
@@ -4583,6 +4590,7 @@ function buildHall(){
     MK.bots.mw.position.set(-3.06,0,1.05);MK.bots.mw.rotation.y=Math.PI;g.add(MK.bots.mw);MK.obs.push([-3.31,.8,-2.81,1.3])}
   buildCleaners(g,t);   // 청소 로봇 5대 (세 번째 리모델링부터)
   if(two)buildFloors(g,t,F);
+  const f1=new T.Group();[...g.children].forEach(o=>{if(!o.userData.shell&&!(MK.floors||[]).includes(o)){g.remove(o);f1.add(o)}});g.add(f1);MK.f1=f1;   // 1층 안쪽
   buildDeco(g,t,lv);
   // 넓어진 만큼 안개도 멀리
   MK.fog=[Math.max(14,hx*1.4),Math.max(40,hx*3.4)];
@@ -4595,7 +4603,7 @@ function buildDeco(g,t,lv){
   // Lv.2~: 천장에 세일 깃발 줄
   if(t>=2){const cols=jm?[0xff6a00,0xffffff,0xffb000]:[0xe2483d,0xffcc2e,0x2fbf71,0x2c6fd6,0xff7a00],rows=[-5.3,-3.2,-.6],per=Math.floor((hx*2-1)/.5);
     const fg=new T.CircleGeometry(.15,3);fg.rotateZ(-Math.PI/2);
-    const im=new T.InstancedMesh(fg,new T.MeshStandardMaterial({color:0xffffff,roughness:.7,side:T.DoubleSide}),rows.length*per);
+    const im=new T.InstancedMesh(fg,new T.MeshStandardMaterial({color:0xffffff,roughness:.7,side:T.DoubleSide}),rows.length*per);im.frustumCulled=false;
     const M=new T.Matrix4(),C=new T.Color();let n=0;
     rows.forEach(z=>{mesh(box(hx*2-.4,.012,.012),mStd(0x3a3d44,.6),{y:2.6,z,parent:g});
       for(let i=0;i<per;i++){M.makeTranslation(-hx+.5+i*.5,2.5,z);im.setMatrixAt(n,M);im.setColorAt(n,C.setHex(cols[i%cols.length]));n++}});
@@ -4660,7 +4668,7 @@ function refreshMarket(){
   W3.counter.visible=!on;W3.shelves.visible=!on;W3.fridges.visible=!on;
   if(mk&&mk.kiosk)mk.kiosk.visible=hasUp("kiosk")&&!on;
   // 옆 건물들은 넓어진 가게에 가려진다
-  if(W3.street)W3.street.children.forEach(m=>{const p=m.position;if(Math.abs(Math.abs(p.x)-6.5)<.01&&p.y===3||Math.abs(p.y-4.4)<.01&&Math.abs(p.z+2.7)<.01)m.visible=!on});
+  if(W3.street)W3.street.children.forEach(m=>{const p=m.position;if(Math.abs(Math.abs(p.x)-6.5)<.01&&p.y===3||Math.abs(p.y-4.46)<.01&&Math.abs(p.z+2.7)<.01)m.visible=!on});
   // 핫바 그릴: 계산대가 없어지면 기계 테이블로
   if(mk&&mk.grill){if(on&&mk.grill.parent!==W3.machines){W3.machines.add(mk.grill);mk.grill.position.set(WING_X,.95,-1.5);mk.grill.rotation.y=.7}
     else if(!on&&mk.grill.parent!==W3.counter){W3.counter.add(mk.grill);mk.grill.position.set(-.98,COUNTER_Y,-.22);mk.grill.rotation.y=0}}
@@ -5134,7 +5142,7 @@ function floorMats(){
   return {floor:mStd(0xffffff,.32,0,{map:tile(floorTex())}),ceilUnder:mStd(0xffffff,.9,0,{map:tile(ceilTex())}),edge:mStd(0xd8dce3,.6),
     wall:mStd(0xffffff,.85,0,{map:tile(wallTex(),D/9.8,1)}),ceil:mStd(0xffffff,.9,0,{map:tile(ceilTex(),W/6.8,D/9.8)}),
     band:mStd(0x2b2d33,.6,.2),glass:new T.MeshStandardMaterial({color:0x9fb6d0,roughness:.04,metalness:.1,transparent:true,opacity:.18,depthWrite:false}),
-    step:mStd(0x9aa0ad,.6,.1),nose:mStd(0xffcc2e,.5),rail:mStd(0x3a3d44,.4,.7),lampGeo:box(1.2,.03,.28)};
+    step:mStd(0x9aa0ad,.6,.1),nose:mStd(0xffcc2e,.5),rail:mStd(0x3a3d44,.4,.7)};
 }
 function buildFloors(g,t,F){
   const hx=HALL.x,W=hx*2,D=HALL.zb-HALL.zf,zc=(HALL.zb+HALL.zf)/2,jm=isJMart(t),M=floorMats();
@@ -5150,7 +5158,7 @@ function buildFloors(g,t,F){
     for(let x=-hx+2;x<hx-.5;x+=2.4)mesh(box(.08,1.5,.14),M.band,{x,y:1.35,z:HALL.zf,parent:fg});
     // 맨 위층만 천장판 (아래층 천장은 위층 바닥판이 된다)
     if(f===F)mesh(new T.PlaneGeometry(W,D),M.ceil,{y:2.8,z:zc,rx:Math.PI/2,parent:fg});
-    const lx=Math.floor((hx-1.5)/2)*2;for(let z=-6.6;z<=3.6;z+=1.7)for(let x=-lx;x<=lx;x+=2)if(!holeAt(x,z,f+1,.8)&&!holeAt(x,z,f,.8))mesh(M.lampGeo,W3.mat.lamp,{x,y:2.785,z,parent:fg});
+    lampGrid(fg,2.785,(x,z)=>holeAt(x,z,f+1,.8)||holeAt(x,z,f,.8));
     // 곤돌라 (진열 칸도 늘어난다: 자동 진열 기계가 위층까지 채운다)
     const K=shelfKit(fg,1500);
     LAY2.gond.forEach(([x,z0,L],i)=>gondola(K,fg,x,z0,L,i+f*3,"u"+f+"_",null));
@@ -5170,7 +5178,7 @@ function buildFloors(g,t,F){
     holeRails(fg,f,M);
     if(f<F)buildFlight(fg,f,M);
   }
-  buildElevator(g,F);
+  const eg=new T.Group();eg.userData.shell=true;g.add(eg);buildElevator(eg,F);   // 엘리베이터는 모든 층을 지나간다
   // 바깥: 층마다 불 켜진 창문 간판 (밖에서는 위층 안을 그리지 않고 이걸 보여 준다) + 옆벽
   for(let f=2;f<=F;f++){const fc=FLOOR_COL[f];
     const ft=tex("facade"+f+(jm?"j":""),2048,160,(x,w,h)=>{x.fillStyle="#1a2032";x.fillRect(0,0,w,h);
@@ -5178,10 +5186,10 @@ function buildFloors(g,t,F){
         x.fillStyle="rgba(40,40,60,.35)";for(let k=0;k<3;k++)x.fillRect(px+8+k*pw/3.2,h-60+(k%2)*6,pw/4.5,44-(k%2)*6)}   // 창 너머 진열대 그림자
       const bx=w/2-330;x.fillStyle=jm?"#ff6a00":fc;x.fillRect(bx,0,660,h);x.fillStyle="rgba(255,255,255,.2)";x.fillRect(bx,h-14,660,14);
       tx(x,jm?`J-MART ${f}F`:`${f}F`,bx+140,h/2+2,jm?64:84,"#fff",{font:FD,maxW:250});tx(x,FLOOR_NAMES[f],bx+450,h/2+4,56,"#fff",{font:FJ,maxW:380})});
-    mesh(new T.PlaneGeometry(W,2.9),new T.MeshStandardMaterial({map:ft,emissive:0xffffff,emissiveMap:ft,emissiveIntensity:.75,roughness:.5}),{y:floorY(f)+1.45,z:HALL.zf-.1,ry:Math.PI,parent:g})}
-  [-1,1].forEach(s=>mesh(box(.08,(F-1)*FLOOR_H,D+.2),M.band,{x:s*(hx+.11),y:FLOOR_H+(F-1)*FLOOR_H/2,z:zc,parent:g}));
+    mesh(new T.PlaneGeometry(W,2.9),new T.MeshStandardMaterial({map:ft,emissive:0xffffff,emissiveMap:ft,emissiveIntensity:.75,roughness:.5}),{y:floorY(f)+1.45,z:HALL.zf-.1,ry:Math.PI,parent:g}).userData.shell=true}
+  [-1,1].forEach(s=>{mesh(box(.08,(F-1)*FLOOR_H,D+.2),M.band,{x:s*(hx+.11),y:FLOOR_H+(F-1)*FLOOR_H/2,z:zc,parent:g}).userData.shell=true});
   // 위층 불빛 두 개: 늘 내가 있는 층을 따라간다 (불빛 수가 안 바뀌어야 층을 옮길 때 안 끊긴다)
-  MK.upLights=[-1,1].map(s=>{const l=new T.PointLight(0xf2f6ff,.75,16+hx*.6,1.4);l.position.set(s*hx*.45,FLOOR_H+2.6,-2.2);g.add(l);return l});
+  MK.upLights=[-1,1].map(s=>{const l=new T.PointLight(0xf2f6ff,.75,16+hx*.6,1.4);l.position.set(s*hx*.45,FLOOR_H+2.6,-2.2);l.userData.shell=true;g.add(l);return l});
   MK.obs.push([ELEV.x0,ELEV.z0-.08,ELEV.x1,ELEV.z0+.08],[ELEV.x0,ELEV.z1-.08,ELEV.x1,ELEV.z1+.08]);   // 1층 엘리베이터 벽
   OBST2={};
 }
@@ -5295,6 +5303,7 @@ function stepFloor2(dt){
   if(ELEV.plat)ELEV.plat.position.y=ELEV.y;
   const py=PLAYER.pos.y,pf=floorOf(py),out=PLAYER.pos.z<-7.4;
   (MK.floors||[]).forEach((g,f)=>{if(g)g.visible=!out&&Math.abs(f-pf)<=1});
+  if(MK.f1)MK.f1.visible=out||pf<=2;   // 3층 위에서는 1층 안쪽을 안 그린다
   (MK.upLights||[]).forEach(l=>l.position.y=floorY(Math.max(2,pf))+2.6);
   CUST.forEach(C=>{C.obj.visible=Math.abs(C.obj.position.y-py)<2.4});
   // 계단으로 층을 옮기면 한마디
