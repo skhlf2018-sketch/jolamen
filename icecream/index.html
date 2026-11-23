@@ -2752,9 +2752,14 @@ function renderBubbles(){
   // 가까운 사람 말풍선이 먼저 자리를 잡고, 겹치는 건 위로 올린다
   rects.sort((a,b)=>a.d-b.d);
   const placed=[];
-  rects.forEach(r=>{let x=r.x-r.w/2,y=r.y-r.h;
-    for(let pass=0;pass<8;pass++){const hit=placed.find(q=>x<q.x+q.w&&q.x<x+r.w&&y<q.y+q.h&&q.y<y+r.h);if(!hit)break;y=hit.y-r.h-4}
-    x=clamp(x,4,cw-r.w-4);y=clamp(y,58,ch-r.h-4);placed.push({x,y,w:r.w,h:r.h});
+  const TOP=58,free=(x,y,w,h)=>!placed.some(q=>x<q.x+q.w+3&&q.x<x+w+3&&y<q.y+q.h+3&&q.y<y+h+3);
+  rects.forEach(r=>{const x0=clamp(r.x-r.w/2,4,cw-r.w-4),y0=clamp(r.y-r.h,TOP,ch-r.h-4);
+    // 자리: 머리 위 → 위로 쌓기 → (화면 위 끝이면) 옆으로 비키기
+    const cand=[[x0,y0]];for(let k=1;k<6;k++)cand.push([x0,y0-k*(r.h+4)]);
+    for(let k=1;k<5;k++){cand.push([x0+k*(r.w*.55+6),y0]);cand.push([x0-k*(r.w*.55+6),y0]);cand.push([x0+k*(r.w*.55+6),y0+r.h*.6]);cand.push([x0-k*(r.w*.55+6),y0+r.h*.6])}
+    let x=x0,y=y0;
+    for(const [cx,cy] of cand){const X=clamp(cx,4,cw-r.w-4),Y=clamp(cy,TOP,ch-r.h-4);if(free(X,Y,r.w,r.h)){x=X;y=Y;break}}
+    placed.push({x,y,w:r.w,h:r.h});
     r.e.style.transform=`translate(${x.toFixed(0)}px,${y.toFixed(0)}px)`;
   });
 }
