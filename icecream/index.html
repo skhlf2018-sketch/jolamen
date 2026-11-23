@@ -393,13 +393,15 @@ const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
 const randInt=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const rand=(a,b)=>a+Math.random()*(b-a);
 const r50=n=>Math.max(50,Math.round(n/50)*50);          // 가격은 늘 50원 단위
-const UNITS=[[1e16,"경"],[1e12,"조"],[1e8,"억"],[1e4,"만"]];
+// 큰 돈은 1·2편처럼 한글 단위로: ₩12경 3,450조 (1억 아래는 그냥 쉼표)
+const UNITS=[[1e68,"무량대수"],[1e64,"불가사의"],[1e60,"나유타"],[1e56,"아승기"],[1e52,"항하사"],[1e48,"극"],[1e44,"재"],[1e40,"정"],[1e36,"간"],[1e32,"구"],[1e28,"양"],[1e24,"자"],[1e20,"해"],[1e16,"경"],[1e12,"조"],[1e8,"억"],[1e4,"만"]];
 function korNum(n){
   n=Math.max(0,Math.round(n));
   if(n<1e8)return n.toLocaleString("ko-KR");
   for(let i=0;i<UNITS.length;i++){
     const [u,name]=UNITS[i];if(n<u)continue;
     const v=n/u,hi=Math.floor(v+1e-9),sub=UNITS[i+1],lo=sub?Math.max(0,Math.floor((v-hi)*u/sub[0]+1e-6)):0;
+    if(hi>=1e4)return hi.toExponential(2)+name;
     return hi.toLocaleString("ko-KR")+name+(lo?" "+lo.toLocaleString("ko-KR")+sub[1]:"");
   }
   return n.toLocaleString("ko-KR");
