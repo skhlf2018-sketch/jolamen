@@ -3553,6 +3553,13 @@ function boot(){
   ["pointerdown","keydown"].forEach(ev=>addEventListener(ev,()=>Snd.wake(),{once:true}));
   $("loading").hidden=true;
   Scr.show("title");
+  // 웹폰트가 늦게 오면 간판·가격표·포장지 글씨를 다시 그린다
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{
+    const x=ATLAS.c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,ATLAS.c.width,ATLAS.c.height);
+    ICES.forEach((d,i)=>drawPackage(x,d,(i%ATLAS.cols)*ATLAS.cw+2,Math.floor(i/ATLAS.cols)*ATLAS.ch+2,ATLAS.cw-4,ATLAS.ch-4));ATLAS.t.needsUpdate=true;
+    ICES.forEach(d=>drawLabel(d));Object.keys(ICON_URL).forEach(k=>delete ICON_URL[k]);
+    if(Scr.name==="title"){buildStore(state.tier);placeKiosks();markItemsDirty();applyEnding()}
+  }).catch(()=>{});
   setTimeout(()=>$("keysHelp").classList.add("gone"),14000);
   requestAnimationFrame(frame);
 }
