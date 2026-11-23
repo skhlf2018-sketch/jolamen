@@ -40,6 +40,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .btn.alt{background:var(--paper)}
 .btn.mint{background:var(--mint)}
 .btn.pink{background:var(--pink);color:#fff}
+.btn.red{background:var(--red);color:#fff}
 .btn.ghost{background:rgba(10,18,40,.72);color:#fff;border-color:#fff;box-shadow:0 4px 0 rgba(255,255,255,.35)}
 .btn.sm{font-size:16px;padding:6px 14px;border-radius:12px;box-shadow:0 3px 0 var(--ink)}
 .btn.ghost.sm{box-shadow:0 3px 0 rgba(255,255,255,.35)}
@@ -3154,7 +3155,8 @@ function openSettings(from){
   $("sMus").onclick=e=>{Snd.music=!Snd.music;e.currentTarget.setAttribute("aria-checked",Snd.music);Snd.savePrefs();if(Snd.music)Snd.wake();else Snd.stopMusic()};
   $("sTalk").onclick=e=>{Talk.setOff(!Talk.off);e.currentTarget.setAttribute("aria-checked",!Talk.off)};
   $("sX").onclick=()=>{Snd.click();closeModal()};
-  if($("sReset"))$("sReset").onclick=()=>{if(confirm("저장된 가게를 지우고 처음부터 할까요?"))resetGame()};
+  // 브라우저 확인창 대신: 한 번 더 누르면 지운다
+  if($("sReset"))$("sReset").onclick=e=>{const b=e.currentTarget;if(b.dataset.sure){resetGame();return}b.dataset.sure="1";b.textContent="정말 지울까요? 한 번 더 누르기";b.classList.add("red");Snd.errBeep()};
 }
 
 /* ---------- 하루 정산 ---------- */
@@ -3554,7 +3556,9 @@ function boot(){
   state=freshState();state.weather=rollWeather();
   resetWorld();
   resizeAll();addEventListener("resize",resizeAll);
-  $("tNew").onclick=()=>{Snd.wake();Snd.click();if(loadSave()&&!confirm("저장된 가게가 있어요. 새로 시작할까요?"))return;newGame()};
+  $("tNew").onclick=()=>{Snd.wake();Snd.click();if(!loadSave()){newGame();return}
+    openModal(`<div class="panel"><h2>새로 시작할까요?</h2><p>저장된 가게가 있어요. 새 게임을 하면 저장이 지워져요.</p><div class="acts"><button class="btn alt sm" id="nwN" type="button">이어하기</button><button class="btn sm" id="nwY" type="button">새로 시작</button></div></div>`);
+    $("nwN").onclick=()=>{closeModal();continueGame()};$("nwY").onclick=()=>{closeModal();newGame()}};
   $("tCont").onclick=()=>{Snd.wake();Snd.click();continueGame()};
   $("tRep").onclick=()=>{Snd.wake();Snd.click();Scr.show("opening");Op.start(true)};
   $("tSet").onclick=()=>{Snd.wake();openSettings("title")};
