@@ -1100,7 +1100,10 @@ function drawTalkHead(cv,t,talking,mood,who){
   else if(mood==="sweat"||mood==="shock"){c.beginPath();c.moveTo(-10,20);c.lineTo(10,20);c.stroke()}
   else if(mood==="angry"){c.beginPath();c.arc(0,30,14,1.15*Math.PI,1.85*Math.PI);c.stroke()}
   else{c.beginPath();c.arc(0,10,16,.15*Math.PI,.85*Math.PI);c.stroke()}
-  if(peng){   // 왕관
+  if(peng&&state&&state.rival&&state.rival.broke){   // 망한 뒤: 왕관 대신 알바 썬캡
+    c.fillStyle="#ff6fae";c.strokeStyle=INK;c.lineWidth=5;c.fillRect(-46,-40,92,14);c.strokeRect(-46,-40,92,14);
+    c.beginPath();c.moveTo(10,-26);c.quadraticCurveTo(58,-30,70,-12);c.lineTo(14,-14);c.closePath();c.fill();c.stroke();
+  }else if(peng){   // 왕관
     c.fillStyle="#ffcc2e";c.lineWidth=4;c.beginPath();c.moveTo(-28,-40);c.lineTo(-32,-74);c.lineTo(-14,-56);c.lineTo(0,-80);c.lineTo(14,-56);c.lineTo(32,-74);c.lineTo(28,-40);c.closePath();c.fill();c.stroke();
     circle(c,0,-80,5,"#e2483d",INK,2);
   }else{      // 분홍 썬캡
@@ -2313,6 +2316,7 @@ function newRivalDay(){
   if(W3.rivalBoard)drawRivalBoard();
 }
 function rivalLine(){
+  if(state.rival.broke)return pick(["사장님! 오늘도 바코드 열심히 찍을게요 꽥!","꽥! 건너편은 이제 조용해요... 우리 가게 최고!","사장님, 세계콘 하나만 먹어도 돼요? 꽥?","알바비 받으면 왕관 찾으러 갈 거예요 꽥!"]);
   const R=state.rival,s=R.sale.map(id=>`${ICE[id].name} ${rivalPrice(id).toLocaleString("ko-KR")}원`);
   if(R.hp!=null&&R.hp<25)return pick(["꽥... 요즘 손님이 너무 없어... 아, 아니야! 하나도 안 힘들어!","왕관 전당포에 맡길까... 아니 아니! 오늘도 특가다!"]);
   if(R.cut>=.12)return pick([`가격 전쟁이다! 오늘 특가: ${s.join(", ")}! 꽥꽥!`,`네가 싸게 팔면 나는 더 싸게 판다! ${s[0]}!`]);
@@ -2920,7 +2924,7 @@ const Talk={q:[],cur:null,shown:0,hideAt:0,off:false,story:null,
   show(line,story){
     this.cur={...line,story};this.shown=0;this.hideAt=0;
     const el=$("talk");el.hidden=false;placeTalk();el.classList.toggle("rival",line.who==="rival");el.style.animation="none";void el.offsetWidth;el.style.animation="";
-    $("talkText").textContent="";$("talkAct").hidden=!story;$("talkBox").querySelector(".nm").textContent=line.who==="rival"?"🐧 빙하왕국 펭귄 사장":"졸라맨 (속마음)";
+    $("talkText").textContent="";$("talkAct").hidden=!story;$("talkBox").querySelector(".nm").textContent=line.who==="rival"?(state&&state.rival.broke?"🐧 펭귄 알바":"🐧 빙하왕국 펭귄 사장"):"졸라맨 (속마음)";
     if(story){$("talkNext").textContent=this.story.i>=this.story.lines.length-1?"알겠어 ▶":"다음 ▶";$("talkSkip").hidden=this.story.lines.length<3}
     if(line.who==="rival")Snd.quack();else{Snd.tone(880,.05,"sine",.05);Snd.tone(1320,.08,"sine",.04,.05)}
   },
