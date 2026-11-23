@@ -2363,7 +2363,7 @@ const CTYPES={
   rich:   {w:.2,  items:[3,7], scale:1,  speed:1.1, pat:40, premium:true, minTier:2},
   drunk:  {w:0,   items:[0,0], scale:1,  speed:.8, pat:99},
   creep:  {w:0,   items:[0,0], scale:1,  speed:1.1,pat:99},
-  brat:   {w:0,   items:[0,0], scale:.72,speed:1.6,pat:99},
+  brat:   {w:0,   items:[0,0], scale:.56,speed:1.7,pat:99},
   gapjil: {w:0,   items:[0,0], scale:1.05,speed:1.0,pat:99},
   taster: {w:0,   items:[0,0], scale:1,  speed:1.1,pat:99},
   spy:    {w:0,   items:[2,3], scale:.96,speed:1.2, pat:99}
@@ -2645,7 +2645,7 @@ function drawJinFx(ctx,now){
       [-7,7].forEach(dx=>outlinedText(ctx,"♥",eye.x+dx,eye.y,14,"#ff4f8b",INK,2.5));
     }else if(C.jin==="drunk"){const k=(now*.0009)%1;ctx.globalAlpha=1-k;outlinedText(ctx,"딸꾹",eye.x+30,eye.y-20-k*30,16,"#ffe066",INK,4);ctx.globalAlpha=1;
       for(let i=0;i<3;i++){const a=now*.004+i*2.1;circle(ctx,eye.x+Math.cos(a)*22,eye.y-36+Math.sin(a)*6,3.5,"#ffe066",INK,1.5)}}
-    else if(C.jin==="brat")outlinedText(ctx,pick(["어쩔!","저쩔!"]),eye.x+(Math.random()-.5)*50,eye.y-30,20,"#ffcc2e",INK,4);
+    else if(C.jin==="brat"){const sd=Math.floor(now/400)%2?1:-1;outlinedText(ctx,sd>0?"어쩔!":"저쩔!",eye.x+sd*48,eye.y+6,18,"#ffcc2e",INK,4)}
     else if(C.jin==="gapjil")doodleMood(ctx,eye.x+18,eye.y-26,"angry",now);
   });
 }
@@ -2745,7 +2745,7 @@ function renderBubbles(){
     if(sEl.textContent!==text)sEl.textContent=text;sEl.hidden=!text;
     e.className="cb"+(C.sayCls?" "+C.sayCls:"");
     pEl.hidden=!showPat;if(showPat){const k=clamp(C.pat/C.patMax,0,1),i=pEl.firstChild;i.style.width=(k*100).toFixed(0)+"%";i.className=k<.3?"low":k<.6?"mid":""}
-    rects.push({e,x:s.x,y:s.y,w:e.offsetWidth||120,h:e.offsetHeight||40,d});
+    rects.push({e,x:s.x,y:s.y-(C.jin&&!C.caught?56:0),w:e.offsetWidth||120,h:e.offsetHeight||40,d});   // 진상은 빨간 이름표 위로
   });
   // 가까운 사람 말풍선이 먼저 자리를 잡고, 겹치는 건 위로 올린다
   rects.sort((a,b)=>a.d-b.d);
