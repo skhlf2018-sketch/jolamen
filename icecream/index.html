@@ -106,6 +106,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .abtn{border:3px solid var(--ink);border-radius:14px;background:var(--paper);color:var(--ink);font-size:17px;padding:7px 14px;box-shadow:0 4px 0 var(--ink);display:flex;align-items:center;gap:6px}
 .abtn.need{background:var(--brand);animation:pulse 1s ease-in-out infinite}
 .abtn:disabled{opacity:.5;box-shadow:0 2px 0 var(--ink)}
+.abtn>b{font-weight:400}.abtn .sm{display:none}
 .pos{display:flex;align-items:baseline;gap:10px;background:var(--lcd-bg);border:3px solid #22382c;border-radius:12px;padding:4px 14px;font-family:var(--fm);color:var(--lcd)}
 .pos b{font-size:22px;text-shadow:0 0 8px rgba(152,247,189,.6)}.pos span{font-size:14px;opacity:.85}
 
@@ -278,6 +279,10 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
   .cb .say{font-size:15px}
   .abtn{font-size:15px;padding:6px 10px}
   .floors{bottom:150px}
+  .bottom{right:66px}
+  #actions:not(:empty){display:grid;grid-template-columns:repeat(2,auto);gap:6px}
+  #actions .abtn{flex-direction:column;gap:0;font-size:13px;padding:3px 10px;min-width:62px;line-height:1.15}
+  #actions .abtn>b{font-size:19px}#actions .abtn .lg{display:none}#actions .abtn .sm{display:inline}
   .floors button{width:48px;height:38px;font-size:15px}
   .pl-ctl button{min-width:36px}
   .pl-ctl output{min-width:62px;font-size:15px}
@@ -417,7 +422,7 @@ const lerp=(a,b,t)=>a+(b-a)*t;
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 const easeOut=t=>1-Math.pow(1-t,3);
 /* ================= 아이스크림 =================
-   avg: 동네 평균 가격 (아이스크림마다 다 다르다). cost(도매가)는 평균의 55%.
+   avg: 동네 평균 가격 (아이스크림마다 다 다르다). cost(도매가)는 평균의 42%.
    pop: 인기 (손님이 고를 확률). tier: 이 리모델링 단계부터 들어온다 (층이 생기면 그 층에 진열).
    shape: bar 막대 · cone 콘 · pouch 짜먹는 · sand 샌드/붕어 · cup 컵 · tub 통 */
 const ICES=[
@@ -462,9 +467,12 @@ const ICES=[
   {id:"glacier",name:"남극 빙하컵",shape:"cup",  avg:25000,pop:.25,tier:4, c1:"#9fe3ff",c2:"#ffffff",t:"#0b3a5a"},
   // 아이스크림 궁전
   {id:"space",  name:"우주인 아이스크림",shape:"pouch",avg:50000,pop:.2,tier:5,c1:"#c0c8d8",c2:"#1f2a5a",t:"#1f2a5a"},
-  {id:"diamond",name:"다이아몬드바",shape:"bar",avg:100000,pop:.12,tier:5,c1:"#b9f2ff",c2:"#ffffff",t:"#1a4a6a"}
+  {id:"diamond",name:"다이아몬드바",shape:"bar",avg:100000,pop:.12,tier:5,c1:"#b9f2ff",c2:"#ffffff",t:"#1a4a6a"},
+  {id:"lava",   name:"용암 아이스크림",shape:"cup",avg:150000,pop:.12,tier:6,c1:"#e8412c",c2:"#ffcc2e",t:"#fff"},
+  {id:"rainbow",name:"무지개 우주콘",shape:"cone",avg:300000,pop:.1,tier:7,c1:"#8a5fd1",c2:"#4fd6c0",t:"#fff"},
+  {id:"statue", name:"졸라맨 황금동상바",shape:"bar",avg:800000,pop:.08,tier:8,c1:"#c9a227",c2:"#fff6c4",t:"#fff"}
 ];
-const ICE={};ICES.forEach((d,i)=>{d.i=i;d.cost=r50(d.avg*.55);ICE[d.id]=d});
+const ICE={};ICES.forEach((d,i)=>{d.i=i;d.cost=r50(d.avg*.42);ICE[d.id]=d});
 // 층마다 코너 이름 (그 층에 들어가는 아이스크림의 tier)
 const FLOOR_NAMES=["막대·콘 코너","짜먹는·샌드 코너","컵·가족 통 코너","프리미엄 라운지"];
 const floorOfIce=d=>Math.min(d.tier,3);
@@ -477,7 +485,10 @@ const TIERS=[
   {name:"3층 아이스크림 백화점",  floors:3,W:16,D:15,crowd:3.2, cost:350000},
   {name:"4층 아이스크림 빌딩",    floors:4,W:19,D:17,crowd:4.8, cost:1000000},
   {name:"아이스크림 메가타워",    floors:4,W:24,D:19,crowd:7, cost:3000000},
-  {name:"아이스크림 궁전",        floors:4,W:30,D:22,crowd:10,  cost:8000000}
+  {name:"아이스크림 궁전",        floors:4,W:30,D:22,crowd:10,  cost:8000000},
+  {name:"아이스크림 제국",        floors:4,W:34,D:24,crowd:13,  cost:25000000},
+  {name:"아이스크림 우주정거장",  floors:4,W:38,D:26,crowd:16,  cost:70000000},
+  {name:"졸라맨 아이스크림 월드", floors:4,W:42,D:28,crowd:20,  cost:200000000}
 ];
 const FLOOR_H=3.4;          // 층 높이 (m)
 const MAX_TIER=TIERS.length-1;
@@ -493,7 +504,7 @@ const UPGRADES=[
   {id:"bigfz",ic:"🧊",name:"냉동고 확장",max:1,cost:()=>80000,desc:()=>"아이스크림을 두 배로 쟁여 둘 수 있어요 (품절 걱정 끝)"},
   {id:"auto",ic:"🚚",name:"자동 발주",max:1,cost:()=>100000,desc:()=>"아침마다 빈 칸을 도매가로 알아서 채워요"},
   {id:"point",ic:"💳",name:"포인트 적립 카드",max:1,cost:()=>90000,desc:()=>"단골이 생겨요. 손님이 더 자주 와요"},
-  {id:"guard",ic:"👮",name:"경비 아저씨",max:1,cost:()=>45000,desc:()=>"진상 손님이 오면 알아서 내보내 줘요 (술주정 · 변태 · 잼민이 · 갑질 · 시식 진상)"}
+  {id:"guard",ic:"👮",name:"경비 아저씨",max:1,cost:()=>45000,desc:()=>"1층 입구에 경비 아저씨가 서 있다가 진상 손님이 오면 바로 달려가서 내보내요"}
 ];
 const UP={};UPGRADES.forEach(u=>UP[u.id]=u);
 
@@ -613,8 +624,9 @@ const Snd={
   shutter(){for(let i=0;i<10;i++)this.noiseHit(900+i*40,.06,.08,"bandpass",i*.07)},
   truck(){this.tone(98,.6,"sawtooth",.04);this.tone(82,.8,"sawtooth",.03,.3);this.noiseHit(300,.9,.05,"lowpass")},
   sparkle(){[1976,2349,2637,3136].forEach((f,i)=>this.tone(f,.2,"sine",.035,i*.06))},
-  step(){this.noiseHit(500,.05,.03,"lowpass")},
+  foot(){this.noiseHit(500,.05,.03,"lowpass")},                                                       // 발소리
   hammer(delay=0){this.noiseHit(1400,.09,.3,"bandpass",delay);this.tone(190,.08,"square",.06,delay)},
+  whistle(){this.tone(2900,.1,"square",.035);this.tone(3150,.42,"square",.045,.12)},
   siren(){for(let i=0;i<4;i++){this.tone(960,.25,"square",.025,i*.5);this.tone(720,.25,"square",.025,i*.5+.25)}}
 };
 Snd.loadPrefs();
@@ -1181,7 +1193,7 @@ function drawSky(h){
 const ATLAS={cols:4,cw:256,ch:112,c:null,t:null};
 function buildAtlas(){
   const rows=Math.ceil(ICES.length/ATLAS.cols);
-  ATLAS.c=mkCanvas(ATLAS.cols*ATLAS.cw,1024);
+  ATLAS.c=mkCanvas(ATLAS.cols*ATLAS.cw,2048);
   const x=ATLAS.c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,ATLAS.c.width,ATLAS.c.height);
   ICES.forEach((d,i)=>{const X=(i%ATLAS.cols)*ATLAS.cw,Y=Math.floor(i/ATLAS.cols)*ATLAS.ch;drawPackage(x,d,X+2,Y+2,ATLAS.cw-4,ATLAS.ch-4)});
   ATLAS.rows=rows;ATLAS.t=toTex(ATLAS.c);ATLAS.t.flipY=false;
@@ -1195,7 +1207,7 @@ function atlasUV(i,side){
 
 /* ---------- 가격표 아틀라스: 아이스크림마다 한 칸 (가격이 바뀌면 그 칸만 다시 그린다) ---------- */
 const LABEL={cols:4,cw:256,ch:104,c:null,t:null,dirty:false};
-function buildLabels(){LABEL.c=mkCanvas(LABEL.cols*LABEL.cw,1024);LABEL.t=toTex(LABEL.c);LABEL.t.flipY=false;ICES.forEach(d=>drawLabel(d));LABEL.t.needsUpdate=true}
+function buildLabels(){LABEL.c=mkCanvas(LABEL.cols*LABEL.cw,2048);LABEL.t=toTex(LABEL.c);LABEL.t.flipY=false;ICES.forEach(d=>drawLabel(d));LABEL.t.needsUpdate=true}
 function drawLabel(d){
   const x=LABEL.c.getContext("2d"),X=(d.i%LABEL.cols)*LABEL.cw,Y=Math.floor(d.i/LABEL.cols)*LABEL.ch,W=LABEL.cw,H=LABEL.ch;
   x.save();x.translate(X,Y);x.clearRect(0,0,W,H);
@@ -1270,7 +1282,7 @@ function elevCanvas(f){
    냉동고는 서로·벽·계산대·키오스크·엘리베이터와 절대 겹치지 않게 칸을 나눠 놓고, validateLayout 으로 검사한다.
    rot: 냉동고 앞면(손님 쪽)이 바라보는 방향. 0 → +z, π/2 → +x, -π/2 → -x, π → -z */
 const CHEST={L:1.8,D:.86,H:.86}, UPRIGHT={L:1.0,D:.72,H:2.0};
-const AISLES=[1.4,1.45,1.5,1.55,1.7,1.9];
+const AISLES=[1.4,1.45,1.5,1.55,1.7,1.9,2.0,2.1,2.2];
 const front=rot=>[Math.sin(rot),Math.cos(rot)];          // 앞면 방향
 const along=rot=>[Math.cos(rot),-Math.sin(rot)];         // 긴 쪽 방향
 function fixRect(fx){const horiz=Math.abs(Math.sin(fx.rot))<.5,hl=fx.L/2,hd=fx.D/2;
@@ -1537,12 +1549,31 @@ function buildRival(){
   [-3.6,-1.1,1.1,3.6].forEach(x=>b.box(x,1.6,Z-.06,.12,3.2,.12,0,"#1f5fd1"));
   b.box(0,3.6,Z-.06,Wd,.4,.14,0,"#1f5fd1");
   b.box(0,.1,Z-.06,Wd,.2,.14,0,"#0b2e7a");
-  // 가게 안 (유리 너머로 보이는 냉동고들)
-  b.box(0,0.02,Z+3,Wd-.6,.04,6,0,"#cfe6ff");
-  for(let i=-2;i<=2;i++)b.box(i*2.1,.45,Z+2.6,1.7,.9,.8,0,"#ffffff");
-  b.box(0,1,Z+5.9,Wd-.6,2,.6,0,"#9fd0ff");
+  // 가게 안 (문으로 들어갈 수 있다: 냉동고 다섯 대 · 계산대 · 펭귄 사장)
+  b.box(0,0.02,Z+3.2,Wd-.4,.04,6.4,0,"#cfe6ff");
+  const tops=["#ffd1e0","#fff1a8","#c8f0d8","#ffd9b0","#d8d0ff"];
+  for(let i=-2;i<=2;i++){b.box(i*2.1,.45,Z+2.6,1.7,.9,.8,0,"#ffffff");b.box(i*2.1,.92,Z+2.6,1.5,.06,.62,0,tops[i+2]);
+    for(let k=0;k<6;k++)b.box(i*2.1-.55+k*.22,.97,Z+2.6+(k%2?.12:-.12),.16,.07,.2,0,["#e2483d","#4fd6c0","#ffcc2e","#8a5fd1","#ff8fb1","#5ab0ff"][(k+i+2)%6])}
+  const PC=["#e2483d","#4fd6c0","#ffcc2e","#8a5fd1","#ff8fb1","#5ab0ff","#43a36b","#ff9a3c"];
+  for(let u=0;u<5;u++){const ux=-4.4+u*2.2;                                                   // 뒤쪽 유리문 냉장고 다섯 칸
+    b.box(ux,1.15,Z+5.95,2.1,2.3,.62,0,"#ffffff");b.box(ux,1.2,Z+5.63,1.84,1.96,.03,0,"#cdeeff");
+    for(let sh=0;sh<4;sh++){b.box(ux,.5+sh*.45,Z+5.61,1.8,.03,.03,0,"#e8f4ff");
+      for(let k=0;k<7;k++)b.box(ux-.78+k*.26,.62+sh*.45,Z+5.6,.2,.2,.03,0,PC[(k*3+sh+u*2)%8])}
+    b.box(ux,2.36,Z+5.64,1.9,.12,.04,0,"#1f5fd1")}
+  b.box(-Wd/2+.25,1.7,Z+3.2,.1,3.4,6.4,0,"#eaf6ff",null,null,false,"r");b.box(Wd/2-.25,1.7,Z+3.2,.1,3.4,6.4,0,"#eaf6ff",null,null,false,"l");   // 안쪽 벽
+  b.box(0,1.7,Z+6.35,Wd-.4,3.4,.1,0,"#dcefff",null,null,false,"k");b.box(0,3.42,Z+3.2,Wd-.4,.06,6.4,0,"#f6fbff",null,null,false,"b");          // 뒷벽 · 천장
+  b.box(0,3.38,Z+.04,Wd-.4,.12,.1,0,"#1f5fd1",null,null,false,"f");
+  b.box(2.4,.5,Z+4.6,1.6,1,.6,0,"#1f5fd1");b.box(2.4,1.02,Z+4.6,1.7,.06,.7,0,"#ffffff");b.box(3.0,1.2,Z+4.5,.36,.3,.26,0,"#333a4a");    // 계산대
+  b.box(4.45,.45,Z+4.6,2.4,.9,.62,0,"#ffffff");b.box(4.45,.92,Z+4.6,2.2,.05,.5,0,"#bfe6ff");                                                // 콘 쇼케이스
+  for(let k=0;k<7;k++)b.box(3.6+k*.28,.98,Z+4.6+(k%2?.1:-.1),.18,.08,.18,0,PC[k]);
+  b.box(0,.06,Z+.6,1.6,.04,.9,0,"#1f5fd1");                                                                                                  // 발판
   mesh(b.geo(),MAT.vc,{parent:g});
-  mesh(new T.PlaneGeometry(Wd-.4,3.2),new T.MeshLambertMaterial({color:0x9fd8ff,transparent:true,opacity:.35,depthWrite:false}),{y:1.8,z:Z-.08,ry:Math.PI,parent:g});
+  // 천장 등 · 안쪽 간판 · 벽 포스터
+  const lampM=new T.MeshBasicMaterial({color:0xffffff});[-3,0,3].forEach(x=>mesh(box(.5,.04,5.2),lampM,{x,y:3.38,z:Z+3.1,parent:g}));
+  mesh(new T.PlaneGeometry(5,.94),new T.MeshBasicMaterial({map:toTex(rivalSignCanvas())}),{y:2.85,z:Z+6.28,ry:Math.PI,parent:g});
+  const ip=toTex(posterCanvas("rival"));[[-5.68,Math.PI/2],[5.68,-Math.PI/2]].forEach(([x,ry])=>[1.6,4.2].forEach(z=>mesh(new T.PlaneGeometry(.9,1.26),new T.MeshBasicMaterial({map:ip}),{x,y:1.75,z:Z+z,ry,parent:g})));
+  const glassM=new T.MeshLambertMaterial({color:0x9fd8ff,transparent:true,opacity:.35,depthWrite:false});
+  [-1,1].forEach(sd=>mesh(new T.PlaneGeometry(4.75,3.2),glassM,{x:sd*3.43,y:1.8,z:Z-.08,ry:Math.PI,parent:g}));   // 가운데는 열린 문
   W3.rivalSign=mesh(new T.PlaneGeometry(9,1.7),new T.MeshBasicMaterial({map:toTex(rivalSignCanvas())}),{y:6.4,z:Z-.12,ry:Math.PI,parent:g});
   W3.rivalPoster=mesh(new T.PlaneGeometry(.9,1.26),new T.MeshBasicMaterial({map:toTex(posterCanvas("rival"))}),{x:2.4,y:1.6,z:Z-.13,ry:Math.PI,parent:g});
   mesh(new T.PlaneGeometry(.9,1.26),new T.MeshBasicMaterial({map:toTex(posterCanvas("rival"))}),{x:-2.4,y:1.6,z:Z-.13,ry:Math.PI,parent:g});
@@ -1752,11 +1783,11 @@ function drawPosScreen(total,count){
 const SHAPE={bar:[.085,.24,.028],pouch:[.09,.22,.04],sand:[.13,.2,.04],cone:[.1,.24,.075],cup:[.12,.12,.075],tub:[.2,.2,.12]};
 function secSlots(sec,d){
   const [a,bd]=SHAPE[d.shape];
-  if(sec.type==="chest"){const cols=Math.floor(.84/(a+.012)),rows=Math.max(1,Math.floor(.7/(bd+.02)));return {cols,rows,n:Math.min(cols*rows,18)}}
+  if(sec.type==="chest"){const cols=Math.floor(.84/(a+.012)),rows=Math.max(1,Math.floor(.7/(bd+.02)));return {cols,rows,n:Math.min(cols*rows,state.tier>=5?10:18)}}
   const cols=Math.floor(.9/(a+.015));return {cols,rows:3,n:cols*3};
 }
 // 아이스크림 한 종류를 가게에 쟁여 둘 수 있는 양 (리모델링할수록, 냉동고 확장하면 두 배)
-function capPer(){return (20+8*state.tier)*(hasUp("bigfz")?2:1)}
+function capPer(){return (40+16*state.tier)*(hasUp("bigfz")?2:1)}   // 손님이 두 배로 사 가니까 재고도 두 배
 function rebuildFloorItems(F){
   F.dirty=false;
   const L=F.L,gi=new GB(),gl=new GB();
@@ -2078,7 +2109,7 @@ const PLAYER={x:0,z:0,f:0,yaw:Math.PI,pitch:-.35,keys:{},walkT:0,speed:0,stick:{
       const sy=Math.sin(this.yaw),cy=Math.cos(this.yaw);
       const dx=(-sy*f+cy*r)*sp*s,dz=(-cy*f-sy*r)*sp*s;
       this.move(dx,0);this.move(0,dz);this.walkT+=dt;
-      if(Math.floor(this.walkT/380)!==Math.floor((this.walkT-dt)/380))Snd.step();
+      if(Math.floor(this.walkT/380)!==Math.floor((this.walkT-dt)/380))Snd.foot();
     }
     this.pushFromPeople();
     this.checkElevator();
@@ -2102,12 +2133,20 @@ function blocked(f,x,z){
   if(f===0){
     const inDoor=x>L.door.x0+r&&x<L.door.x1-r;
     if(z>-r&&z<r&&!inDoor)return true;                        // 앞 유리벽
-    if(z>=r)return x<-34||x>34||z>RIVAL_Z-.4;                 // 길거리 (건너편 가게 앞까지)
+    if(z>=r)return z>RIVAL_Z-.4?rivalBlocked(x,z):x<-34||x>34;   // 길거리 → 건너편 빙하왕국 (문으로 들어갈 수 있다)
     if(z>=-r)return false;                                     // 자동문 사이
   }
   if(x<-W/2+r||x>W/2-r||z<-D+r||z>-r)return true;
   for(const q of L.rects)if(x>q[0]-r&&x<q[2]+r&&z>q[1]-r&&z<q[3]+r)return true;
   for(const k of L.kiosks)if(k.on&&x>k.x-.25-r&&x<k.x+.25+r&&z>k.z-.3-r&&z<k.z+.3+r)return true;
+  return false;
+}
+
+function rivalBlocked(x,z){
+  const r=RADIUS;if(state.rival.broke)return true;                // 망한 뒤에는 문이 잠겨 있다
+  if(z<RIVAL_Z+.4)return Math.abs(x)>.75;                          // 문
+  if(x<-5.4||x>5.4||z>RIVAL_Z+5.3)return true;
+  for(const q of RIVAL_RECTS)if(x>q[0]-r&&x<q[2]+r&&z>q[1]-r&&z<q[3]+r)return true;
   return false;
 }
 
@@ -2244,6 +2283,7 @@ addEventListener("keydown",e=>{
   if(k==="b"){openMenu("up");return}
   if(k==="o"){openMenu("stock");return}
   if(k==="r"){openMenu("remodel");return}
+  if(k==="t"){throwStone();return}
   if(k==="e"||k===" "){e.preventDefault();interactAt(OV.W/2,OV.H/2);return}
   if(/^[1-4]$/.test(k)&&W3.LY.floors.length>1){goFloor(+k-1);return}
   PLAYER.keys[k]=true;if(e.shiftKey)PLAYER.keys.shift=true;
@@ -2302,7 +2342,8 @@ function newRivalDay(){
     if(share>.6)R.cut=Math.min(maxCut,R.cut+.04);else if(share<.45)R.cut=Math.max(0,R.cut-.04);
     // 빙하왕국 체력: 손님을 뺏기고 값을 깎을수록 줄어든다
     // 우리 가게가 4층 빌딩이 되기 전에는 펭귄도 버틴다
-    R.hp=clamp((R.hp==null?100:R.hp)+((1-share)-.5)*36-R.cut*40,state.tier>=3?0:35,100);
+    const hp0=R.hp==null?100:R.hp;
+    R.hp=clamp(hp0+((1-share)-.5)*36-R.cut*40,Math.min(hp0,state.tier>=3?0:35),100);
   }
   ICES.forEach(d=>{let b=R.base[d.id];if(b==null)b=rand(.92,1.03);b=clamp(b+rand(-.035,.035),.86,1.05);R.base[d.id]=b});
   const floor=d=>r50(d.cost*1.12);
@@ -2319,6 +2360,7 @@ function newRivalDay(){
 function rivalLine(){
   if(state.rival.broke)return pick(["사장님! 오늘도 바코드 열심히 찍을게요 꽥!","꽥! 건너편은 이제 조용해요... 우리 가게 최고!","사장님, 세계콘 하나만 먹어도 돼요? 꽥?","알바비 받으면 왕관 찾으러 갈 거예요 꽥!"]);
   const R=state.rival,s=R.sale.map(id=>`${ICE[id].name} ${rivalPrice(id).toLocaleString("ko-KR")}원`);
+  if((R.hurt||0)>=6)return pick(["어제 누가 우리 가게 유리창 깼어!! 너지?! 꽥!! ...증거는 없지만!","어제 웬 진상이 들어와서 춤추고 갔어... 꽥... 너 아니지?","유리창 수리비가 아이스크림 천 개 값이야!! 꽥꽥!!"]);
   if(R.hp!=null&&R.hp<25)return pick(["꽥... 요즘 손님이 너무 없어... 아, 아니야! 하나도 안 힘들어!","왕관 전당포에 맡길까... 아니 아니! 오늘도 특가다!"]);
   if(R.cut>=.12)return pick([`가격 전쟁이다! 오늘 특가: ${s.join(", ")}! 꽥꽥!`,`네가 싸게 팔면 나는 더 싸게 판다! ${s[0]}!`]);
   return pick([`빙하왕국 오늘의 특가! ${s.join(", ")}! 푸하하!`,`오늘도 우리 가게가 최고지~ ${s[0]}! 꽥!`,`졸라맨, 아직 안 망했어? ${s[1]||s[0]} 이다~`]);
@@ -2329,7 +2371,7 @@ function shopperRate(){   // 실제 1분에 지나가는 사람 수
   const h=state.min/60,curve=.55+.45*Math.sin(clamp((h-10)/12,0,1)*Math.PI)+(h>18.5&&h<20.5?.25:0);
   return 22*tierDef().crowd*weatherMult()*curve;
 }
-const maxInStore=()=>30+15*tierDef().floors+8*state.tier;
+const maxInStore=()=>Math.min(110,30+15*tierDef().floors+8*state.tier);
 
 /* ---------- 재고 ---------- */
 function restockCost(id){return Math.max(0,skuCapacity(id)-state.stock[id])*ICE[id].cost}
@@ -2407,7 +2449,7 @@ function spawnShopper(){
   if(state.min>21*60+40||GAME.closing)return;
   const M=shareModel(),r=Math.random();
   if(r<M.me){
-    if(CUST.length>=maxInStore()){state.today.full=(state.today.full||0)+1;return}
+    if(CUST.filter(c=>!c.staff).length>=maxInStore()){state.today.full=(state.today.full||0)+1;return}
     if(Math.random()<.052&&CUST.filter(c=>c.jin&&!c.caught).length<2)spawnCustomer(pick(Object.keys(JIN)));else spawnCustomer();
   }else if(r<M.me+M.rv){state.today.rival++;spawnWalker(true)}
   else{state.today.pass++;spawnWalker(false)}
@@ -2425,7 +2467,7 @@ function spawnWalker(toRival){
 function stepWalkers(dt){
   for(let i=WALKERS.length-1;i>=0;i--){const w=WALKERS[i],p=w.obj.position,tg=w.path[w.pi];
     const dx=tg[0]-p.x,dz=tg[1]-p.z,d=Math.hypot(dx,dz),st=w.speed*dt/1000;
-    if(d<=st){p.x=tg[0];p.z=tg[1];w.pi++;if(w.pi>=w.path.length){scene.remove(w.obj);WALKERS.splice(i,1);continue}}
+    if(d<=st){p.x=tg[0];p.z=tg[1];w.pi++;if(w.pi>=w.path.length){scene.remove(w.obj);WALKERS.splice(i,1);if(w.onEnd)w.onEnd();continue}}
     else{p.x+=dx/d*st;p.z+=dz/d*st;w.obj.rotation.y=Math.atan2(dx,dz)}
     p.y=p.z>3.2&&p.z<11.8?0:.12;
     w.t+=dt*.012*w.speed;setPose(w.obj,"walk",w.t,"happy");
@@ -2461,14 +2503,15 @@ function walk(C,dt){
     C.obj.rotation.y=Math.atan2(dx,dz);}
   C.t+=dt*.012*C.speed;
   if(C.pi>=C.path.length){setPose(C.obj,"stand",C.t,C.face||"happy");return true}
-  setPose(C.obj,C.jin&&C.caught?"run":"walk",C.t,C.face||"happy");return false;
+  setPose(C.obj,(C.jin&&C.caught)||(C.staff&&C.gs!=="back")?"run":"walk",C.t,C.face||"happy");return false;
 }
 function faceTo(C,x,z){const p=C.obj.position;C.obj.rotation.y=Math.atan2(x-p.x,z-p.z)}
 
 /* ---------- 살 것 정하기 ---------- */
 function planShopping(C){
   const LY=W3.LY,def=C.def;
-  let n=randInt(def.items[0],def.items[1])+Math.floor(state.tier/2)+(hasUp("aircon")&&Math.random()<.6?1:0);
+  // 돈 수익 2배: 손님이 두 배로 사 간다
+  let n=(randInt(def.items[0],def.items[1])+Math.floor(state.tier/2))*2+(hasUp("aircon")&&Math.random()<.6?2:0);
   if(C.spy)n=2;
   // 어느 층으로 갈까 (그 층 아이스크림 인기의 합, 위층은 조금 덜)
   const fw=LY.floors.map(L=>{const ids=[...new Set(L.secs.map(s=>s.sku))];let w=ids.reduce((a,id)=>a+ICE[id].pop*(def.premium&&ICE[id].avg>=2500?3:1)*(def.family&&(ICE[id].shape==="tub"||ICE[id].shape==="cup")?3:1)*(def.cheap&&ICE[id].avg<=800?2:1),0);return w/(1+.15*L.f)});
@@ -2622,7 +2665,6 @@ function scareAway(o,line){
 }
 function stepJin(C,dt){
   C.jinT+=dt;C.act-=dt;
-  if(hasUp("guard")&&C.jinT>7000){kickJin(C,true);return}
   if(C.jinT>45000){say(C,"재미없다... 간다!","",2000);C.caught=true;goOut(C);return}   // 지쳐서 스스로 나간다
   const arrived=walk(C,dt);
   if(C.jin==="drunk"&&!arrived){const p=C.obj.position,L=W3.LY.floors[C.f],nx=p.x+Math.sin(C.t*1.7)*.018,nz=p.z+Math.cos(C.t*1.3)*.018;if(navFree(L,nx,nz)){p.x=nx;p.z=nz}C.obj.rotation.y+=Math.sin(C.t*2)*.05}
@@ -2636,6 +2678,41 @@ function kickJin(C,guard){
   Snd.siren();banner(guard?"경비 아저씨 출동!":"진상 퇴치!",`${J.ic} ${J.name} 아웃`);
   CUST.forEach(o=>{if(o!==C&&!o.jin&&o.f===C.f&&!o.outside&&Math.hypot(o.obj.position.x-C.obj.position.x,o.obj.position.z-C.obj.position.z)<7&&Math.random()<.7){say(o,pick(["사이다!","속이 다 시원하다!","사장님 최고👏","나이스!"]),"good",2000);o.sat+=.15}});
   goOut(C);updateHud();
+}
+/* ---------- 경비 아저씨: 1층 입구에 서 있다가 진상이 나타나면 바로 달려간다 ---------- */
+function ensureGuard(){
+  if(!hasUp("guard")||CUST.some(c=>c.staff)||!W3.LY)return;
+  const L=W3.LY.floors[0],post={x:L.W/2-1.0,z:-1.3};
+  const obj=makeDoodlePerson({shirt:"#2b3a67",hat:"cap",hatColor:"#2b3a67",badge:true,tie:"#ffcc2e"});obj.scale.setScalar(1.06);scene.add(obj);obj.position.set(post.x,0,post.z);obj.rotation.y=Math.PI;
+  CUST.push({id:++CID,type:"guard",def:{scale:1.06,speed:3,pat:99},obj,f:0,outside:false,state:"guard",gs:"post",path:[],pi:0,speed:3.1*(1+.08*state.tier),t:0,
+    list:[],cart:[],sat:1,pat:1,patMax:1,staff:true,post,say:"",sayUntil:0,sayCls:"",face:"happy"});
+}
+function guardGo(G,f,x,z,then){
+  if(G.f!==f){const L=W3.LY.floors[G.f];G.gs2=then;G.liftF=f;G.gs="toLift";setPath(G,L.elev.wait.x,L.elev.wait.z);return}
+  setPath(G,x,z);G.gs=then;
+}
+function stepGuard(G,dt){
+  G.t+=dt*.01;G.rep=(G.rep||0)-dt;
+  const J=G.tgt&&!G.tgt.caught&&CUST.includes(G.tgt)?G.tgt:null;
+  if(!J&&G.gs==="chase"){G.tgt=null;guardGo(G,0,G.post.x,G.post.z,"back")}
+  switch(G.gs){
+    case "post":{
+      const j=CUST.find(c=>c.jin&&!c.caught&&c.state==="jin");
+      if(j){G.tgt=j;say(G,"삐익! 거기 서요!","",1500);if(G.f===PLAYER.f||j.f===PLAYER.f)Snd.whistle();guardGo(G,j.f,j.obj.position.x,j.obj.position.z,"chase");G.rep=500}
+      else{setPose(G.obj,"stand",G.t,"happy");G.obj.rotation.y=Math.PI}
+      break}
+    case "toLift":if(walk(G,dt)){G.gs="lift";G.hidden=true;G.obj.visible=false;G.wait=900}break;
+    case "lift":G.wait-=dt;if(G.wait<=0){const L=W3.LY.floors[G.liftF];G.f=G.liftF;G.hidden=false;G.obj.position.set(L.elev.wait.x,G.f*FLOOR_H,L.elev.wait.z);
+      const nx=G.gs2;if(nx==="chase"&&J)guardGo(G,G.f,J.obj.position.x,J.obj.position.z,"chase");else guardGo(G,G.f,G.post.x,G.post.z,"back")}break;
+    case "chase":{
+      if(!J)break;
+      if(J.f!==G.f){guardGo(G,J.f,J.obj.position.x,J.obj.position.z,"chase");break}
+      const d=Math.hypot(J.obj.position.x-G.obj.position.x,J.obj.position.z-G.obj.position.z);
+      if(d<1.15){kickJin(J,true);say(G,pick(["손님, 나가 주세요!","여기서 이러시면 안 됩니다!","삐익! 퇴장!"]),"",2200);G.tgt=null;guardGo(G,0,G.post.x,G.post.z,"back");break}
+      if(G.rep<=0){G.rep=600;setPath(G,J.obj.position.x,J.obj.position.z)}
+      walk(G,dt);break}
+    case "back":if(walk(G,dt)){G.gs="post"}break;
+  }
 }
 function catchCustomer(C){if(C.spy)catchSpy(C);else if(C.jin)kickJin(C,false)}
 // 진상 표시 (머리 위 빨간 이름표 + 변태 하트 · 술주정 딸꾹)
@@ -2686,6 +2763,7 @@ function stepCustomers(dt){
         break;}
       case "counter":C.pat-=dt*.3;break;
       case "jin":stepJin(C,dt);break;
+      case "guard":stepGuard(C,dt);break;
       case "toDoor":if(walk(C,dt))outside(C);break;
       case "out":if(walk(C,dt)){scene.remove(C.obj);CUST.splice(i,1);removeBubble(C)}break;
     }
@@ -2825,7 +2903,7 @@ async function scanItem(C,it,fast){
   Snd.beep();W3.laser.material.opacity=1;setTimeout(()=>{if(W3.laser)W3.laser.material.opacity=.55},140);
   const price=state.prices[it.sku];C.total+=price;C.count++;
   state.today.best[it.sku]=(state.today.best[it.sku]||0)+1;
-  const s=toScreen(m.position);floatText("삐빅! "+won(price),s.x,s.y-20,"#98f7bd",20);
+  const s=toScreen(m.position);if(!s.behind&&PLAYER.f===0&&!PLAYER.outside())floatText("삐빅! "+won(price),s.x,s.y-20,"#98f7bd",20);
   updatePos();
   await tween(m,S.bag,fast?100:160,{lift:.06,scale:.4});
   W3.bag.visible=true;
@@ -3086,6 +3164,7 @@ function buyUpgrade(id){
   if(id==="kiosk"){placeKiosks();const k=kioskSpots()[lvOf("kiosk")-1];toast(`🖥 키오스크 설치 완료! (${k?k.f+1:1}층)`);
     if(lvOf("kiosk")===1)setTimeout(()=>Talk.say("이제 손님이 스스로 바코드 찍고 결제해! 나는 가격이랑 재고만 신경 쓰면 돼","wink"),400)}
   else if(id==="bigfz"){markItemsDirty();toast("냉동고가 두 배로 커졌어요! 발주해서 채워요")}
+  else if(id==="guard"){ensureGuard();toast("👮 경비 아저씨 출근! 1층 입구에 서 있어요")}
   else toast(`${u.ic} ${u.name} 완료!`);
   updateHud();renderMenu();
 }
@@ -3125,7 +3204,7 @@ function doRemodel(){
     state.tier++;buildStore(state.tier);placeKiosks();
     // 새 아이스크림은 개업 선물로 반쯤 채워 준다
     ICES.forEach(d=>{if(d.tier===state.tier&&!state.gifts[d.id]){state.gifts[d.id]=1;state.stock[d.id]=Math.round(skuCapacity(d.id)*.5)}});
-    markItemsDirty();PLAYER.reset();renderFloors();
+    markItemsDirty();PLAYER.reset();ensureGuard();renderFloors();
   },1500);
   setTimeout(()=>{$("build").hidden=true;GAME.building=false;Snd.fanfare();banner(tierDef().name,tierDef().floors>1?`${tierDef().floors}층까지!`:"");
     const lines=[{text:`짜잔! ${tierDef().name}! 손님이 더 많이 올 거야!`,mood:"wink"}];
@@ -3338,6 +3417,166 @@ function leaveOpening(){
 $("opNext").onclick=()=>{Snd.wake();Snd.click();if(Op.i<Op.list.length)Op.go(Op.i+1)};
 $("opSkip").onclick=()=>{Snd.wake();Snd.click();Op.go(Op.list.length)};
 $("opStart").onclick=()=>{Snd.wake();Snd.click();leaveOpening()};
+/* ================= 빙하왕국 괴롭히기: 돌 던지기 · 들어가서 진상짓 =================
+   길에 나가면 '돌 던지기' 버튼, 빙하왕국 안에 들어가면 진상짓 버튼 4개.
+   맞을 때마다 빙하왕국 체력이 줄고, 0이 되면 다음 날 아침 문을 닫는다 (엔딩).
+   안에서 너무 날뛰면 펭귄 사장이 화나서 쫓아낸다 */
+const RV={cool:0,anger:0,cracks:[],people:[],peng:null,dance:0,pengT:0,popT:0,calm:0};
+const RIVAL_RECTS=[[-5.1,0,-3.3,0],[-3,0,-1.2,0],[-.85,0,.85,0],[1.25,0,2.95,0],[3.35,0,5.05,0]].map(([a,,b])=>[a,RIVAL_Z+2.2,b,RIVAL_Z+3.0])
+  .concat([[1.6,RIVAL_Z+4.28,5.7,RIVAL_Z+5.5]]);                 // 계산대 + 콘 쇼케이스 (펭귄 사장은 그 뒤에)
+const inRival=()=>PLAYER.f===0&&PLAYER.z>RIVAL_Z+.35;
+function rivalHit(dmg,why){
+  const R=state.rival;if(R.broke)return;R.harass=(R.harass||0)+1;
+  R.hp=Math.max(0,(R.hp==null?100:R.hp)-dmg);
+  if(state.today.rival>0&&Math.random()<.5)state.today.rival--;
+  if(R.hp<=0&&!R.dead){R.dead=1;banner("빙하왕국 휘청!","내일 아침에 무슨 일이...");Snd.fanfare()}
+}
+// 펭귄 사장 한마디 (보이면 머리 위에, 아니면 알림으로)
+function pengYell(text){
+  Snd.quack();
+  const p=RV.peng;
+  if(p&&p.visible){const s=toScreen(p.getWorldPosition(new T.Vector3()).setY(1.9));if(!s.behind&&s.x>40&&s.x<OV.W-40&&s.y>60&&s.y<OV.H-40){floatText("🐧 "+text,s.x,s.y,"#9fd0ff",20);return}}
+  toast("🐧 "+text);
+}
+/* ---------- 빙하왕국 안: 펭귄 사장 + 손님들 ---------- */
+function ensureRivalPeople(max=4){
+  if(state.rival.broke)return;
+  if(!RV.peng){RV.peng=makeDoodlePerson(PENG_LOOK);RV.peng.scale.setScalar(1.05);RV.peng.position.set(2.5,.04,RIVAL_Z+5.12);RV.peng.rotation.y=Math.PI;scene.add(RV.peng)}
+  RV.peng.visible=true;
+  RV.people=RV.people.filter(o=>o.parent);
+  const spots=[-4.2,-2.1,0,2.1].filter(x=>!RV.people.some(o=>Math.abs(o.position.x-x)<.5));
+  let add=max;
+  while(RV.people.length<4&&spots.length&&add-->0){const x=spots.shift(),o=makeDoodlePerson(lookFor(pick(["office","student","kid","grandma",""])));
+    o.position.set(x+rand(-.2,.2),.04,RIVAL_Z+1.75);o.rotation.y=0;o.userData.rv=1;scene.add(o);RV.people.push(o)}
+}
+// 빙하왕국 손님이 놀라서 나간다 → 절반은 우리 가게로!
+function scareRival(n,line){
+  let k=0;RV.people.slice().forEach(o=>{
+    if(k>=n||!o.parent)return;k++;RV.people=RV.people.filter(q=>q!==o);
+    const s=toScreen(o.position.clone().setY(1.7));if(!s.behind)floatText(line||pick(["으악!","뭐야 저 사람!","무서워!","나갈래!"]),s.x,s.y,"#ffe1dc",18);
+    scene.remove(o);
+    const w=makeDoodlePerson(o.userData.dp.look);w.position.copy(o.position);scene.add(w);
+    const toMe=Math.random()<.55,dx=W3.LY.floors[0].door.x;
+    WALKERS.push({obj:w,path:toMe?[[o.position.x,RIVAL_Z+.9],[0,RIVAL_Z+.5],[0,RIVAL_Z-1.2],[4.5,12.2],[4.5,3.6],[dx,2.3]]:[[o.position.x,RIVAL_Z+.9],[0,RIVAL_Z+.5],[0,RIVAL_Z-1.2],[pick([-30,30]),13.2]],
+      pi:0,speed:2.4,t:0,onEnd:toMe?()=>{if(GAME.running&&!GAME.closing&&CUST.filter(c=>!c.staff).length<maxInStore()){const C=spawnCustomer(pick(["office","student","grandma"]));if(C)C.obj.position.set(dx,.12,2.3);toast("🏃 빙하왕국 손님이 우리 가게로 왔어요!")}}:null});
+    if(state.today.rival>0)state.today.rival--;
+  });
+  return k;
+}
+/* ---------- 돌 던지기 ---------- */
+let ROCK_GEO=null,CRACK_TEX=null;
+function crackTex(){
+  if(CRACK_TEX)return CRACK_TEX;
+  const c=mkCanvas(128,128),x=c.getContext("2d");x.strokeStyle="rgba(255,255,255,.95)";x.lineCap="round";
+  for(let i=0;i<9;i++){let a=i/9*TAU+Math.random()*.3,r=0,px=64,py=64;x.lineWidth=2.4;x.beginPath();x.moveTo(px,py);
+    while(r<60){r+=8+Math.random()*8;a+=(Math.random()-.5)*.5;px=64+Math.cos(a)*r;py=64+Math.sin(a)*r;x.lineTo(px,py)}x.stroke()}
+  x.lineWidth=1.5;for(let k=1;k<4;k++){x.beginPath();x.arc(64,64,k*15,0,TAU);x.stroke()}
+  x.fillStyle="rgba(255,255,255,.9)";x.beginPath();x.arc(64,64,6,0,TAU);x.fill();
+  return CRACK_TEX=toTex(c);
+}
+function throwStone(){
+  if(RV.cool>0||Scr.name!=="game"||!PLAYER.outside()||inRival())return;
+  if(state.rival.broke){toast("빙하왕국은 이미 문을 닫았어요");return}
+  RV.cool=650;Snd.wake();
+  const dir=new T.Vector3(0,0,-1).applyQuaternion(camera.quaternion),o=camera.position.clone();
+  let tx=null,ty=null;
+  if(dir.z>.05){const k=(RIVAL_Z-.12-o.z)/dir.z;tx=o.x+dir.x*k+rand(-.35,.35);ty=o.y+dir.y*k+rand(-.25,.25)}   // 조금씩 빗나간다
+  if(tx==null||Math.abs(tx)>6||ty<.15||ty>8.2){tx=rand(-5,5);ty=rand(.6,3)}
+  if(!ROCK_GEO)ROCK_GEO=new T.IcosahedronGeometry(.08,0);
+  const rock=mesh(ROCK_GEO,mLam(0x8a8178,{flatShading:true}),{parent:scene});
+  rock.position.copy(o).add(dir.clone().multiplyScalar(.6)).add(new T.Vector3(0,-.25,0));
+  const to=new T.Vector3(tx,ty,RIVAL_Z-.14),dist=o.distanceTo(to);
+  Snd.whoosh();HANDS.go("R",OV.W*.62,OV.H*.42,"open",.45);setTimeout(()=>HANDS.rest("R"),260);
+  tween(rock,to,Math.min(950,260+dist*48),{lift:Math.min(2.6,dist*.13)}).then(()=>{scene.remove(rock);rock.material.dispose();stoneHit(tx,ty)});
+}
+function stoneHit(x,y){
+  if(Math.abs(x)<1.05&&y<3.3){   // 열린 문으로 쏙
+    Snd.thud();rivalHit(2);scareRival(1,"돌이 날아왔어!");if(Math.random()<.5)pengYell("가게 안에 돌 던지지 마!! 꽥!!");
+  }else if(Math.abs(x)<5.8&&y<3.45){   // 유리창: 쨍그랑
+    const m=mesh(new T.PlaneGeometry(.75,.75),new T.MeshBasicMaterial({map:crackTex(),transparent:true,depthWrite:false}),{x,y,z:RIVAL_Z-.15,ry:Math.PI,rz:Math.random()*TAU,parent:scene});
+    RV.cracks.push(m);if(RV.cracks.length>18){const old=RV.cracks.shift();scene.remove(old);old.material.dispose()}
+    Snd.noiseHit(6000,.35,.25,"highpass");Snd.tone(2400,.2,"triangle",.05);Snd.tone(3300,.25,"triangle",.04,.05);
+    rivalHit(3);scareRival(1,"꺄악! 유리창이!");
+    if(Math.random()<.5)pengYell(pick(["누구야!! 꽥!!","내 유리창!!!","경찰 부른다 꽥!!"]));
+  }else if(y>5.3&&y<7.3&&Math.abs(x)<4.6){   // 간판: 삐뚤
+    W3.rivalSign.rotation.z+=(Math.random()<.5?-1:1)*.05;Snd.thud();rivalHit(2);if(Math.random()<.4)pengYell("간판 건드리지 마!!");
+  }else{Snd.thud();rivalHit(1)}
+  toast(`🪨 빙하왕국 체력 ${Math.round(state.rival.hp)}%`);updateHint();
+}
+/* ---------- 빙하왕국 안에서 진상짓 ---------- */
+function rivalAct(kind){
+  if(RV.cool>0||!inRival())return;
+  RV.cool=900;Snd.wake();
+  const cx=OV.W/2,cy=OV.H*.36;
+  if(kind==="eat"){
+    const m=new T.Mesh(itemGeo(pick(["world","melon","jaws","samanco"])),MAT.vcTex);camera.add(m);m.position.set(.2,-.26,-.52);m.rotation.set(.4,.7,.2);
+    tween(m,new T.Vector3(.02,-.12,-.3),520,{scale:.4}).then(()=>{camera.remove(m)});
+    floatText("냠냠! 공짜라 더 맛있다~",cx,cy,"#fff",26);Snd.splat();rivalHit(1.5);RV.anger+=1;
+    setTimeout(()=>pengYell(pick(["야!! 그거 계산해!! 꽥!!","도둑이야 꽥꽥!!","내 아이스크림!!"])),500);
+  }else if(kind==="shout"){
+    floatText("여기 비싸요~!! 건너편이 더 싸요!!",cx,cy,"#ffcc2e",28);Snd.angry();Snd.tone(520,.3,"sawtooth",.05,.1);
+    const n=scareRival(2,pick(["진짜요?!","건너편 가 보자!","어머 비싸대!"]));rivalHit(2.5+n*.5);RV.anger+=1;
+    setTimeout(()=>pengYell(pick(["영업 방해다 꽥!!","거짓말이야!! 우리가 제일 싸!","조용히 해!!"])),600);
+  }else if(kind==="dance"){
+    RV.dance=1700;floatText("💃 졸라맨 막춤 타임~!",cx,cy,"#ff9cc8",28);Snd.fanfare();HANDS.go("L",OV.W*.3,OV.H*.45,"wave",.3);HANDS.go("R",OV.W*.7,OV.H*.45,"wave",.3);
+    setTimeout(()=>{HANDS.rest("L");HANDS.rest("R")},1700);
+    const n=scareRival(Math.random()<.6?1:2,pick(["뭐야 저 사람...","으 창피해","눈 버렸어!"]));rivalHit(1.5+n*.5);RV.anger+=1;
+    setTimeout(()=>pengYell(pick(["여기서 춤추지 마!!","꽥?! 뭐 하는 거야!!"])),700);
+  }else if(kind==="melt"){
+    floatText("❄ 냉동고 문 활짝! 다 녹는다~ 💧",cx,cy,"#9fe3ff",26);Snd.slideDoor();Snd.noiseHit(400,1.2,.08,"lowpass",.2);
+    rivalHit(3);RV.anger+=2;scareRival(1,"아이스크림이 녹았어!");
+    setTimeout(()=>pengYell(pick(["내 아이스크림이 녹잖아!!! 꽥!!","냉동고 닫아!!!"])),500);
+  }
+  if(RV.anger>=6)setTimeout(kickedOut,900);
+  updateHint();
+}
+// 펭귄 사장한테 쫓겨나기
+function kickedOut(){
+  if(!inRival())return;
+  pengYell("나가!! 다신 오지 마!! 꽥!!");Snd.thud();
+  $("fade").classList.add("on");
+  setTimeout(()=>{PLAYER.x=.3;PLAYER.z=RIVAL_Z-1.9;PLAYER.yaw=0;PLAYER.pitch=-.05;PLAYER.apply();RV.anger=0;$("fade").classList.remove("on");toast("🐧 펭귄 사장한테 쫓겨났다! (다시 들어갈 수 있어요)")},300);
+}
+function stepRival(dt){
+  if(RV.cool>0)RV.cool-=dt;
+  RV.calm+=dt;if(RV.calm>8000){RV.calm=0;if(RV.anger>0)RV.anger--}
+  if(RV.dance>0){RV.dance-=dt;PLAYER.yaw+=Math.sin(RV.dance*.02)*.035;PLAYER.walkT+=dt*2;PLAYER.speed=1}
+  const near=PLAYER.outside();
+  if(near&&!RV.init&&!state.rival.broke){RV.init=1;ensureRivalPeople()}
+  if(RV.peng){RV.peng.visible=!state.rival.broke;setPose(RV.peng,RV.anger>=3?"cheer":"stand",performance.now()/120,RV.anger>=2?"angry":"happy")}
+  RV.people.forEach(o=>setPose(o,"look",performance.now()/400,"happy"));
+  // 손님이 다시 들어온다
+  RV.popT+=dt;if(RV.popT>6000){RV.popT=0;if(near)ensureRivalPeople(1)}
+}
+function rivalNewDay(){
+  const R=state.rival;
+  if(!R.broke&&R.hp>0){RV.cracks.forEach(m=>{scene.remove(m);m.material.dispose()});RV.cracks=[];W3.rivalSign.rotation.z=0;R.hp=Math.min(100,R.hp+5)}   // 밤새 고친다
+  RV.anger=0;if(R.hp>0)R.dead=0;R.hurt=(R.harass||0)-(R.harass0||0);R.harass0=R.harass||0;
+}
+// 빙하왕국 간판 위 체력 막대 (길에 나왔을 때만)
+function drawRivalHp(ctx){
+  if(!PLAYER.outside()||state.rival.broke||inRival())return;
+  const s=toScreen(new T.Vector3(0,7.75,RIVAL_Z-.2));if(s.behind||s.x<-60||s.x>OV.W+60||s.y<20||s.y>OV.H-40)return;
+  const hp=clamp(state.rival.hp??100,0,100)/100,w=Math.min(220,OV.W*.42),x=s.x-w/2,y=s.y;
+  ctx.save();ctx.lineWidth=3;ctx.strokeStyle=INK;ctx.fillStyle="rgba(255,255,255,.9)";rr(ctx,x,y-11,w,22,10);ctx.fill();ctx.stroke();
+  ctx.fillStyle=hp>.5?"#43a36b":hp>.25?"#f4b63f":"#e2483d";rr(ctx,x+3,y-8,Math.max(0,(w-6)*hp),16,7);ctx.fill();
+  rawText(ctx,`빙하왕국 ${Math.round(hp*100)}%`,s.x,y,15,INK);ctx.restore();
+}
+/* ---------- 아래 버튼 ---------- */
+let ACTK="";
+function renderActions(){
+  const inR=inRival(),out=PLAYER.outside()&&!inR,broke=state.rival.broke;
+  const k=Scr.name!=="game"?"":inR?"r":out&&!broke?"o":"";
+  if(k===ACTK)return;ACTK=k;
+  const A=$("actions");
+  // 폰에서는 짧은 이름 (lg: 긴 이름 · sm: 짧은 이름)
+  const B=(ic,lg,sm,attr,cls="")=>`<button class="abtn ${cls}" type="button" ${attr}><b>${ic}</b><span class="lg">${lg}</span><span class="sm">${sm}</span></button>`;
+  if(k==="o")A.innerHTML=B("🪨","빙하왕국에 돌 던지기 <small>T</small>","돌 던지기",'id="acStone"',"need");
+  else if(k==="r")A.innerHTML=[["eat","🍦","몰래 먹기","먹기"],["shout","📢","소리치기","소리"],["dance","💃","춤추기","춤"],["melt","❄","냉동고 활짝 열기","냉동고"]].map(([a,ic,lg,sm])=>B(ic,lg,sm,`data-a="${a}"`)).join("");
+  else A.innerHTML="";
+  if($("acStone"))$("acStone").onclick=throwStone;
+  A.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>rivalAct(b.dataset.a));
+}
 /* ================= 하루 장사 (10:00 ~ 22:00, 실제 약 5분) ================= */
 const GAME_SPEED=2.5;   // 실제 1초 = 게임 2.5분
 const GAME={running:false,acc:0,closing:false,building:false,lockModal:false,taunt:{},saveT:0};
@@ -3355,8 +3594,8 @@ function stepGame(dt){
   [[13,"a"],[18.5,"b"]].forEach(([h,k])=>{if(state.min>=h*60&&!GAME.taunt[k]){GAME.taunt[k]=1;Talk.say(rivalLine(),"happy","rival")}});
   // 마감 뒤 오래 남은 손님은 정리 (아이스크림은 냉동고로)
   if(GAME.closing){GAME.closeT=(GAME.closeT||0)+dt;
-    if(GAME.closeT>50000&&!CO.cur){CUST.filter(c=>!c.outside).forEach(C=>{C.cart.forEach(c=>{state.stock[c.sku]+=c.qty});C.cart=[];if(C.kiosk&&C.kiosk.user===C)C.kiosk.user=null;if(C.sec&&C.sec.busy===C)C.sec.busy=null;leaveLine(C);scene.remove(C.obj);removeBubble(C);CUST.splice(CUST.indexOf(C),1)});markItemsDirty()}}
-  if(GAME.closing&&!CUST.some(c=>!c.outside)&&!CO.cur){endDay();return}
+    if(GAME.closeT>50000&&!CO.cur){CUST.filter(c=>!c.outside&&!c.staff).forEach(C=>{C.cart.forEach(c=>{state.stock[c.sku]+=c.qty});C.cart=[];if(C.kiosk&&C.kiosk.user===C)C.kiosk.user=null;if(C.sec&&C.sec.busy===C)C.sec.busy=null;leaveLine(C);scene.remove(C.obj);removeBubble(C);CUST.splice(CUST.indexOf(C),1)});markItemsDirty()}}
+  if(GAME.closing&&!CUST.some(c=>!c.outside&&!c.staff)&&!CO.cur){endDay();return}
   drawSky(state.min/60);
   GAME.saveT+=dt;if(GAME.saveT>20000){GAME.saveT=0;save()}
 }
@@ -3365,11 +3604,12 @@ function endDay(){
   save();setTimeout(showReport,400);
 }
 function nextDay(){
-  newRivalDay();                       // 어제 손님 수를 보고 펭귄이 가격을 바꾼다
+  const rivalDown=!state.ended&&state.rival.hp!=null&&state.rival.hp<=0;
+  newRivalDay();rivalNewDay();                       // 어제 손님 수를 보고 펭귄이 가격을 바꾼다
   state.day++;state.min=600;state.today=freshToday();state.weather=rollWeather();
   if(hasUp("auto")){const r=restockAll(true);if(r.n)toast(`🚚 자동 발주: ${r.n}개 채웠어요 (-${won(r.cost)})`)}
   save();
-  if(!state.ended&&state.tier>=3&&state.rival.hp!=null&&state.rival.hp<=0){startEnding();return}
+  if(rivalDown||(!state.ended&&state.rival.hp!=null&&state.rival.hp<=0)){startEnding();return}
   Talk.say(rivalLine(),"happy","rival");
   if(state.weather.sky==="hot")setTimeout(()=>banner("폭염 특보!","오늘은 손님이 몰려와요"),600);
   else if(state.weather.sky==="rain")setTimeout(()=>banner("비 오는 날","손님이 좀 적어요"),600);
@@ -3383,7 +3623,7 @@ function startEnding(){
   Talk.tell([
     {text:"...어? 오늘따라 건너편이 조용하다.",mood:"shock"},
     {text:"꽥... 졸라맨... 나 망했어. 왕관도 전당포에 맡겼어...",who:"rival",mood:"happy"},
-    {text:"네 가게는 4층짜리 아이스크림 빌딩... 나는 냉동고 다섯 대...",who:"rival",mood:"happy"},
+    {text:(state.rival.harass||0)>=15?"유리창은 다 깨지고... 웬 진상이 들어와서 춤추고 아이스크림 먹고... 손님이 하나도 안 와...":`네 가게는 ${tierDef().floors>1?tierDef().floors+"층짜리 아이스크림 빌딩":"손님 바글바글한 할인점"}... 나는 냉동고 다섯 대...`,who:"rival",mood:"happy"},
     {text:"그러니까... 나 여기서 알바하면 안 될까? 아이스크림 냄새만 맡아도 행복해...",who:"rival",mood:"happy"},
     {text:"푸하하! 좋아! 대신 바코드는 네가 찍어! 오늘부터 펭귄 알바다!",mood:"wink"},
     {text:"🎉 엔딩! 길 건너 펭귄 가게를 이겼다! (펭귄 알바가 1층 계산대를 도와줘요. 장사는 계속돼요)",mood:"happy"}
@@ -3435,7 +3675,7 @@ function resetWorld(){
   CO.line.length=0;CO.cur=null;TWEENS.length=0;WAITS.length=0;$("drawer").hidden=true;updatePos();
   buildStore(state.tier);placeKiosks();markItemsDirty();ICES.forEach(d=>drawLabel(d));
   if(!state.rival.prices||!Object.keys(state.rival.prices).length)newRivalDay();else drawRivalBoard();
-  W3.pengHelper=null;applyEnding();
+  W3.pengHelper=null;applyEnding();ensureGuard();
   GAME.running=false;GAME.closing=false;
 }
 function newGame(){clearSave();state=freshState();state.weather=rollWeather();resetWorld();Scr.show("opening");Op.start(false)}
@@ -3496,7 +3736,9 @@ function updateHint(){
   let h="";const C=CO.cur;
   const jn=CUST.find(c=>c.jin&&!c.caught&&c.state==="jin");
   if(jn)h=jn.f===PLAYER.f?`🚨 ${JIN[jn.jin].name} 등장! 가까이 가서 눌러서 내쫓아요`:`🚨 ${jn.f+1}층에 진상 손님! (${jn.f+1}F 버튼)`;
-  else if(PLAYER.outside())h="길 건너 빙하왕국 특가판을 눌러서 가격을 엿볼 수 있어요";
+  else if(inRival())h=`🧊 빙하왕국 체력 ${Math.round(state.rival.hp??100)}% · 🐧 사장 ${RV.anger>=4?"폭발 직전! 😡":RV.anger>=2?"화남 😠":"멀뚱"}`;
+  else if(PLAYER.outside()&&!state.rival.broke)h=`🧊 빙하왕국 체력 ${Math.round(state.rival.hp??100)}% · 🪨 돌 던지기(T) · 가운데 문으로 들어가기`;
+  else if(PLAYER.outside())h="길 건너 빙하왕국은 문을 닫았어요 (임대 문의)";
   else if(C&&PLAYER.f!==0)h=state.ended?"🐧 펭귄 알바가 1층 계산을 도와주고 있어요":"🔔 1층 계산대에 손님이 기다려요! (1F 버튼)";
   else if(C&&!PLAYER.atRegister())h=state.ended?"🐧 펭귄 알바가 계산 중!":"🔔 계산대에 손님이 기다려요!";
   else if(C&&C.onCounter.length)h=hasUp("scanner")?"아이스크림을 누르면 같은 것끼리 한꺼번에 삑!":"아이스크림을 눌러서 바코드를 찍어요";
@@ -3535,16 +3777,16 @@ function frameBody(now){
     Op.step(dt);stepWalkers(dt);stepDoors(dt);stepItems(dt);HANDS.step(dt);drawPeople(now);renderer.render(scene,camera);Op.overlay(ctx,now);HANDS.draw(ctx);
   }else if(Scr.name==="game"){
     const paused=!$("modal").hidden||GAME.building;
-    if(!paused){stepTweens(dt);stepWaits(dt);stepGame(dt);stepWalkers(dt);stepPenguinHelper(dt)}
+    if(!paused){stepTweens(dt);stepWaits(dt);stepGame(dt);stepWalkers(dt);stepPenguinHelper(dt);stepRival(dt)}
     if(canMove())PLAYER.step(dt);else PLAYER.apply();
     stepDoors(dt);stepItems(dt);HANDS.step(dt);
     drawPeople(now);
     renderer.render(scene,camera);
-    drawGuides(ctx,now);drawJinFx(ctx,now);
+    drawGuides(ctx,now);drawJinFx(ctx,now);drawRivalHp(ctx);
     crosshair(ctx);HANDS.draw(ctx);
     stepHover(now);drawHoverLabel(ctx);drawFloats(ctx,dt);
     renderBubbles();
-    hudT+=dt;if(hudT>200){hudT=0;updateHud();updateHint()}
+    hudT+=dt;if(hudT>200){hudT=0;updateHud();updateHint();renderActions()}
     floorT+=dt;if(floorT>700){floorT=0;renderFloors();if(PP.id)PP.fill()}
     Talk.frame(dt,now);
   }
