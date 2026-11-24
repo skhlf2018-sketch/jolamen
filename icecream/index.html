@@ -98,7 +98,7 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .pat i.mid{background:#ffcc2e}.pat i.low{background:var(--red)}
 
 /* 아래쪽: 계산대 화면 → 안내 → 할 일 버튼 (한 줄씩 쌓여서 겹치지 않는다) */
-.bottom{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.bottom{position:absolute;left:76px;right:76px;bottom:12px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 .hint{background:rgba(8,12,30,.85);border:2px solid rgba(255,204,46,.55);border-radius:999px;padding:5px 16px;font-size:17px;text-align:center;max-width:100%;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hint:empty{display:none}
 .row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;pointer-events:auto;max-width:100%}
@@ -106,7 +106,8 @@ button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .abtn{border:3px solid var(--ink);border-radius:14px;background:var(--paper);color:var(--ink);font-size:17px;padding:7px 14px;box-shadow:0 4px 0 var(--ink);display:flex;align-items:center;gap:6px}
 .abtn.need{background:var(--brand);animation:pulse 1s ease-in-out infinite}
 .abtn:disabled{opacity:.5;box-shadow:0 2px 0 var(--ink)}
-.abtn>b{font-weight:400}.abtn .sm{display:none}
+.abtn>b{font-weight:400}.abtn .sm{display:none}.abtn.off{opacity:.55;box-shadow:0 2px 0 var(--ink)}
+.up.spy{background:#fff4d6;border-color:#f4b63f}
 .pos{display:flex;align-items:baseline;gap:10px;background:var(--lcd-bg);border:3px solid #22382c;border-radius:12px;padding:4px 14px;font-family:var(--fm);color:var(--lcd)}
 .pos b{font-size:22px;text-shadow:0 0 8px rgba(152,247,189,.6)}.pos span{font-size:14px;opacity:.85}
 
@@ -551,7 +552,7 @@ function freshState(){
     talked:{},opSeen:false,ended:false,weather:{t:33,sky:"sun"},gifts:{}
   };
 }
-function freshToday(){return {sales:0,cost:0,sold:0,me:0,rival:0,pass:0,lost:0,expensive:0,soldOut:0,angry:0,jinOut:0,jinCaught:0,jinLoss:0,best:{}}}
+function freshToday(){return {sales:0,cost:0,sold:0,me:0,rival:0,pass:0,lost:0,expensive:0,soldOut:0,angry:0,jinOut:0,jinCaught:0,jinLoss:0,stones:0,spy:0,best:{}}}
 const lvOf=id=>state.ups[id]||0;
 const hasUp=id=>lvOf(id)>0;
 const tierDef=()=>TIERS[state.tier];
@@ -3214,10 +3215,14 @@ function renderStockTab(B){
 function upCost(u){return r50(u.cost(lvOf(u.id)))}
 function kioskMax(){return 2*tierDef().floors}
 function renderUpTab(B){
-  B.innerHTML=`<div class="ups scroll">${UPGRADES.map(u=>{const lv=lvOf(u.id),maxed=lv>=u.max,cost=upCost(u),km=u.id==="kiosk"&&lv>=kioskMax()&&!maxed;
+  const sl=spyLeft(),sc=spyCost(),down=state.rival.broke||(state.rival.hp??100)<=0;
+  const spy=`<div class="up spy"><span class="ic">🕵</span><div><b>스파이 보내기</b> <small class="lv">오늘 ${sl}/${SPY_MAX}번</small><small>길 건너 ${esc(rivalDef().short)}에 몰래 들어가서 장난치고 와요 (체력 ↓, 손님 ↓). 4번에 1번은 들켜요</small></div>
+    <button class="btn sm" type="button" id="upSpy" ${state.money<sc||!sl||down?"disabled":""}>${sl?won(sc):"내일 또"}</button></div>`;
+  B.innerHTML=`<div class="ups scroll">${spy}${UPGRADES.map(u=>{const lv=lvOf(u.id),maxed=lv>=u.max,cost=upCost(u),km=u.id==="kiosk"&&lv>=kioskMax()&&!maxed;
     return `<div class="up ${maxed||(u.max===1&&lv)?"own":""}"><span class="ic">${u.ic}</span><div><b>${esc(u.name)}</b> ${u.max>1&&lv?`<small class="lv">${lv}대</small>`:""}<small>${esc(u.desc(lv))}${km?" · 리모델링하면 더 놓을 수 있어요":""}</small></div>
       ${maxed||(u.max===1&&lv)?`<span>✅</span>`:`<button class="btn sm" type="button" data-u="${u.id}" ${state.money<cost||km?"disabled":""}>${won(cost)}</button>`}</div>`}).join("")}</div>`;
   B.querySelectorAll("[data-u]").forEach(b=>b.onclick=()=>buyUpgrade(b.dataset.u));
+  $("upSpy").onclick=sendSpy;
 }
 function buyUpgrade(id){
   const u=UP[id],cost=upCost(u);if(state.money<cost){Snd.errBeep();return}
@@ -3483,7 +3488,9 @@ $("opStart").onclick=()=>{Snd.wake();Snd.click();leaveOpening()};
    맞을 때마다 건너편 체력이 줄고, 0이 되면 다음 날 아침 문을 닫고 새 가게가 들어온다 (엔딩 없음, 갈수록 독한 가게).
    안에서 너무 날뛰면 사장이 화나서 쫓아낸다 */
 const TIC=s=>s.replace(/\{t\}/g,rivalDef().tic);   // 말버릇 넣기 ({t} → 꽥 · 크앙 · 후후 · 삐리빗 · 삑)
-const RV={cool:0,anger:0,cracks:[],people:[],peng:null,dance:0,pengT:0,popT:0,calm:0};
+const RV={cool:0,anger:0,cracks:[],people:[],peng:null,dance:0,pengT:0,popT:0,calm:0,bonk:0,dizzy:0,hammer:null};
+const STONE_MAX=5, SPY_MAX=2;                                   // 돌은 하루 5개, 스파이는 하루 2번
+const stonesLeft=()=>Math.max(0,STONE_MAX-((state.today&&state.today.stones)||0));
 const RIVAL_RECTS=[[-5.1,0,-3.3,0],[-3,0,-1.2,0],[-.85,0,.85,0],[1.25,0,2.95,0],[3.35,0,5.05,0]].map(([a,,b])=>[a,RIVAL_Z+2.2,b,RIVAL_Z+3.0])
   .concat([[1.6,RIVAL_Z+4.28,5.7,RIVAL_Z+5.5]]);                 // 계산대 + 콘 쇼케이스 (펭귄 사장은 그 뒤에)
 const inRival=()=>PLAYER.f===0&&PLAYER.z>RIVAL_Z+.35;
@@ -3515,7 +3522,7 @@ function ensureRivalPeople(max=4){
 function scareRival(n,line){
   let k=0;RV.people.slice().forEach(o=>{
     if(k>=n||!o.parent)return;k++;RV.people=RV.people.filter(q=>q!==o);
-    const s=toScreen(o.position.clone().setY(1.7));if(!s.behind)floatText(line||pick(["으악!","뭐야 저 사람!","무서워!","나갈래!"]),s.x,s.y,"#ffe1dc",18);
+    const s=toScreen(o.position.clone().setY(1.7));if(!s.behind)floatText(k>1||!line?pick(["으악!","뭐야 저 사람!","무서워!","나갈래!"]):line,s.x,s.y-(k-1)*24,"#ffe1dc",18);
     scene.remove(o);
     const w=makeDoodlePerson(o.userData.dp.look);w.position.copy(o.position);scene.add(w);
     const toMe=Math.random()<.55,dx=W3.LY.floors[0].door.x;
@@ -3539,6 +3546,8 @@ function crackTex(){
 function throwStone(){
   if(RV.cool>0||Scr.name!=="game"||!PLAYER.outside()||inRival())return;
   if(state.rival.broke||(state.rival.hp??100)<=0){toast("건너편은 내일 아침에 문을 닫아요. 이제 그만~");return}
+  if(stonesLeft()<=0){toast(`오늘 돌은 다 던졌어요! 내일 다시 ${STONE_MAX}개 🪨`);Snd.errBeep();return}
+  state.today.stones=(state.today.stones||0)+1;
   RV.cool=650;Snd.wake();
   const dir=new T.Vector3(0,0,-1).applyQuaternion(camera.quaternion),o=camera.position.clone();
   let tx=null,ty=null;
@@ -3584,6 +3593,10 @@ function rivalAct(kind){
     setTimeout(()=>{HANDS.rest("L");HANDS.rest("R")},1700);
     const n=scareRival(Math.random()<.6?1:2,pick(["뭐야 저 사람...","으 창피해","눈 버렸어!"]));rivalHit(1.5+n*.5);RV.anger+=1;
     setTimeout(()=>pengYell(pick(["여기서 춤추지 마!!","{t}?! 뭐 하는 거야!!"])),700);
+  }else if(kind==="bonk"){   // 뿅망치로 사장 머리 콩!
+    RV.bonk=420;RV.dizzy=2200;floatText("뿅!! 🔨",OV.W*.66,OV.H*.6,"#ffcc2e",34);Snd.boing();Snd.thud();
+    const n=scareRival(1,pick(["사장님이 맞았어!","헉! 때렸어!","나 갈래..."]));rivalHit(4+n*.5);RV.anger+=3;
+    setTimeout(()=>pengYell(pick(["아야!! {t}!!","때렸어?! 경찰 불러 {t}!!","머리에 혹 났잖아!! {t}!!"])),300);
   }else if(kind==="melt"){
     floatText("❄ 냉동고 문 활짝! 다 녹는다~ 💧",cx,cy,"#9fe3ff",26);Snd.slideDoor();Snd.noiseHit(400,1.2,.08,"lowpass",.2);
     rivalHit(3);RV.anger+=2;scareRival(1,"아이스크림이 녹았어!");
@@ -3602,10 +3615,13 @@ function kickedOut(){
 function stepRival(dt){
   if(RV.cool>0)RV.cool-=dt;
   RV.calm+=dt;if(RV.calm>8000){RV.calm=0;if(RV.anger>0)RV.anger--}
+  if(RV.bonk>0){RV.bonk-=dt;const h=hammer(),k=1-Math.max(0,RV.bonk)/420;h.visible=RV.bonk>0;
+    h.rotation.x=k<.35?lerp(.6,-1.25,k/.35):lerp(-1.25,.6,(k-.35)/.65)}
+  if(RV.dizzy>0)RV.dizzy-=dt;
   if(RV.dance>0){RV.dance-=dt;PLAYER.yaw+=Math.sin(RV.dance*.02)*.035;PLAYER.walkT+=dt*2;PLAYER.speed=1}
   const near=PLAYER.outside();
   if(near&&!RV.init&&!state.rival.broke){RV.init=1;ensureRivalPeople()}
-  if(RV.peng){RV.peng.visible=!state.rival.broke;setPose(RV.peng,RV.anger>=3?"cheer":"stand",performance.now()/120,RV.anger>=2?"angry":"happy")}
+  if(RV.peng){RV.peng.visible=!state.rival.broke;setPose(RV.peng,RV.dizzy>0?"stand":RV.anger>=3?"cheer":"stand",performance.now()/120,RV.dizzy>0?"dizzy":RV.anger>=2?"angry":"happy")}
   RV.people.forEach(o=>setPose(o,"look",performance.now()/400,"happy"));
   // 손님이 다시 들어온다
   RV.popT+=dt;if(RV.popT>6000){RV.popT=0;if(near)ensureRivalPeople(1)}
@@ -3615,8 +3631,16 @@ function rivalNewDay(){
   if(!R.broke&&R.hp>0){RV.cracks.forEach(m=>{scene.remove(m);m.material.dispose()});RV.cracks=[];W3.rivalSign.rotation.z=0;R.hp=Math.min(100,R.hp+5)}   // 밤새 고친다
   RV.anger=0;if(R.hp>0)R.dead=0;R.hurt=(R.harass||0)-(R.harass0||0);R.harass0=R.harass||0;
 }
-// 건너편 간판 위 체력 막대 (길에 나왔을 때만)
+// 뿅망치 (카메라 오른손 쪽에 붙는다)
+function hammer(){
+  if(RV.hammer)return RV.hammer;
+  const g=new T.Group(),b=new GB();b.box(0,.2,0,.035,.4,.035,0,"#ffcc2e");b.box(0,.44,0,.2,.12,.12,0,"#e2483d");b.box(-.11,.44,0,.03,.13,.13,0,"#ffe14d");b.box(.11,.44,0,.03,.13,.13,0,"#ffe14d");
+  mesh(b.geo(),MAT.vc,{parent:g});g.position.set(.36,-.34,-.8);g.rotation.z=.3;g.scale.setScalar(.55);camera.add(g);g.visible=false;return RV.hammer=g;
+}
+// 건너편 간판 위 체력 막대 (길에 나왔을 때만) + 맞은 사장 머리 위 별
 function drawRivalHp(ctx){
+  if(RV.dizzy>0&&RV.peng&&RV.peng.visible&&inRival()){const s=toScreen(RV.peng.position.clone().setY(2.05));
+    if(!s.behind){const t=performance.now()*.006;for(let i=0;i<3;i++){const a=t+i*TAU/3;outlinedText(ctx,"★",s.x+Math.cos(a)*30,s.y+Math.sin(a)*9,22,"#ffe14d",INK,3)}}}
   if(!PLAYER.outside()||state.rival.broke||inRival())return;
   const s=toScreen(new T.Vector3(0,7.75,RIVAL_Z-.2));if(s.behind||s.x<-60||s.x>OV.W+60||s.y<20||s.y>OV.H-40)return;
   const hp=clamp(state.rival.hp??100,0,100)/100,w=Math.min(220,OV.W*.42),x=s.x-w/2,y=s.y;
@@ -3628,13 +3652,13 @@ function drawRivalHp(ctx){
 let ACTK="";
 function renderActions(){
   const inR=inRival(),out=PLAYER.outside()&&!inR,broke=state.rival.broke;
-  const k=Scr.name!=="game"?"":inR?"r":out&&!broke?"o":"";
+  const k=Scr.name!=="game"?"":inR?"r":out&&!broke?"o"+stonesLeft():"";
   if(k===ACTK)return;ACTK=k;   // (가게가 바뀌면 ACTK="" 로 다시 그린다)
   const A=$("actions");
   // 폰에서는 짧은 이름 (lg: 긴 이름 · sm: 짧은 이름)
   const B=(ic,lg,sm,attr,cls="")=>`<button class="abtn ${cls}" type="button" ${attr}><b>${ic}</b><span class="lg">${lg}</span><span class="sm">${sm}</span></button>`;
-  if(k==="o")A.innerHTML=B("🪨",`${esc(rivalDef().short)}에 돌 던지기 <small>T</small>`,"돌 던지기",'id="acStone"',"need");
-  else if(k==="r")A.innerHTML=[["eat","🍦","몰래 먹기","먹기"],["shout","📢","소리치기","소리"],["dance","💃","춤추기","춤"],["melt","❄","냉동고 활짝 열기","냉동고"]].map(([a,ic,lg,sm])=>B(ic,lg,sm,`data-a="${a}"`)).join("");
+  if(k[0]==="o"){const n=stonesLeft();A.innerHTML=B("🪨",`${esc(rivalDef().short)}에 돌 던지기 (${n}/${STONE_MAX}) <small>T</small>`,`돌 ${n}/${STONE_MAX}`,'id="acStone"',n?"need":"off")}
+  else if(k==="r")A.innerHTML=[["eat","🍦","몰래 먹기","먹기"],["shout","📢","소리치기","소리"],["dance","💃","춤추기","춤"],["melt","❄","냉동고 활짝 열기","냉동고"],["bonk","🔨","사장 때리기","때리기"]].map(([a,ic,lg,sm])=>B(ic,lg,sm,`data-a="${a}"`)).join("");
   else A.innerHTML="";
   if($("acStone"))$("acStone").onclick=throwStone;
   A.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>rivalAct(b.dataset.a));
@@ -3672,6 +3696,34 @@ function rivalTakeover(){
     {text:nw.open,who:"rival",rv:nw,mood:"angry"},
     {text:`${nw.boss}?! 좋아, 덤벼! 50원 전쟁 ${wins+1}라운드다!`,mood:"wink"}
   ],()=>{swap();save();banner(`NEW OPEN! ${nw.ic} ${nw.short}`,`${wins+1}라운드 · 갈수록 독해져요`);Snd.fanfare();startDay()});
+}
+
+/* ---------- 🕵 스파이 보내기 (사장님 메뉴) ----------
+   검은 양복 스파이가 길을 건너 건너편에 몰래 들어가서 장난을 치고 온다. 4번 중 1번은 들켜서 도망 */
+const SPY_LOOK={suit:"#26262e",hat:"fedora",hatColor:"#26262e",glasses:true,tie:"#e2483d"};
+const spyCost=()=>Math.max(20000,r50(TIERS[Math.min(state.tier+1,TIERS.length-1)].cost*.05));
+const spyLeft=()=>Math.max(0,SPY_MAX-((state.today&&state.today.spy)||0));
+function sendSpy(){
+  if(spyLeft()<=0){toast(`스파이는 하루 ${SPY_MAX}번까지예요. 내일 또 보내요!`);Snd.errBeep();return}
+  if(state.rival.broke||(state.rival.hp??100)<=0){toast("건너편은 이미 망하기 직전이에요!");return}
+  const c=spyCost();if(state.money<c){toast("돈이 모자라요!");Snd.errBeep();return}
+  state.money-=c;state.today.spy=(state.today.spy||0)+1;closeModal();Snd.whoosh();
+  const dx=W3.LY.floors[0].door.x,o=makeDoodlePerson(SPY_LOOK);o.position.set(dx,.12,1.4);scene.add(o);
+  WALKERS.push({obj:o,path:[[dx,2.4],[4.5,3.6],[4.5,12.2],[0,RIVAL_Z-1.2],[0,RIVAL_Z+.6],[-1.6,RIVAL_Z+1.3]],pi:0,speed:2.3,t:0,onEnd:spyResult});
+  toast(`🕵 스파이 출발! 길 건너 ${rivalDef().short}로 살금살금... (오늘 ${spyLeft()}번 남음)`);updateHud();
+}
+function spyResult(){
+  const D=rivalDef(),dx=W3.LY.floors[0].door.x,back=(caught)=>{const o=makeDoodlePerson(SPY_LOOK);o.position.set(-1.6,.04,RIVAL_Z+1.3);scene.add(o);
+    WALKERS.push({obj:o,path:[[0,RIVAL_Z+.6],[0,RIVAL_Z-1.2],[4.5,12.2],[4.5,3.6],[dx,1.4]],pi:0,speed:caught?3.6:2.4,t:0})};
+  if(!GAME.running&&!GAME.closing)return;
+  if(Math.random()<.25){   // 들켰다!
+    pengYell(pick(["너 누구야?! 수상한데?! {t}!!","스파이다!! 잡아라 {t}!!","선글라스 벗어 봐! {t}!!"]));Snd.fail();
+    toast(`🕵 스파이가 들켰다! ${D.boss}한테 쫓겨서 도망쳐 왔어요...`);back(true);return}
+  const m=pick([["냉동고 온도를 10도 올려놨어요 🫠",8],["계산대 바코드 기계에 껌을 붙였어요",7],["간판 전구를 다 빼 왔어요 💡",6],["가격표를 전부 거꾸로 붙였어요 🙃",6],["문에 '오늘 휴무' 쪽지를 붙였어요 📝",9]]);
+  rivalHit(m[1]);scareRival(2,pick(["뭐야 이 가게...","오늘 휴무래!","냉동고가 왜 이래?"]));
+  Snd.fanfare();toast(`🕵 스파이 성공! ${m[0]} (${D.short} 체력 ${Math.round(state.rival.hp)}%)`);
+  if(Math.random()<.4)setTimeout(()=>pengYell(pick(["어? 뭐가 이상한데... {t}?","누가 내 가게에 장난쳤어?! {t}!!"])),900);
+  back(false);updateHint();
 }
 /* ================= 하루 장사 (10:00 ~ 22:00, 실제 약 5분) ================= */
 const GAME_SPEED=2.5;   // 실제 1초 = 게임 2.5분
@@ -3825,7 +3877,7 @@ function updateHint(){
   if(jn)h=jn.f===PLAYER.f?`🚨 ${JIN[jn.jin].name} 등장! 가까이 가서 눌러서 내쫓아요`:`🚨 ${jn.f+1}층에 진상 손님! (${jn.f+1}F 버튼)`;
   else if(inRival())h=`${rivalDef().ic} ${rivalDef().short} 체력 ${Math.round(state.rival.hp??100)}% · 사장 ${RV.anger>=4?"폭발 직전! 😡":RV.anger>=2?"화남 😠":"멀뚱"}`;
   else if(PLAYER.outside()&&(state.rival.hp??100)<=0)h=`${rivalDef().ic} ${rivalDef().short} 체력 0%! 내일 아침 문 닫아요 (새 가게가 들어올지도...)`;
-  else if(PLAYER.outside())h=`${rivalDef().ic} ${rivalDef().short} 체력 ${Math.round(state.rival.hp??100)}% · 🪨 돌 던지기(T) · 가운데 문으로 들어가기`;
+  else if(PLAYER.outside())h=`${rivalDef().ic} ${rivalDef().short} 체력 ${Math.round(state.rival.hp??100)}% · 🪨 돌 ${stonesLeft()}/${STONE_MAX}(T) · 가운데 문으로 들어가기`;
   else if(C&&PLAYER.f!==0)h=state.ended?"🐧 펭귄 알바가 1층 계산을 도와주고 있어요":"🔔 1층 계산대에 손님이 기다려요! (1F 버튼)";
   else if(C&&!PLAYER.atRegister())h=state.ended?"🐧 펭귄 알바가 계산 중!":"🔔 계산대에 손님이 기다려요!";
   else if(C&&C.onCounter.length)h=hasUp("scanner")?"아이스크림을 누르면 같은 것끼리 한꺼번에 삑!":"아이스크림을 눌러서 바코드를 찍어요";
