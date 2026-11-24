@@ -3597,7 +3597,7 @@ function kickedOut(){
   if(!inRival())return;
   pengYell("나가!! 다신 오지 마!! {t}!!");Snd.thud();
   $("fade").classList.add("on");
-  setTimeout(()=>{PLAYER.x=.3;PLAYER.z=RIVAL_Z-1.9;PLAYER.yaw=0;PLAYER.pitch=-.05;PLAYER.apply();RV.anger=0;$("fade").classList.remove("on");toast(`${rivalDef().ic} ${rivalDef().boss}한테 쫓겨났다! (다시 들어갈 수 있어요)`)},300);
+  setTimeout(()=>{FLOATS.length=0;PLAYER.x=.3;PLAYER.z=RIVAL_Z-1.9;PLAYER.yaw=0;PLAYER.pitch=-.05;PLAYER.apply();RV.anger=0;$("fade").classList.remove("on");toast(`${rivalDef().ic} ${rivalDef().boss}한테 쫓겨났다! (다시 들어갈 수 있어요)`)},300);
 }
 function stepRival(dt){
   if(RV.cool>0)RV.cool-=dt;
